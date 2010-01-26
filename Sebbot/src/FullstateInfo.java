@@ -10,6 +10,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This class is used o store all the game information given in a fullstate
+ * message sent from the server. 
+ * 
  * @author Sebastien Lentz
  * 
  */
