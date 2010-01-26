@@ -21,25 +21,25 @@ public class FullstateInfo
     /*
      * Constants of the class.
      */
-    final static String PLAYMODE_PATTERN = "\\(pmode ([a-zA-Z_]*)\\)";
+    final static String PLAYMODE_PATTERN  = "\\(pmode ([a-zA-Z_]*)\\)";
     final static String REAL_NB_PATTERN   = "((?:\\-)?[0-9]+(?:\\.[0-9]+(?:e(?:\\-)?[0-9]+)?)?)";
-    final static String BALL_PATTERN     = "\\(\\(b\\) " + REAL_NB_PATTERN + " "
-                                                + REAL_NB_PATTERN + " "
-                                                + REAL_NB_PATTERN + " "
-                                                + REAL_NB_PATTERN + "\\)";
-    final static String PLAYER_PATTERN   = "\\(\\(p ([lr]) ([1-9]{1,2}) ([g[0-9]+])\\) "
-                                                + REAL_NB_PATTERN
-                                                + " "
-                                                + REAL_NB_PATTERN
-                                                + " "
-                                                + REAL_NB_PATTERN
-                                                + " "
-                                                + REAL_NB_PATTERN
-                                                + " "
-                                                + REAL_NB_PATTERN
-                                                + " "
-                                                + REAL_NB_PATTERN;
-    final static String TIME_STEP_PATTERN     = "\\(fullstate ([0-9]+) \\(";
+    final static String BALL_PATTERN      = "\\(\\(b\\) " + REAL_NB_PATTERN
+                                                  + " " + REAL_NB_PATTERN + " "
+                                                  + REAL_NB_PATTERN + " "
+                                                  + REAL_NB_PATTERN + "\\)";
+    final static String PLAYER_PATTERN    = "\\(\\(p ([lr]) ([1-9]{1,2}) ([g[0-9]+])\\) "
+                                                  + REAL_NB_PATTERN
+                                                  + " "
+                                                  + REAL_NB_PATTERN
+                                                  + " "
+                                                  + REAL_NB_PATTERN
+                                                  + " "
+                                                  + REAL_NB_PATTERN
+                                                  + " "
+                                                  + REAL_NB_PATTERN
+                                                  + " "
+                                                  + REAL_NB_PATTERN;
+    final static String TIME_STEP_PATTERN = "\\(fullstate ([0-9]+) \\(";
 
     /*
      * Members of the class.
