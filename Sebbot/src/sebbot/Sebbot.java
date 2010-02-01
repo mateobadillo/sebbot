@@ -1,3 +1,5 @@
+package sebbot;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,21 +10,22 @@ import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
 /**
- * This class implements the Sebbot agent for Robocup Soccer Simulation 2D.
+ * This class implements the commands of the Robocup Soccer Simulation 2D
+ * interface. It contains the client-server communication functions.
  * 
  * @author Sebastien Lentz
  * 
  */
-class Sebbot
+public class Sebbot
 {
 
     private static final int MSG_SIZE = 4096; // Size of the socket buffer
 
-    private DatagramSocket   socket;   // Socket to communicate with the server
-    private InetAddress      host;     // Server address
-    private int              port;     // Server port
-    private String           teamName; // Team name
-    private Brain            brain;    // Decision module
+    private DatagramSocket   socket;         // Socket to communicate with the server
+    private InetAddress      host;           // Server address
+    private int              port;           // Server port
+    private String           teamName;       // Team name
+    private Brain            brain;          // Decision module
 
     /**
      * @param host
@@ -41,8 +44,6 @@ class Sebbot
 
     /**
      * This destructor closes the communication socket.
-     * 
-     * @see java.lang.Object#finalize()
      */
     public void finalize()
     {
@@ -68,7 +69,8 @@ class Sebbot
 
         byte[] buffer = message.getBytes(Charset.defaultCharset());
 
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, host, port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, host,
+                port);
 
         try
         {
@@ -118,8 +120,8 @@ class Sebbot
      * @param moment
      */
     public void turn(double moment)
-    {        
-        send("(turn " + Double.toString(moment) + ")");        
+    {
+        send("(turn " + Double.toString(moment) + ")");
     }
 
     /**
@@ -158,8 +160,9 @@ class Sebbot
             brain.getFullstateInfo().setFullstateMsg(message);
             brain.getFullstateInfo().parse();
         }
-        
-        else if (message.charAt(1) == 'e')  System.out.println(message);
+
+        else if (message.charAt(1) == 'e')
+            System.out.println(message);
 
     }
 
@@ -184,7 +187,8 @@ class Sebbot
 
         if (matcher.find())
         {
-            brain = new Brain(this, matcher.group(1).charAt(0), Integer.valueOf(matcher.group(2)));
+            brain = new Brain(this, matcher.group(1).charAt(0) == 'l' ? true
+                    : false, Integer.valueOf(matcher.group(2)));
             brain.getFullstateInfo().setPlayMode(matcher.group(3));
             brain.start();
         }
@@ -192,8 +196,8 @@ class Sebbot
         {
             throw new IOException(message);
         }
-    }    
-    
+    }
+
     /**
      * This is the entry point of the application.
      * Launch the soccer client using command line:
@@ -258,7 +262,8 @@ class Sebbot
             System.err.println("    team        team_name    Team1");
             System.err.println("");
             System.err.println("    Example:");
-            System.err.println("      Sebbot -host www.host.com -port 6000 -team Team1");
+            System.err
+                    .println("      Sebbot -host www.host.com -port 6000 -team Team1");
             System.err.println("    or");
             System.err.println("      Sebbot -host 195.142.15.4");
             return;
@@ -281,19 +286,19 @@ class Sebbot
         socket.receive(packet);
         parseInitCommand(new String(buffer, Charset.defaultCharset()));
         port = packet.getPort();
-        
+
         // Before kick off, position the player somewhere in his side.
         move(-Math.random() * 52.5, Math.random() * 34.0);
 
         /* 
          * This loop will just keep waiting for server messages
          * to arrive on the socket then parse them.
-         */ 
+         */
         while (true)
         {
             parseFullstateInformation(receive());
         }
-        
+
     }
 
 }
