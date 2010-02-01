@@ -1,16 +1,19 @@
+package sebbot;
 import java.lang.Math;
+
+import sebbot.strategy.GoToBallAndShoot;
+import sebbot.strategy.Strategy;
 
 /**
  * @author Sebastien Lentz
  *
  */
-class Brain extends Thread
+public class Brain extends Thread
 {
-    private Sebbot        sebbot;       // The agent controlled by this brain
+    private Sebbot        sebbot;        // For communicating with the server 
     private FullstateInfo fullstateInfo; // Contains all info about the
                                          //     current state of the game
-    private char          teamSide;     // Side of the agent ([l]eft/[r]ight)
-    private int           playerNumber; // Uniform number of the agent
+    private Player        player;        // The player this brain controls
 
     /**
      * Constructor.
@@ -19,12 +22,12 @@ class Brain extends Thread
      * @param teamSide
      * @param playerNumber
      */
-    public Brain(Sebbot sebbot, char teamSide, int playerNumber)
+    public Brain(Sebbot sebbot, boolean leftSide, int playerNumber)
     {
         this.sebbot = sebbot;
         this.fullstateInfo = new FullstateInfo("");
-        this.teamSide = teamSide;
-        this.playerNumber = playerNumber;
+        this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber -1]
+                               : fullstateInfo.getRightTeam()[playerNumber -1];
     }
 
     /**
@@ -50,11 +53,10 @@ class Brain extends Thread
      * If the ball is the agent's kickable margin, then kick it in the direction
      * of the opposite goal.     * 
      * If not, turn in the direction of the ball then run towards it.
-     * 
-     * @see java.lang.Thread#run()
      */
     public void run()
     {
+        Strategy s1 = new GoToBallAndShoot();
 //        int lastTimeStep = 0;
         while (true) // TODO: change according to the play mode.
         {
@@ -68,29 +70,8 @@ class Brain extends Thread
 //                        + fullstateInfo.getStepTime());
 //            }
 //            lastTimeStep = fullstateInfo.getStepTime();
-
-            Ball ball = fullstateInfo.getBall();
             
-            Player player = (teamSide == 'l') ?
-                    fullstateInfo.getLeftTeam()[playerNumber - 1] :
-                    fullstateInfo.getRightTeam()[playerNumber - 1];
-
-            if (player.distanceTo(ball) > 0.5d)
-            { // The ball is not in the kickable margin.
-                if (Math.abs(player.directionOf(ball)) < 30.0)
-                { // The player is directed at the ball.
-                    sebbot.dash(100);
-                }
-                else
-                { // The player needs to turn in the direction of the ball.
-                    sebbot.turn(player.directionOf(ball));
-                }
-            }
-            else
-            { // The ball is in the kickable margin => kick it towards the goal!
-                double goalPosX = this.teamSide == 'l' ? 52.5d : -52.5d;
-                sebbot.kick(100, player.directionOf(goalPosX, 0));
-            }
+            s1.doAction(sebbot, fullstateInfo, player);
 
             // Wait for next cycle before sending another command.
             try

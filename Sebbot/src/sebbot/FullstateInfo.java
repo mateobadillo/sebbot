@@ -1,3 +1,4 @@
+package sebbot;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
@@ -64,8 +65,8 @@ public class FullstateInfo
         rightTeam = new Player[11];
         for (int i = 0; i < 11; i++)
         {
-            leftTeam[i] = new Player(0, 0, 0, 0, 'l', '0', 0);
-            rightTeam[i] = new Player(0, 0, 0, 0, 'r', '0', 0);
+            leftTeam[i] = new Player(0, 0, 0, 0, true, '0', 0);
+            rightTeam[i] = new Player(0, 0, 0, 0, false, '0', 0);
         }
     }
 
@@ -180,10 +181,10 @@ public class FullstateInfo
         matcher = pattern.matcher(fullstateMsg);
         if (matcher.find())
         {
-            ball.setPosX(Double.valueOf(matcher.group(1)));
-            ball.setPosY(Double.valueOf(matcher.group(2)));
-            ball.setVelX(Double.valueOf(matcher.group(3)));
-            ball.setVelY(Double.valueOf(matcher.group(4)));
+            ball.getPosition().setX(Double.valueOf(matcher.group(1)));
+            ball.getPosition().setY(Double.valueOf(matcher.group(2)));
+            ball.getVelocity().setX(Double.valueOf(matcher.group(3)));
+            ball.getVelocity().setY(Double.valueOf(matcher.group(4)));
         }
         else
         {
@@ -230,10 +231,11 @@ public class FullstateInfo
                         .group(3)));
             }
 
-            team[playerNumber - 1].setPosX(Double.valueOf(matcher.group(4)));
-            team[playerNumber - 1].setPosY(Double.valueOf(matcher.group(5)));
-            team[playerNumber - 1].setVelX(Double.valueOf(matcher.group(6)));
-            team[playerNumber - 1].setVelY(Double.valueOf(matcher.group(7)));
+            team[playerNumber - 1].setUniformNumber(playerNumber);
+            team[playerNumber - 1].getPosition().setX(Double.valueOf(matcher.group(4)));
+            team[playerNumber - 1].getPosition().setY(Double.valueOf(matcher.group(5)));
+            team[playerNumber - 1].getVelocity().setX(Double.valueOf(matcher.group(6)));
+            team[playerNumber - 1].getVelocity().setY(Double.valueOf(matcher.group(7)));
             team[playerNumber - 1].setBodyDirection(Double.valueOf(matcher
                     .group(8)));
         }
@@ -244,13 +246,12 @@ public class FullstateInfo
     {
         System.out.println("------ Fullstate at step: " + timeStep
                 + " ---------");
-        System.out.println("ball: " + ball.getPosX() + " " + ball.getPosY());
+        System.out.println("ball: " + ball);
         Player pi;
         for (int i = 0; i < 11; i++)
         {
             pi = leftTeam[i];
-            System.out.println("Player nr" + (i + 1) + " " + pi.getPosX() + " "
-                    + pi.getPosY() + " " + pi.getBodyDirection());
+            System.out.println("Player " + (i + 1) + " " + pi);
         }
 
         System.out.println();
@@ -258,8 +259,7 @@ public class FullstateInfo
         for (int i = 0; i < 11; i++)
         {
             pi = rightTeam[i];
-            System.out.println("Player nr" + (i + 1) + " " + pi.getPosX() + " "
-                    + pi.getPosY() + " " + pi.getBodyDirection());
+            System.out.println("Player " + (i + 1) + " " + pi);
         }
 
     }
@@ -269,19 +269,17 @@ public class FullstateInfo
     {
         String fs = "";
         fs += "------ " + System.currentTimeMillis() + " ---------\n";
-        fs += "ball: " + ball.getPosX() + " " + ball.getPosY() + "\n";
+        fs += "ball: " + ball + "\n";
         Player pi;
         for (int i = 0; i < 11; i++)
         {
             pi = leftTeam[i];
-            fs += "Player nr" + i + " " + pi.getPosX() + " " + pi.getPosY()
-                    + " " + pi.getBodyDirection() + "\n";
+            fs += "Player " + i + " " + pi + "\n";
         }
         for (int i = 0; i < 11; i++)
         {
             pi = rightTeam[i];
-            fs += "Player nr" + i + " " + pi.getPosX() + " " + pi.getPosY()
-                    + " " + pi.getBodyDirection() + "\n";
+            fs += "Player " + i + " " + pi + "\n";
         }
 
         Path logfile = Paths.get(path);

@@ -1,3 +1,4 @@
+package sebbot;
 
 /**
  * @author Sebastien Lentz

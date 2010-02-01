@@ -1,9 +1,10 @@
+package sebbot;
 
 /**
  * @author Sebastien Lentz
  *
  */
-class Ball extends MobileObject {
+public class Ball extends MobileObject {
 
     /**
      * @param posX
