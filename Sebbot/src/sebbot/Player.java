@@ -164,7 +164,7 @@ public class Player extends MobileObject
      */
     public String toString()
     {
-        return super.toString() + " - BodyDir: " + bodyDirection;
+        return "Player " + (isLeftSide() ? "left " : "right ") + uniformNumber + ": " + super.toString() + " - BodyDir: " + bodyDirection;
     }
 
 

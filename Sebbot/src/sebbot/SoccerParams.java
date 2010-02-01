@@ -4,8 +4,10 @@ package sebbot;
  * @author Sebastien Lentz
  *
  */
-class SoccerParams 
+public class SoccerParams 
 {
-	final static int SIMULATOR_STEP = 100;
+	public final static int SIMULATOR_STEP = 100;
+	public final static float FIELD_WIDTH  = 68;
+	public final static float FIELD_LENGTH = 103;
 }
 
