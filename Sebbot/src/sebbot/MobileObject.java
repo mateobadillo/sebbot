@@ -70,9 +70,14 @@ public class MobileObject
      * 
      * =========================================================================
      */
+    public double distanceTo(Vector2D v)
+    {
+        return position.distanceTo(v);
+    }
+    
     public double distanceTo(MobileObject o)
     {
-        return position.distanceTo(o.getPosition());
+        return distanceTo(o.getPosition());
     }
 
 

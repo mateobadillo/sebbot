@@ -1,8 +1,10 @@
 package sebbot;
 import java.lang.Math;
 
+import sebbot.strategy.BasicStrategy;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
+import sebbot.strategy.UniformCovering;
 
 /**
  * @author Sebastien Lentz
@@ -56,7 +58,11 @@ public class Brain extends Thread
      */
     public void run()
     {
-        Strategy s1 = new GoToBallAndShoot();
+        // Before kick off, position the player somewhere in his side.
+        sebbot.move(-Math.random() * 52.5, Math.random() * 34.0);
+
+        
+        Strategy s1 = new UniformCovering(5);
 //        int lastTimeStep = 0;
         while (true) // TODO: change according to the play mode.
         {

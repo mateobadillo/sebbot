@@ -286,10 +286,7 @@ public class Sebbot
         socket.receive(packet);
         parseInitCommand(new String(buffer, Charset.defaultCharset()));
         port = packet.getPort();
-
-        // Before kick off, position the player somewhere in his side.
-        move(-Math.random() * 52.5, Math.random() * 34.0);
-
+        
         /* 
          * This loop will just keep waiting for server messages
          * to arrive on the socket then parse them.

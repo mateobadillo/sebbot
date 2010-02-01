@@ -7,16 +7,10 @@ import sebbot.Sebbot;
 
 public class GoToBallAndShoot implements Strategy
 {
-    public GoToBallAndShoot()
-    {
-        
-    }
 
     public void doAction(Sebbot s, FullstateInfo fsi, Player p)
     {
         Ball ball = fsi.getBall();
-        
-        fsi.printAll();
 
         if (p.distanceTo(ball) > 0.5d)
         { // The ball is not in the kickable margin.
