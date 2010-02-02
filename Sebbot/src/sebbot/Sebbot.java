@@ -25,6 +25,7 @@ public class Sebbot
     private InetAddress      host;           // Server address
     private int              port;           // Server port
     private String           teamName;       // Team name
+    private String           strategy;       // Strategy used by the brain
     private Brain            brain;          // Decision module
 
     /**
@@ -33,13 +34,14 @@ public class Sebbot
      * @param teamName
      * @throws SocketException
      */
-    public Sebbot(InetAddress host, int port, String teamName)
+    public Sebbot(InetAddress host, int port, String teamName, String strategy)
             throws SocketException
     {
         this.socket = new DatagramSocket();
         this.host = host;
         this.port = port;
         this.teamName = teamName;
+        this.strategy = strategy;
     }
 
     /**
@@ -188,7 +190,7 @@ public class Sebbot
         if (matcher.find())
         {
             brain = new Brain(this, matcher.group(1).charAt(0) == 'l' ? true
-                    : false, Integer.valueOf(matcher.group(2)));
+                    : false, Integer.valueOf(matcher.group(2)), strategy);
             brain.getFullstateInfo().setPlayMode(matcher.group(3));
             brain.start();
         }
@@ -223,9 +225,10 @@ public class Sebbot
      */
     public static void main(String args[]) throws SocketException, IOException
     {
-        String hostname = new String("127.0.0.1");
+        String hostname = "127.0.0.1";
         int port = 6000;
-        String team = new String("Team1");
+        String team = "Team1";
+        String strategy = "Default";
 
         try
         {
@@ -243,6 +246,10 @@ public class Sebbot
                 else if (args[i].compareTo("-team") == 0)
                 {
                     team = args[i + 1];
+                }
+                else if (args[i].compareTo("-strategy") == 0)
+                {
+                    strategy = args[i + 1];
                 }
                 else
                 {
@@ -269,7 +276,7 @@ public class Sebbot
             return;
         }
 
-        Sebbot player = new Sebbot(InetAddress.getByName(hostname), port, team);
+        Sebbot player = new Sebbot(InetAddress.getByName(hostname), port, team, strategy);
 
         // Enter main loop
         player.mainLoop();
