@@ -16,13 +16,13 @@ import sebbot.SoccerParams;
  * @author Sebastien Lentz
  *
  */
-public class UniformCovering implements Strategy
+public class UniformCover implements Strategy
 {
     protected int        numberOfPlayers;
     protected Vector2D[] optimalPositions;
     Strategy             goToBallAndShoot;
 
-    public UniformCovering(int numberOfplayers)
+    public UniformCover(int numberOfplayers)
     {
         this.numberOfPlayers = numberOfplayers;
         optimalPositions = new Vector2D[numberOfplayers - 1];

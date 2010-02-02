@@ -4,7 +4,7 @@ import java.lang.Math;
 import sebbot.strategy.BasicStrategy;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
-import sebbot.strategy.UniformCovering;
+import sebbot.strategy.UniformCover;
 
 /**
  * @author Sebastien Lentz
@@ -16,6 +16,7 @@ public class Brain extends Thread
     private FullstateInfo fullstateInfo; // Contains all info about the
                                          //     current state of the game
     private Player        player;        // The player this brain controls
+    private String        strategy;      // Strategy used by this brain
 
     /**
      * Constructor.
@@ -24,12 +25,13 @@ public class Brain extends Thread
      * @param teamSide
      * @param playerNumber
      */
-    public Brain(Sebbot sebbot, boolean leftSide, int playerNumber)
+    public Brain(Sebbot sebbot, boolean leftSide, int playerNumber, String strategy)
     {
         this.sebbot = sebbot;
         this.fullstateInfo = new FullstateInfo("");
         this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber -1]
                                : fullstateInfo.getRightTeam()[playerNumber -1];
+        this.strategy = strategy;
     }
 
     /**
@@ -61,9 +63,16 @@ public class Brain extends Thread
         // Before kick off, position the player somewhere in his side.
         sebbot.move(-Math.random() * 52.5, Math.random() * 34.0);
 
-        
-        Strategy s1 = new UniformCovering(5);
-//        int lastTimeStep = 0;
+        Strategy s1;
+        if (strategy.equalsIgnoreCase("UniformCover"))
+        {
+            s1 = new UniformCover(5);
+        }
+        else
+        {
+            s1 = new GoToBallAndShoot();
+        }
+//      int lastTimeStep = 0;
         while (true) // TODO: change according to the play mode.
         {
             // TODO: debug agent skipping some steps.
