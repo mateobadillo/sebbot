@@ -8,7 +8,7 @@ import java.util.HashSet;
 import sebbot.Ball;
 import sebbot.FullstateInfo;
 import sebbot.Player;
-import sebbot.Sebbot;
+import sebbot.RobocupClient;
 import sebbot.Vector2D;
 import sebbot.SoccerParams;
 
@@ -28,7 +28,7 @@ public class UniformCover implements Strategy
         optimalPositions = new Vector2D[numberOfplayers - 1];
     }
 
-    public void doAction(Sebbot s, FullstateInfo fsi, Player p)
+    public void doAction(RobocupClient s, FullstateInfo fsi, Player p)
     {
         Ball ball = fsi.getBall();
         Player[] team = p.isLeftSide() ? fsi.getLeftTeam() : fsi.getRightTeam();
