@@ -1,7 +1,7 @@
 package sebbot.strategy;
 import sebbot.FullstateInfo;
 import sebbot.Player;
-import sebbot.Sebbot;
+import sebbot.RobocupClient;
 
 
 /**
@@ -10,6 +10,6 @@ import sebbot.Sebbot;
  */
 public interface Strategy
 {
-    public void doAction(Sebbot s, FullstateInfo fsi, Player p);
+    public void doAction(RobocupClient s, FullstateInfo fsi, Player p);
 
 }

@@ -5,7 +5,7 @@ import sebbot.Ball;
 import sebbot.FullstateInfo;
 import sebbot.MobileObject;
 import sebbot.Player;
-import sebbot.Sebbot;
+import sebbot.RobocupClient;
 import sebbot.Vector2D;
 
 /**
@@ -14,7 +14,7 @@ import sebbot.Vector2D;
  */
 public class BasicStrategy
 {
-    public static boolean goTo(Vector2D position, Sebbot s, FullstateInfo fsi, Player p)
+    public static boolean goTo(Vector2D position, RobocupClient s, FullstateInfo fsi, Player p)
     {
         if (p.distanceTo(position) > 0.5d)
         { // We are too far away from the position.
@@ -35,12 +35,12 @@ public class BasicStrategy
         }
     }
     
-    public static boolean goTo (MobileObject o, Sebbot s, FullstateInfo fsi, Player p)
+    public static boolean goTo (MobileObject o, RobocupClient s, FullstateInfo fsi, Player p)
     {
         return goTo(o.getPosition(), s, fsi, p);
     }
     
-    public static boolean goToBallAndShootToGoal(Sebbot s, FullstateInfo fsi, Player p)
+    public static boolean goToBallAndShootToGoal(RobocupClient s, FullstateInfo fsi, Player p)
     {
         if (goTo(fsi.getBall(), s, fsi, p))
         { // The ball is in the kickable margin => kick it towards the goal!

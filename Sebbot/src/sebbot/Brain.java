@@ -7,27 +7,30 @@ import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
 
 /**
+ * 
+ * 
  * @author Sebastien Lentz
  *
  */
-public class Brain extends Thread
+public class Brain implements Runnable
 {
-    private Sebbot        sebbot;        // For communicating with the server 
+    private RobocupClient robocupClient; // For communicating with the server 
     private FullstateInfo fullstateInfo; // Contains all info about the
-                                         //     current state of the game
+                                         //   current state of the game
     private Player        player;        // The player this brain controls
     private String        strategy;      // Strategy used by this brain
 
     /**
      * Constructor.
      * 
-     * @param sebbot
+     * @param robocupClient
      * @param teamSide
      * @param playerNumber
+     * @param strategy
      */
-    public Brain(Sebbot sebbot, boolean leftSide, int playerNumber, String strategy)
+    public Brain(RobocupClient robocupClient, boolean leftSide, int playerNumber, String strategy)
     {
-        this.sebbot = sebbot;
+        this.robocupClient = robocupClient;
         this.fullstateInfo = new FullstateInfo("");
         this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber -1]
                                : fullstateInfo.getRightTeam()[playerNumber -1];
@@ -61,9 +64,10 @@ public class Brain extends Thread
     public void run()
     {
         // Before kick off, position the player somewhere in his side.
-        sebbot.move(-Math.random() * 52.5, Math.random() * 34.0);
+        robocupClient.move(-Math.random() * 52.5, Math.random() * 34.0);
 
         Strategy s1;
+        System.out.println(strategy);
         if (strategy.equalsIgnoreCase("UniformCover"))
         {
             s1 = new UniformCover(5);
@@ -86,7 +90,7 @@ public class Brain extends Thread
 //            }
 //            lastTimeStep = fullstateInfo.getStepTime();
             
-            s1.doAction(sebbot, fullstateInfo, player);
+            s1.doAction(robocupClient, fullstateInfo, player);
 
             // Wait for next cycle before sending another command.
             try
