@@ -1,7 +1,5 @@
 package sebbot;
 import java.lang.Math;
-
-import sebbot.strategy.BasicStrategy;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
@@ -89,6 +87,14 @@ public class Brain implements Runnable
 //                        + fullstateInfo.getStepTime());
 //            }
 //            lastTimeStep = fullstateInfo.getStepTime();
+            
+//            System.out.println(fullstateInfo.getTimeStep() + ": " + player + " " + fullstateInfo.getBall());
+//            System.out.println("Next position: " + player.nextPosition(100.0d));
+//            System.out.println("Next velocity: " + player.nextVelocity(100.0d));
+//            
+//            robocupClient.dash(100.0d);
+
+
             
             s1.doAction(robocupClient, fullstateInfo, player);
 
