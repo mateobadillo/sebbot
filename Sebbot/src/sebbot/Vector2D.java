@@ -97,11 +97,21 @@ public class Vector2D implements Cloneable
         }
         else
         {
-            angle = MathTools.radToDeg(Math.atan2(y, x));
+            angle = Math.toDegrees(Math.atan2(y, x));
         }
 
         return angle;
 
+    }
+    
+    public void normalize(double modulusMax)
+    {
+        double currentModulus = getPolarRadius();
+        if (currentModulus > modulusMax)
+        {
+            this.x *= (modulusMax / currentModulus);
+            this.y *= (modulusMax / currentModulus);
+        }
     }
 
 

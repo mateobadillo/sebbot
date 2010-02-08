@@ -1,5 +1,7 @@
 package sebbot;
 
+import java.util.Collection;
+
 /**
  * @author Sebastien Lentz
  *
@@ -105,7 +107,7 @@ public class Player extends MobileObject
     /*
      * =========================================================================
      * 
-     *                          Math methods
+     *                          Movement methods
      * 
      * =========================================================================
      */
@@ -120,7 +122,7 @@ public class Player extends MobileObject
      * @return
      *          the angle to turn.
      */
-    public double getAngleFromBody(double x, double y)
+    public double angleFromBody(double x, double y)
     {
         return MathTools.normalizeAngle(position.directionOf(x, y)
                 - bodyDirection);
@@ -135,7 +137,7 @@ public class Player extends MobileObject
      * @return
      *          the angle to turn.
      */
-    public double getAngleFromBody(Vector2D p)
+    public double angleFromBody(Vector2D p)
     {
         return MathTools
                 .normalizeAngle(position.directionOf(p) - bodyDirection);
@@ -150,11 +152,102 @@ public class Player extends MobileObject
      * @return
      *          the angle to turn.
      */
-    public double getAngleFromBody(MobileObject o)
+    public double angleFromBody(MobileObject o)
     {
-        return getAngleFromBody(o.getPosition());
+        return angleFromBody(o.getPosition());
     }
-    
+
+    public Vector2D nextPosition(double power)
+    {
+        return super.nextPosition(SoccerParams.PLAYER_SPEED_MAX,
+                SoccerParams.PLAYER_ACCEL_MAX, SoccerParams.DASH_POWER_RATE,
+                power, bodyDirection);
+    }
+
+    public Vector2D nextPosition(Vector2D initialPosition,
+            Vector2D initialVelocity, double power)
+    {
+        return super.nextPosition(initialPosition, initialVelocity,
+                SoccerParams.PLAYER_SPEED_MAX, SoccerParams.PLAYER_ACCEL_MAX,
+                SoccerParams.DASH_POWER_RATE, power, bodyDirection);
+    }
+
+    public Vector2D nextVelocity(double power)
+    {
+        return super.nextVelocity(SoccerParams.PLAYER_DECAY,
+                SoccerParams.PLAYER_SPEED_MAX, SoccerParams.PLAYER_ACCEL_MAX,
+                SoccerParams.DASH_POWER_RATE, power, bodyDirection);
+    }
+
+    public Vector2D nextVelocity(Vector2D initialVelocity, double power)
+    {
+        return super.nextVelocity(initialVelocity, SoccerParams.PLAYER_DECAY,
+                SoccerParams.PLAYER_SPEED_MAX, SoccerParams.PLAYER_ACCEL_MAX,
+                SoccerParams.DASH_POWER_RATE, power, bodyDirection);
+    }
+
+    public int timeToReach(Vector2D position)
+    {
+        if(position == null)
+        {
+            System.out.println("null");
+        }
+        int nbOfSteps = 0;
+        double bodyAngle = this.bodyDirection;
+
+        if (Math.abs(angleFromBody(position)) > 1.0d)
+        {
+            this.bodyDirection = MathTools.normalizeAngle(this.bodyDirection
+                    + angleFromBody(position));
+            nbOfSteps++;
+        }
+
+        Vector2D lastVelocity = this.velocity;
+        Vector2D lastPosition = this.position;
+        Vector2D currentposition = this.position;
+        while (currentposition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
+        {
+            lastPosition = currentposition;
+            currentposition = nextPosition(lastPosition, lastVelocity, 100.0d);
+            lastVelocity = nextVelocity(lastVelocity, 100.0d);
+            nbOfSteps++;
+
+            if (currentposition.distanceTo(position) > lastPosition.distanceTo(position))
+            {
+                System.out.println("----------");
+                System.out.println("position: " + this.position);
+                System.out.println("position to reach: " + position);
+                System.out.println("relative position: " + (position.subtract(this.position)));
+                System.out.println("angle from body: " + angleFromBody(position));
+                System.out.println("Nb of steps: " + nbOfSteps);
+                System.out.println("----------");
+
+                break;
+            }
+        }
+
+        this.bodyDirection = bodyAngle;
+
+        return nbOfSteps;
+    }
+
+    public Vector2D interceptionPoint(Collection<Vector2D> trajectory)
+    {
+        Vector2D interceptionPoint = null;
+        int nbOfTimeSteps = 999;
+
+        for (Vector2D point : trajectory)
+        {
+            if (timeToReach(point) < nbOfTimeSteps)
+            {
+                interceptionPoint = point;
+                nbOfTimeSteps = timeToReach(point);
+            }
+        }
+
+        return interceptionPoint;
+    }
+
     /*
      * =========================================================================
      * 
@@ -164,8 +257,8 @@ public class Player extends MobileObject
      */
     public String toString()
     {
-        return "Player " + (isLeftSide() ? "left " : "right ") + uniformNumber + ": " + super.toString() + " - BodyDir: " + bodyDirection;
+        return "Player " + (isLeftSide() ? "left " : "right ") + uniformNumber
+                + ": " + super.toString() + " - BodyDir: " + bodyDirection;
     }
-
 
 }

@@ -1,4 +1,5 @@
 package sebbot;
+
 /**
  * @author Sebastien Lentz
  *
@@ -32,32 +33,6 @@ public class MathTools
     }
 
     /**
-     * Convert an angle expressed in radians to degrees.
-     * 
-     * @param a
-     *          the angle in radians.
-     * @return
-     *          the angle converted in degrees.
-     */
-    public static double radToDeg(double a)
-    {
-        return a * 180.0D / Math.PI;
-    }
-
-    /**
-     * Convert an angle expressed in degrees to radians.
-     * 
-     * @param a
-     *          the angle in degrees.
-     * @return
-     *          the angle converted in radians.
-     */
-    public static double degToRad(double a)
-    {
-        return a / 180.0D * Math.PI;
-    }
-
-    /**
      * Quantize the input number according to the input step.
      * 
      * @param nb
@@ -70,6 +45,12 @@ public class MathTools
     public static double quantize(double nb, double step)
     {
         return Math.rint(nb / step) * step;
+    }
+
+    public static Vector2D toCartesianCoordinates(double radius, double angle)
+    {
+        return new Vector2D(radius * Math.cos(Math.toRadians(angle)), radius
+                * Math.sin(Math.toRadians(angle)));
     }
 
 }

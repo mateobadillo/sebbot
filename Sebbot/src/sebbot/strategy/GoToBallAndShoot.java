@@ -8,6 +8,6 @@ public class GoToBallAndShoot implements Strategy
 {
     public void doAction(RobocupClient s, FullstateInfo fsi, Player p)
     {
-        BasicStrategy.goToBallAndShootToGoal(s, fsi, p);
+        BasicStrategy.goToBallAndShootToGoal2(s, fsi, p);
     }
 }

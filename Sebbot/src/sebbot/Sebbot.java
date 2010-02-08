@@ -94,6 +94,5 @@ public class Sebbot
 
         new Thread(client, "client").start();
         new Thread(brain, "brain").start();
-
     }
 }

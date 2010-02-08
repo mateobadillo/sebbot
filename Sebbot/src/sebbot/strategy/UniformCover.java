@@ -1,6 +1,3 @@
-/**
- * 
- */
 package sebbot.strategy;
 
 import java.util.HashSet;

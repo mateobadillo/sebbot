@@ -4,7 +4,7 @@ package sebbot;
  * @author Sebastien Lentz
  *
  */
-public class MobileObject
+public abstract class MobileObject
 {
     protected Vector2D position;
     protected Vector2D velocity;
@@ -61,8 +61,7 @@ public class MobileObject
     {
         this.velocity = velocity;
     }
-    
-    
+
     /*
      * =========================================================================
      * 
@@ -74,12 +73,80 @@ public class MobileObject
     {
         return position.distanceTo(v);
     }
-    
+
     public double distanceTo(MobileObject o)
     {
         return distanceTo(o.getPosition());
     }
 
+    protected Vector2D velocity(Vector2D initialVelocity, double maxVelocity,
+            double maxAccel, double powerRate, double power, double angle)
+    {
+        Vector2D v = MathTools.toCartesianCoordinates(power * powerRate, angle);
+        v.normalize(maxAccel);
+        v = v.add(initialVelocity);
+        v.normalize(maxVelocity);
+
+        return v;
+    }
+
+    protected Vector2D velocity(double maxVelocity, double maxAccel,
+            double powerRate, double power, double angle)
+    {
+        return velocity(this.velocity, maxVelocity, maxAccel, powerRate, power,
+                angle);
+    }
+
+    public Vector2D nextPosition(Vector2D initialPosition,
+            Vector2D initialVelocity)
+    {
+        return initialPosition.add(initialVelocity);
+    }
+
+    public Vector2D nextPosition()
+    {
+        return nextPosition(position, velocity);
+    }
+
+    protected Vector2D nextPosition(Vector2D initialPosition,
+            Vector2D initialVelocity, double maxVelocity, double maxAccel,
+            double powerRate, double power, double angle)
+    {
+        return velocity(initialVelocity, maxVelocity, maxAccel, powerRate,
+                power, angle).add(initialPosition);
+    }
+
+    protected Vector2D nextPosition(double maxVelocity, double maxAccel,
+            double powerRate, double power, double angle)
+    {
+        return nextPosition(this.position, this.velocity, maxVelocity,
+                maxAccel, powerRate, power, angle);
+    }
+
+    public Vector2D nextVelocity(Vector2D initialVelocity, double decay)
+    {
+        return initialVelocity.multiply(decay);
+    }
+
+    public Vector2D nextVelocity(double decay)
+    {
+        return nextVelocity(this.velocity, decay);
+    }
+
+    protected Vector2D nextVelocity(Vector2D initialVelocity, double decay,
+            double maxVelocity, double maxAccel, double powerRate,
+            double power, double angle)
+    {
+        return velocity(initialVelocity, maxVelocity, maxAccel, powerRate,
+                power, angle).multiply(decay);
+    }
+
+    protected Vector2D nextVelocity(double decay, double maxVelocity,
+            double maxAccel, double powerRate, double power, double angle)
+    {
+        return nextVelocity(this.velocity, decay, maxVelocity, maxAccel,
+                powerRate, power, angle);
+    }
 
     /*
      * =========================================================================
