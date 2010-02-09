@@ -8,11 +8,21 @@ import java.util.Collection;
  */
 public class Player extends MobileObject
 {
+    /*
+     * Private members.
+     */
     private boolean leftSide;
     private int     playerType;
     private int     uniformNumber;
     private double  bodyDirection;
 
+    /*
+     * =========================================================================
+     * 
+     *                     Constructors and destructors
+     * 
+     * =========================================================================
+     */
     /**
      * Constructor.
      * 
@@ -156,7 +166,7 @@ public class Player extends MobileObject
     {
         return angleFromBody(o.getPosition());
     }
-    
+
     public Vector2D nextPosition(Vector2D initialPosition,
             Vector2D initialVelocity, double power)
     {
@@ -169,7 +179,7 @@ public class Player extends MobileObject
     {
         return this.nextPosition(this.position, this.velocity, power);
     }
-    
+
     public Vector2D nextVelocity(Vector2D initialVelocity, double power)
     {
         return super.nextVelocity(initialVelocity, SoccerParams.PLAYER_DECAY,
@@ -184,45 +194,59 @@ public class Player extends MobileObject
 
     public int timeToReach(Vector2D position)
     {
-        if(position == null)
+        double bodyDirectionBackup = this.bodyDirection;
+        int nbOfSteps = 0;
+
+        if (position == null)
         {
             System.out.println("null");
         }
-        int nbOfSteps = 0;
-        double bodyAngle = this.bodyDirection;
 
-        if (Math.abs(angleFromBody(position)) > 1.0d)
+        if (this.position.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         {
-            this.bodyDirection = MathTools.normalizeAngle(this.bodyDirection
-                    + angleFromBody(position));
-            nbOfSteps++;
-        }
-
-        Vector2D lastVelocity = this.velocity;
-        Vector2D lastPosition = this.position;
-        Vector2D currentPosition = this.position;
-        while (currentPosition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
-        {
-            lastPosition = currentPosition;
-            currentPosition = nextPosition(lastPosition, lastVelocity, 100.0d);
-            lastVelocity = nextVelocity(lastVelocity, 100.0d);
-            nbOfSteps++;
-
-            if (currentPosition.distanceTo(position) > lastPosition.distanceTo(position))
+            if (Math.abs(angleFromBody(position)) > 1.0d)
             {
-                System.out.println("----------");
-                System.out.println("position: " + this.position);
-                System.out.println("position to reach: " + position);
-                System.out.println("relative position: " + (position.subtract(this.position)));
-                System.out.println("angle from body: " + angleFromBody(position));
-                System.out.println("Nb of steps: " + nbOfSteps);
-                System.out.println("----------");
+                this.bodyDirection = MathTools
+                        .normalizeAngle(this.bodyDirection
+                                + angleFromBody(position));
+                nbOfSteps++;
+            }
 
-                break;
+            Vector2D oldVelocity = this.velocity;
+            Vector2D oldPosition = this.position;
+            Vector2D newPosition = this.position;
+            Vector2D oldRelativePosition = position.subtract(this.position);
+            Vector2D newRelativePosition = position.subtract(this.position);
+            while (newPosition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
+            {
+                oldPosition = newPosition;
+                newPosition = nextPosition(oldPosition, oldVelocity, 100.0d);
+                oldRelativePosition = newRelativePosition;
+                newRelativePosition = position.subtract(oldPosition);
+                oldVelocity = nextVelocity(oldVelocity, 100.0d);
+                nbOfSteps++;
+
+                if (newPosition.distanceTo(position) > oldPosition
+                        .distanceTo(position))
+                {
+                    System.out.println("----------");
+                    System.out.println("position: " + this.position);
+                    System.out.println("position to reach: " + position);
+                    System.out.println("new relative position: "
+                            + newRelativePosition);
+                    System.out.println("old relative position: "
+                            + oldRelativePosition);
+                    System.out.println("angle from body: "
+                            + angleFromBody(position));
+                    System.out.println("Nb of steps: " + nbOfSteps);
+                    System.out.println("----------");
+
+                    break;
+                }
             }
         }
 
-        this.bodyDirection = bodyAngle;
+        this.bodyDirection = bodyDirectionBackup;
 
         return nbOfSteps;
     }

@@ -1,5 +1,8 @@
 package sebbot;
+
 import java.lang.Math;
+import java.util.ArrayDeque;
+
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
@@ -12,12 +15,23 @@ import sebbot.strategy.UniformCover;
  */
 public class Brain implements Runnable
 {
-    private RobocupClient robocupClient; // For communicating with the server 
-    private FullstateInfo fullstateInfo; // Contains all info about the
-                                         //   current state of the game
-    private Player        player;        // The player this brain controls
-    private String        strategy;      // Strategy used by this brain
-
+    /*
+     * Private members.
+     */
+    private RobocupClient            robocupClient; // For communicating with the server 
+    private FullstateInfo            fullstateInfo; // Contains all info about the
+                                                    //   current state of the game
+    private Player                   player;        // The player this brain controls
+    private String                   strategy;      // Strategy used by this brain
+    private ArrayDeque<PlayerAction> actionsQueue;  // Contains the actions to be executed.
+    
+    /*
+     * =========================================================================
+     * 
+     *                     Constructors and destructors
+     * 
+     * =========================================================================
+     */
     /**
      * Constructor.
      * 
@@ -26,13 +40,86 @@ public class Brain implements Runnable
      * @param playerNumber
      * @param strategy
      */
-    public Brain(RobocupClient robocupClient, boolean leftSide, int playerNumber, String strategy)
+    public Brain(RobocupClient robocupClient, boolean leftSide,
+            int playerNumber, String strategy)
     {
         this.robocupClient = robocupClient;
         this.fullstateInfo = new FullstateInfo("");
-        this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber -1]
-                               : fullstateInfo.getRightTeam()[playerNumber -1];
+        this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber - 1]
+                : fullstateInfo.getRightTeam()[playerNumber - 1];
         this.strategy = strategy;
+    }
+
+
+    /*
+     * =========================================================================
+     * 
+     *                      Getters and Setters
+     * 
+     * =========================================================================
+     */
+    /**
+     * @return the robocupClient
+     */
+    public RobocupClient getRobocupClient()
+    {
+        return robocupClient;
+    }
+
+    /**
+     * @param robocupClient the robocupClient to set
+     */
+    public void setRobocupClient(RobocupClient robocupClient)
+    {
+        this.robocupClient = robocupClient;
+    }
+
+    /**
+     * @return the player
+     */
+    public Player getPlayer()
+    {
+        return player;
+    }
+
+    /**
+     * @param player the player to set
+     */
+    public void setPlayer(Player player)
+    {
+        this.player = player;
+    }
+
+    /**
+     * @return the strategy
+     */
+    public String getStrategy()
+    {
+        return strategy;
+    }
+
+    /**
+     * @param strategy the strategy to set
+     */
+    public void setStrategy(String strategy)
+    {
+        this.strategy = strategy;
+    }
+
+    /**
+     * @return the actionsQueue
+     */
+    public ArrayDeque<PlayerAction> getActionsQueue()
+    {
+        return actionsQueue;
+    }
+
+    /**
+     * @param actionsQueue the actionsQueue to set
+     */
+    public void setActionsQueue(ArrayDeque<PlayerAction> actionsQueue)
+    {
+        this.actionsQueue = actionsQueue;
     }
 
     /**
@@ -51,7 +138,14 @@ public class Brain implements Runnable
     {
         this.fullstateInfo = fullstateInfo;
     }
-
+    
+    /*
+     * =========================================================================
+     * 
+     *                          Other methods
+     * 
+     * =========================================================================
+     */
     /**
      * This is the main function of the Brain. The strategy is straight forward:
      * 
@@ -79,28 +173,34 @@ public class Brain implements Runnable
         while (true) // TODO: change according to the play mode.
         {
             // TODO: debug agent skipping some steps.
-//            if (fullstateInfo.getStepTime() - lastTimeStep != 1)
-//            {
-//                System.out.println("Agent info: " + playerNumber + " "
-//                        + teamSide);
-//                System.out.println("Brain Last time: " + lastTimeStep);
-//                System.out.println("Brain Current time: "
-//                        + fullstateInfo.getStepTime());
-//            }
-//            lastTimeStep = fullstateInfo.getStepTime();
-            
-//            System.out.println(fullstateInfo.getTimeStep() + ": " + player + " " + fullstateInfo.getBall());
-//            System.out.println("Next position: " + player.nextPosition(100.0d));
-//            System.out.println("Next velocity: " + player.nextVelocity(100.0d));
-//            
-//            robocupClient.dash(100.0d);
+            //            if (fullstateInfo.getStepTime() - lastTimeStep != 1)
+            //            {
+            //                System.out.println("Agent info: " + playerNumber + " "
+            //                        + teamSide);
+            //                System.out.println("Brain Last time: " + lastTimeStep);
+            //                System.out.println("Brain Current time: "
+            //                        + fullstateInfo.getStepTime());
+            //            }
+            //            lastTimeStep = fullstateInfo.getStepTime();
 
+            //            System.out.println(fullstateInfo.getTimeStep() + ": " + player + " " + fullstateInfo.getBall());
+            //            System.out.println("Next position: " + player.nextPosition(100.0d));
+            //            System.out.println("Next velocity: " + player.nextVelocity(100.0d));
+            //            
+            //            robocupClient.dash(100.0d);
 
             lastTimeStep = currentTimeStep;
             currentTimeStep = fullstateInfo.getTimeStep();
             if (currentTimeStep == lastTimeStep + 1)
-            {                             
-                s1.doAction(robocupClient, fullstateInfo, player);
+            {
+                if (actionsQueue.isEmpty())
+                {
+                    s1.doAction(robocupClient, fullstateInfo, player);
+                }
+                else
+                {
+                    actionsQueue.removeFirst().execute();
+                }
             }
             else if (currentTimeStep != lastTimeStep)
             {
@@ -111,7 +211,7 @@ public class Brain implements Runnable
             // Wait for next cycle before sending another command.
             try
             {
-                Thread.sleep(SoccerParams.SIMULATOR_STEP/5);
+                Thread.sleep(SoccerParams.SIMULATOR_STEP / 5);
             }
             catch (Exception e)
             {
