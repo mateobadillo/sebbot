@@ -196,7 +196,7 @@ public class FullstateInfo
         matcher = pattern.matcher(fullstateMsg);
         if (matcher.find())
         {
-            timeStep = Integer.valueOf(matcher.group(1));
+            timeStep = Integer.valueOf(matcher.group(1));            
         }
         else
         {

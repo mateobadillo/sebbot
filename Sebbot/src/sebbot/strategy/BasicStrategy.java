@@ -19,7 +19,11 @@ public class BasicStrategy
         if (p.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         { // We are too far away from the position.
             if (Math.abs(p.angleFromBody(position)) < 30.0d)
-            { // The player is directed at the position.                
+            { // The player is directed at the position.
+//                System.out.println("-------- " + fsi.getTimeStep() + " -------");
+//                System.out.println("Current position/speed: " + p.getPosition() + p.getVelocity());
+//                System.out.println("Next position/speed: " + p.nextPosition(100.0d) + p.nextVelocity(100.0d));
+
                 s.dash(100.0d);
             }
             else
@@ -67,6 +71,9 @@ public class BasicStrategy
             if (Math.abs(p.angleFromBody(position)) < 1.0d)
             { // The player is directed at the position.                
                 s.dash(100.0d);
+//                System.out.println("-------- " + fsi.getTimeStep() + " -------");
+//                System.out.println("Current position/speed: " + p.getPosition() + p.getVelocity());
+//                System.out.println("Next position/speed: " + p.nextPosition(100.0d) + p.nextVelocity(100.0d));
             }
             else
             { // The player needs to turn in the direction of the position.

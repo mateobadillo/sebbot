@@ -74,7 +74,8 @@ public class Brain implements Runnable
         {
             s1 = new GoToBallAndShoot();
         }
-//      int lastTimeStep = 0;
+        int lastTimeStep = 0;
+        int currentTimeStep = 0;
         while (true) // TODO: change according to the play mode.
         {
             // TODO: debug agent skipping some steps.
@@ -95,13 +96,22 @@ public class Brain implements Runnable
 //            robocupClient.dash(100.0d);
 
 
-            
-            s1.doAction(robocupClient, fullstateInfo, player);
+            lastTimeStep = currentTimeStep;
+            currentTimeStep = fullstateInfo.getTimeStep();
+            if (currentTimeStep == lastTimeStep + 1)
+            {                             
+                s1.doAction(robocupClient, fullstateInfo, player);
+            }
+            else if (currentTimeStep != lastTimeStep)
+            {
+                System.out.println(lastTimeStep);
+                System.out.println(currentTimeStep);
+            }
 
             // Wait for next cycle before sending another command.
             try
             {
-                Thread.sleep(SoccerParams.SIMULATOR_STEP);
+                Thread.sleep(SoccerParams.SIMULATOR_STEP/5);
             }
             catch (Exception e)
             {

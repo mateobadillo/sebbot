@@ -156,14 +156,7 @@ public class Player extends MobileObject
     {
         return angleFromBody(o.getPosition());
     }
-
-    public Vector2D nextPosition(double power)
-    {
-        return super.nextPosition(SoccerParams.PLAYER_SPEED_MAX,
-                SoccerParams.PLAYER_ACCEL_MAX, SoccerParams.DASH_POWER_RATE,
-                power, bodyDirection);
-    }
-
+    
     public Vector2D nextPosition(Vector2D initialPosition,
             Vector2D initialVelocity, double power)
     {
@@ -172,18 +165,21 @@ public class Player extends MobileObject
                 SoccerParams.DASH_POWER_RATE, power, bodyDirection);
     }
 
-    public Vector2D nextVelocity(double power)
+    public Vector2D nextPosition(double power)
     {
-        return super.nextVelocity(SoccerParams.PLAYER_DECAY,
-                SoccerParams.PLAYER_SPEED_MAX, SoccerParams.PLAYER_ACCEL_MAX,
-                SoccerParams.DASH_POWER_RATE, power, bodyDirection);
+        return this.nextPosition(this.position, this.velocity, power);
     }
-
+    
     public Vector2D nextVelocity(Vector2D initialVelocity, double power)
     {
         return super.nextVelocity(initialVelocity, SoccerParams.PLAYER_DECAY,
                 SoccerParams.PLAYER_SPEED_MAX, SoccerParams.PLAYER_ACCEL_MAX,
                 SoccerParams.DASH_POWER_RATE, power, bodyDirection);
+    }
+
+    public Vector2D nextVelocity(double power)
+    {
+        return this.nextVelocity(this.velocity, power);
     }
 
     public int timeToReach(Vector2D position)
@@ -204,15 +200,15 @@ public class Player extends MobileObject
 
         Vector2D lastVelocity = this.velocity;
         Vector2D lastPosition = this.position;
-        Vector2D currentposition = this.position;
-        while (currentposition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
+        Vector2D currentPosition = this.position;
+        while (currentPosition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         {
-            lastPosition = currentposition;
-            currentposition = nextPosition(lastPosition, lastVelocity, 100.0d);
+            lastPosition = currentPosition;
+            currentPosition = nextPosition(lastPosition, lastVelocity, 100.0d);
             lastVelocity = nextVelocity(lastVelocity, 100.0d);
             nbOfSteps++;
 
-            if (currentposition.distanceTo(position) > lastPosition.distanceTo(position))
+            if (currentPosition.distanceTo(position) > lastPosition.distanceTo(position))
             {
                 System.out.println("----------");
                 System.out.println("position: " + this.position);
