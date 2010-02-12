@@ -7,19 +7,12 @@ package sebbot;
 public class PlayerAction
 {
     /*
-     * Class constants
-     */
-    public final static int DASH = 0;
-    public final static int KICK = 1;
-    public final static int TURN = 2;
-
-    /*
      * Private members
      */
-    private int             actionType; // "DASH", "KICK" or "TURN".
-    private double          power;     // The power arg of a KICK or DASH cmd.
-    private double          direction; // The direction arg of a KICK or TURN cmd.
-    private RobocupClient   client;    // The client to send actions to the server.
+    private PlayerActionType actionType; // "DASH", "KICK" or "TURN".
+    private double           power;     // The power arg of a KICK or DASH cmd.
+    private double           direction; // The direction arg of a KICK or TURN cmd.
+    private RobocupClient    client;    // The client to send actions to the server.
 
     /*
      * =========================================================================
@@ -36,8 +29,8 @@ public class PlayerAction
      * @param direction
      * @param client
      */
-    public PlayerAction(int actionType, double power, double direction,
-            RobocupClient client)
+    public PlayerAction(PlayerActionType actionType, double power,
+            double direction, RobocupClient client)
     {
         this.actionType = actionType;
         this.power = power;
@@ -55,7 +48,7 @@ public class PlayerAction
     /**
      * @return the actionType
      */
-    public int getActionType()
+    public PlayerActionType getActionType()
     {
         return actionType;
     }
@@ -63,7 +56,7 @@ public class PlayerAction
     /**
      * @param actionType the actionType to set
      */
-    public void setActionType(int actionType)
+    public void setActionType(PlayerActionType actionType)
     {
         this.actionType = actionType;
     }

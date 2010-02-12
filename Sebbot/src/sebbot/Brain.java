@@ -21,10 +21,10 @@ public class Brain implements Runnable
     private RobocupClient            robocupClient; // For communicating with the server 
     private FullstateInfo            fullstateInfo; // Contains all info about the
                                                     //   current state of the game
-    private Player                   player;        // The player this brain controls
-    private String                   strategy;      // Strategy used by this brain
-    private ArrayDeque<PlayerAction> actionsQueue;  // Contains the actions to be executed.
-    
+    private Player                   player;       // The player this brain controls
+    private String                   strategy;     // Strategy used by this brain
+    private ArrayDeque<PlayerAction> actionsQueue; // Contains the actions to be executed.
+
     /*
      * =========================================================================
      * 
@@ -48,8 +48,8 @@ public class Brain implements Runnable
         this.player = leftSide ? fullstateInfo.getLeftTeam()[playerNumber - 1]
                 : fullstateInfo.getRightTeam()[playerNumber - 1];
         this.strategy = strategy;
+        this.actionsQueue = new ArrayDeque<PlayerAction>();
     }
-
 
     /*
      * =========================================================================
@@ -138,7 +138,7 @@ public class Brain implements Runnable
     {
         this.fullstateInfo = fullstateInfo;
     }
-    
+
     /*
      * =========================================================================
      * 
@@ -194,11 +194,12 @@ public class Brain implements Runnable
             if (currentTimeStep == lastTimeStep + 1)
             {
                 if (actionsQueue.isEmpty())
-                {
+                { // The queue is empty, check if we need to add an action.
                     s1.doAction(robocupClient, fullstateInfo, player);
                 }
-                else
-                {
+                
+                if (!actionsQueue.isEmpty())
+                { // An action needs to be executed at this time step, so do it.
                     actionsQueue.removeFirst().execute();
                 }
             }
