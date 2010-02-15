@@ -1,0 +1,88 @@
+\label{sec:playmodes}
+
+The change of the play mode is announced by the referee. Additionally,
+there are some referee messages announcing events like a goal or a foul.  
+If you have a look into the server source code, you will notice some
+additional play modes that are currently not used. Both play modes and
+referee messages are announced using \texttt{(referee \emph{String})},
+where \emph{String} is the respective play mode or message string. The
+play modes are listed in Tab.~\ref{tab:playmodes}, for the messages
+see Tab.~\ref{tab:refereemessages}. 
+
+\begin{table}[htbp]
+    \begin{tabular}[h]{lrll}
+      Play Mode & $t_c$ & subsequent play mode & comment \\ \hline
+    \PM{before\_kick\_off} & 0 & \PM{kick\_off\_\emph{Side}} &
+    at the beginning of a half\\
+    \PM{play\_on} & & & during normal play\\
+    \PM{time\_over} \\
+    \PM{kick\_off\_\emph{Side}} & & & announce start of play \\
+    & & & {\small (after pressing the \texttt{Kick Off} button)} \\
+    \PM{kick\_in\_\emph{Side}} \\
+    \PM{free\_kick\_\emph{Side}} \\
+    \PM{corner\_kick\_\emph{Side}} \\
+    \PM{goal\_kick\_\emph{Side}} & & \PM{play\_on} & play mode changes
+    once \\
+    & & & the ball leaves the penalty area \\
+    \PM{goal\_\emph{Side}} & & & currently unused \\
+    & & & (but see Tab.~\ref{tab:refereemessages}). \\
+    \PM{drop\_ball} & 0 & \PM{play\_on} & \\
+    \PM{offside\_\emph{Side}} & 30 & \PM{free\_kick\_\emph{Side}} & 
+    for the opposite side \\
+%    \PM{penalty\_kick\_\emph{Side}} & currently unused \\
+%    \PM{first\_half\_over} & currently unused \\
+%    \PM{pause} & currently unused \\
+%    \PM{human\_judge} & currently unused \\
+%    \PM{foul\_charge\_\emph{Side}} & currently unused \\
+%    \PM{foul\_push\_\emph{Side}} & currently unused \\
+%    \PM{foul\_multiple\_attack\_\emph{Side}} & currently unused \\
+%    \PM{foul\_ballout\_\emph{Side}} & currently unused \\
+    \multicolumn{4}{l}{} \\
+    \multicolumn{4}{l}{\small where \emph{Side} is either the 
+      character \PM{l} or \PM{r}, \emph{OSide} means opponent's side.}\\ 
+    \multicolumn{4}{l}{\small $t_c$ is the time (in number of cycles)
+      until the subsequent play mode will be announced}\\ 
+  \end{tabular}
+  \caption{Play Modes} 
+  \label{tab:playmodes}
+\end{table}
+
+\begin{table}[htbp]
+  {\small
+    \begin{tabular}[h]{lrll}
+      Message & $t_c$ & subsequent play mode & comment \\ \hline
+    %
+    goal\_\emph{Side}\_\emph{n} & 50 & \PM{kick\_off\_\emph{OSide}}
+    & announce the \emph{n}th goal for a team \\
+    %
+    foul\_\emph{Side} & 0 & \PM{free\_kick\_\emph{OSide}}& announce a foul \\
+    %
+    goalie\_catch\_ball\_\emph{Side} & 0 & \PM{free\_kick\_\emph{OSide}}\\
+    %
+    time\_up\_without\_a\_team & 0 & \PM{time\_over}
+    & sent if there was no opponent until \\
+    & & & the end of the second half \\
+    %
+    time\_up & 0 & \PM{time\_over} & sent once the game is over \\
+    & & & (if the time is $\geq$ second half \textbf{and}\\
+    & & & the scores for each team are different) \\
+    %
+    half\_time & 0 & \PM{before\_kick\_off} & \\
+    %
+    time\_extended & 0 & \PM{before\_kick\_off} & \\
+    %
+    \multicolumn{4}{l}{} \\
+    \multicolumn{4}{l}{\small where \emph{Side} is either the 
+      character \PM{l} or \PM{r}, \emph{OSide} means opponent's side.}\\ 
+    \multicolumn{4}{l}{\small $t_c$ is the time (in number of cycles)
+      until the subsequent play mode will be announced}\\ 
+  \end{tabular}}
+  \caption{Referee Messages} 
+  \label{tab:refereemessages}
+\end{table}
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End: 

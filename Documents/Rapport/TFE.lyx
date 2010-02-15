@@ -1,0 +1,1160 @@
+#LyX 1.6.5 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass memoir
+\begin_preamble
+%%% Soccer Server Manual preamble %%%
+
+\usepackage{algorithmic}
+
+\newcommand{\email}[1]{\texttt{$<$#1$>$}}
+\newcommand{\robocup}{RoboCup}
+\newcommand{\page}[1]{\bgroup p.~#1\egroup}
+\newcommand{\pages}[2]{\bgroup pp.~#1-#2\egroup}
+\newcommand{\pagecite}[2]{\bgroup (\cite{#1},~\page{#2})\egroup}
+\newcommand{\citat}[1]{``#1''}
+% #1 is the text, and #2 is the ref
+
+%% shell prompt "->"
+\newcommand{\prompt}[1]{\noindent{\small\texttt{  $-$$>$ #1 } }\\}
+
+\newcommand{\citatwithref}[2]{\citat{#1}~#2}
+\newcommand{\etal}[1]{\bgroup #1~et~al.~\egroup}
+\newcommand{\etalref}[2]{\bgroup \etal{#1}~\cite{#2}\egroup}
+
+% quotes server command
+\newcommand{\qscommand}[1]{\begin{quote}\scommand{#1}\end{quote}}
+
+\newcommand{\cmdpart}[1]{\textbf{#1}}
+\newcommand{\scommand}[1]{\cmdpart{#1\index{#1}}}
+\newcommand{\command}[1]{\scommand{#1}}
+\newcommand{\sparam}[1]{\textbf{\textsl{#1\index{#1}}}}
+\newcommand{\fssparam}[1]{\footnotesize\sparam{#1}}
+\newcommand{\param}[1]{\textsl{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\variable}[1]{{\textsl{#1}\index{#1}}{}}
+\newcommand{\PM}[1]{`\texttt{#1}'}
+\newcommand{\playmode}[1]{\PM{#1}}
+\newcommand{\rb}[2]{\raisebox{#1}[#1]{#2}}
+\newcommand{\Com}[1]{\texttt{#1}}
+\newcommand{\sm}{Soccer Monitor}
+\newcommand{\Ss}{Soccer Server}
+\newcommand{\sose}{soccerserver}
+\newcommand{\worldcup}{world cup}
+\newcommand{\WorldCup}{World Cup}
+\newcommand{\acronym}[1]{#1}
+\newcommand{\ai}{\acronym{AI}}
+\newcommand{\etc}{etc}
+\newcommand{\coordinate}{co-ordinate}
+\newcommand{\stateoftheart}{state-of-the-art}
+\newcommand{\cooperate}{co-operate}
+\newcommand{\cooperative}{co-operative}
+\newcommand{\cooperation}{co-operation}
+\newcommand{\Cooperation}{Co-operation}
+\newcommand{\ScaledFigure}[5]{\begin{figure}
+        \centering
+        \resizebox{#4}{#5}{\includegraphics{#1}}
+        \caption{#2}
+        \figlabel{#3}
+        \end{figure}}
+\newcommand{\eg}{\bgroup e.g.,\egroup}
+\newcommand{\ie}{\bgroup i.e.,\egroup} %to be put in formal!
+\newcommand{\Ie}{\bgroup I.e.,\egroup} %to be put in formal!
+\def\rcs{RoboCup Soccer Simulator}
+\def\RC{RoboCup}
+%\def\Com#1{\mbox{\tt #1}}
+\newcommand{\sectionref}[1]{section~\ref{sec:#1}}
+
+\newcounter{bibcnt} % consecutive publication numbering
+\newcommand{\publ}[3][bibcnt]% for publications
+  {\section{#2}%\renewcommand{\refname}{\vspace*{-4ex}}
+   \begin{bibunit}[#1]
+        \nocite{*}
+        \putbib[#3]
+  \end{bibunit}}
+\newcommand{\subpubl}[3][bibcnt]% for publications
+  {\subsection{#2}%\renewcommand{\refname}{\vspace*{-4ex}}
+   \begin{bibunit}[#1]
+        \nocite{*}
+        \putbib[#3]
+  \end{bibunit}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end_preamble
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Chapter
+Description of the soccer platform
+\end_layout
+
+\begin_layout Standard
+The content of this chapter mostly comes from the official RoboCup Soccer
+ Server manual
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+\begin_inset CommandInset href
+LatexCommand href
+name "http://sourceforge.net/projects/sserver/files/rcssmanual"
+target "http://sourceforge.net/projects/sserver/files/rcssmanual"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Overview
+\end_layout
+
+\begin_layout Subsection
+The server
+\end_layout
+
+\begin_layout Standard
+The server is a system that enables various teams to compete in a game of
+ soccer.
+ Since the match is carried out in a client-server style, there are no restricti
+ons as to how teams are built.
+ The only requirement is that the tools used to develop a team support client-se
+rver communication via UDP/IP.
+ This is due to the fact that all communication between the server and each
+ client is done via UDP/IP sockets.
+ Each client is a separate process and connects to the server through a
+ specified port.
+ After a player has connected to the server, all messages are transferred
+ through this port.
+ A team can have up to 12 clients, i.e.
+ 11 players (10 elders + 1 goalie) and a coach.
+ The players send requests to the server regarding the actions they want
+ to perform (e.g.
+ kick the ball, turn, run, etc.).
+ The server receives those messages, handles the requests, and updates the
+ environment accordingly.
+ In addition, the server provides all players with environment information
+ (e.g.
+ visual data regarding the position of objects or data about the player's
+ ressources like stamina or speed).
+ It is important to mention that the server is a realtime system working
+ with discrete time intervals (or cycles).
+ Each cycle has a specified duration, and actions that need to be executed
+ in a given cycle must arrive at the server during the right interval.
+\end_layout
+
+\begin_layout Subsection
+The monitor
+\end_layout
+
+\begin_layout Standard
+The Soccer Monitor is a visualisation tool that allows people to see what
+ is happening within the server during a game.
+ The information shown on the monitor include the score, team names, and
+ the positions of all the players and the ball.
+ They also provide simple interfaces to the server.
+ For example, when both teams have connected, the "Kick-OFF" button on the
+ monitor allows a human referee to start the game.
+ You can see on the figure below what it looks like.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Monitor
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/monitor.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Description of the simulation algorithm
+\end_layout
+
+\begin_layout Standard
+In Soccer Server, time is updated in discrete steps.
+ A simulation step is 100ms.
+ During each simulation step, objects (i.e.
+ players and the ball) stay on their positions.
+ If players decide to act within a step, actions are applied to the players
+ and the ball at the transition from one simulation cycle to the next.
+ Depending on the play mode, not all actions are allowed for the players
+ (for instance in `before kick off' mode, players can turn and move, but
+ they cannot dash), so only allowed actions will be applied and take effect.
+ If during a step, several players kick the ball, all the kicks are applied
+ to the ball and a resulting acceleration is calculated.
+ If the resulting acceleration is larger than the maximum acceleration for
+ the ball, acceleration is normalized to its maximum value.
+ After moving the objects, the server checks for collisions and updates
+ velocities if a collision occurred.
+ When applying accelerations and velocities to the objects, the order of
+ application is randomized.
+ After changing objects positions, and updating velocities and accelerations,
+ the automated referee checks the situation and changes the play mode or
+ the object positions, if necessary.
+ Changes to the play mode are announced immediately.
+ Finally, stamina for each player is updated.
+\end_layout
+
+\begin_layout Subsection
+Protocols
+\end_layout
+
+\begin_layout Standard
+When an agent is connected to the server, he must first sends an init message
+ of the form: (
+\series bold
+init
+\series default
+ TeamName [(
+\series bold
+version
+\series default
+ VerNum)] [(
+\series bold
+goalie
+\series default
+)]).
+ In return, the server attributes the new player a side, an uniform number
+ and indicates in which play mode the game currently is: (
+\series bold
+init
+\series default
+ Side Unum PlayMode).
+\end_layout
+
+\begin_layout Standard
+When the player is connected, before the game goes live, he can be positioned
+ somewhere in his side using the (
+\series bold
+move
+\series default
+ x y) command.
+ Notice that 
+\begin_inset Formula $-52.5\leq x\leq0$
+\end_inset
+
+.
+ When the game is started, players can accelerate in their current orientation
+ using (
+\series bold
+dash
+\series default
+ power), turn using (
+\series bold
+turn
+\series default
+ angle) or if they are close enough of the ball, kick it: (
+\series bold
+kick
+\series default
+ Power Direction).
+ Each player can only send one of these command per cycle.
+\end_layout
+
+\begin_layout Standard
+For now, we will configure the server so that every cycle, each player receives
+ fullstate information.
+ This means that all players are fully aware of the position and velocity
+ of all the other mobile objects on the field.
+ The format of the fullstate messages as well as all details concerning
+ the protocols are given on this website:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Users_Manual/Soccer_
+Server
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Physics model
+\end_layout
+
+\begin_layout Subsection
+The field
+\end_layout
+
+\begin_layout Standard
+The field is internally using a simple cartesian coordinate system.
+ The x and y axis are centered in the middel of the field.
+ The absolute 0° direction logically follows the x axis.
+ Figure 1.2 illustrates these concepts.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Coordinate system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/coordinates.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Movement Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-movementmodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Collision Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-collisionmodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Dash Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-dashmodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Kick Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-kickmodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Move Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-movemodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Turn Model
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-turnmodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Play Modes and referee messages
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset include
+LatexCommand input
+preview true
+filename "c4-refereemodel.tex"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Algorithms for the core functions of a player
+\end_layout
+
+\begin_layout Section
+Going to a fixed position as fast as possible
+\end_layout
+
+\begin_layout Standard
+We are here considering the following situation: at time step 
+\begin_inset Formula $0$
+\end_inset
+
+, a player is located at position 
+\begin_inset Formula $\overrightarrow{p_{0}}$
+\end_inset
+
+ and has velocity 
+\begin_inset Formula $\overrightarrow{v_{0}}$
+\end_inset
+
+.
+ This player wants to reach a position 
+\begin_inset Formula $\overrightarrow{p_{p}}$
+\end_inset
+
+ using as few time steps as possible.
+ During a time step, a player is only allowed to turn or dash once.
+ Thus when a player turns, he can't dash and is therefore slowed down.
+ So ideally, we would like the player to:
+\end_layout
+
+\begin_layout Itemize
+turn once in the right direction
+\end_layout
+
+\begin_layout Itemize
+then keep dashing at full power till he reaches the position.
+\end_layout
+
+\begin_layout Standard
+At first, this seems like a trivial problem, but actually it is not so easy
+ to find the angle 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ the player has to turn because of inertia.
+ After a time step, the player's velocity doesn't drop to zero.
+ Instead he retains a part of his velocity from previous time step: 
+\begin_inset Formula $\overrightarrow{v_{m}}=d.\overrightarrow{v_{m-1}}$
+\end_inset
+
+ where 
+\begin_inset Formula $d$
+\end_inset
+
+ is the player speed decay rate.
+\end_layout
+
+\begin_layout Standard
+Suppose our player turns an angle 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ during the first time step.
+ He arrives at position 
+\begin_inset Formula $\overrightarrow{p_{1}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}}$
+\end_inset
+
+ with 
+\begin_inset Formula $\overrightarrow{v_{1}}=\overrightarrow{v_{0}}.d$
+\end_inset
+
+.
+ During the next time step, he will dash, leading him to position 
+\begin_inset Formula $\overrightarrow{p_{2}}=\overrightarrow{p_{1}}+\overrightarrow{v_{2}}$
+\end_inset
+
+ where 
+\begin_inset Formula $\overrightarrow{v_{2}}=d.\overrightarrow{v_{1}}+\overrightarrow{a}$
+\end_inset
+
+.
+ We know the modulus of vector 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\noun off
+\color none
+
+\begin_inset Formula $\overrightarrow{a}$
+\end_inset
+
+ as well as its polar angle.
+ Its modulus is the player maximum dash power and its angle is the sum of
+ the player's previous body orientation with 
+\begin_inset Formula $\alpha$
+\end_inset
+
+.
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\noun default
+\color inherit
+ After 
+\begin_inset Formula $n$
+\end_inset
+
+ time steps, we expect our player to have reached its destination, i.e.
+ 
+\begin_inset Formula $\overrightarrow{p_{n}}=\overrightarrow{p_{p}}$
+\end_inset
+
+.
+ If we put all that in equation we obtain:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{align*}
+\overrightarrow{p_{1}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}} & \qquad\overrightarrow{v_{1}}=\overrightarrow{v_{0}}.d\\
+\overrightarrow{p_{2}}=\overrightarrow{p_{1}}+\overrightarrow{v_{2}} & \qquad\overrightarrow{v_{2}}=d.\overrightarrow{v_{1}}+\overrightarrow{a}\\
+\overrightarrow{p_{3}}=\overrightarrow{p_{2}}+\overrightarrow{v_{3}} & \qquad\overrightarrow{v_{3}}=d.\overrightarrow{v_{2}}+\overrightarrow{a}\\
+\vdots & \qquad\vdots\\
+\overrightarrow{p_{n}}=\overrightarrow{p_{n-1}}+\overrightarrow{v_{n}} & \qquad\overrightarrow{v_{n}}=d.\overrightarrow{v_{n}}+\overrightarrow{a}\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Or equivalently:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{align*}
+\overrightarrow{p_{1}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}} & \qquad\overrightarrow{v_{1}}=d.\overrightarrow{v_{0}}\\
+\overrightarrow{p_{2}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}}+\overrightarrow{v_{2}} & \qquad\overrightarrow{v_{2}}=d^{2}.\overrightarrow{v_{0}}+\overrightarrow{a}\\
+\overrightarrow{p_{3}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}}+\overrightarrow{v_{2}}+\overrightarrow{v_{3}} & \qquad\overrightarrow{v_{3}}=d^{3}.\overrightarrow{v_{0}}+(1+d).\overrightarrow{a}\\
+\vdots & \qquad\vdots\\
+\overrightarrow{p_{n}}=\overrightarrow{p_{0}}+\overrightarrow{v_{1}}+\overrightarrow{v_{2}}+\ldots+\overrightarrow{v_{n}} & \qquad\overrightarrow{v_{n}}=d^{n}.\overrightarrow{v_{0}}+(\sum_{i=0}^{n-2}d^{i}).\overrightarrow{a}\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Leading us to:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\overrightarrow{p_{n}}=\overrightarrow{p_{0}}+\sum_{j=1}^{n}(d^{j}.\overrightarrow{v_{0}}+(\sum_{i=0}^{j-2}d^{i}).\overrightarrow{a})\label{eq:Pn et angle a}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:Pn et angle a"
+
+\end_inset
+
+, if we know 
+\begin_inset Formula $n$
+\end_inset
+
+, the only unknown is the polar angle of 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\noun off
+\color none
+
+\begin_inset Formula $\overrightarrow{a}$
+\end_inset
+
+.
+ Notice that if we always dash at the player's maximum power, 
+\begin_inset Formula $\overrightarrow{p_{n}}$
+\end_inset
+
+ will never be exactly equal to 
+\begin_inset Formula $\overrightarrow{p_{p}}$
+\end_inset
+
+, but as long 
+\begin_inset Formula $|\overrightarrow{p_{n}}-\overrightarrow{p_{p}}|<\varepsilon$
+\end_inset
+
+ where 
+\begin_inset Formula $\varepsilon$
+\end_inset
+
+ is for example the kickable margin, we consider the player has reached
+ the position.
+ We are thus looking for the minimum 
+\begin_inset Formula $n$
+\end_inset
+
+ such that we can find an 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ such that 
+\begin_inset Formula $|\overrightarrow{p_{n}}-\overrightarrow{p_{p}}|<\varepsilon$
+\end_inset
+
+.
+ That's not exactly what I would call a trivial problem, and because of
+ the timing constraints, we can't implement such an computationally heavy
+ algorithm.
+\end_layout
+
+\begin_layout Chapter
+Implementation of a first strategy
+\end_layout
+
+\begin_layout Section
+Uniform covering
+\end_layout
+
+\begin_layout Subsection
+Description of the strategy
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Description-of-the-strategy"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This strategy consists of sending to the ball the closest player and arranging
+ the rest of the team in such a way that the area of the field behind the
+ ball is uniformly covered.
+ In other words, we want the distance between one of the points of the area
+ to one of the players to be as small as possible.
+ More formally, this can be expressed as a min-max-min problem:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\min_{P_{1},\ldots,P_{n}\in\mathbb{R}^{2}}\max_{X\in\mathbb{R}^{2}}\min_{n}distance(X,P_{n})\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $X$
+\end_inset
+
+ is a point of the area and 
+\begin_inset Formula $P_{1,..,n}$
+\end_inset
+
+ a player.
+ This problem can also be interpreted geometrically if we assign an identical
+ covering radius 
+\begin_inset Formula $r$
+\end_inset
+
+ to each player.
+ Then we associate to each of them a circle of radius 
+\begin_inset Formula $r$
+\end_inset
+
+ and centered at their position.
+ The idea is then to search for the minimum 
+\begin_inset Formula $r$
+\end_inset
+
+ such that we can find an arrangement of all these circles that covers the
+ entire rectangle area.
+ It appears that the covering problems, whose dual problems are called packing
+ problems, are both fairly complex problems, even when the shape of the
+ surface is as simple as a rectangle and when we have only a few circles
+ to arrange
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+See 
+\begin_inset Quotes eld
+\end_inset
+
+Covering a Rectangle With Equal Circles
+\begin_inset Quotes erd
+\end_inset
+
+ from Aladár Heppes and Hans Melissen.
+\end_layout
+
+\end_inset
+
+.
+ Therefore, we will restrict our study case to four circles.
+ In that situation, we can intuitively find a repartition that we will show
+ is optimal.
+\end_layout
+
+\begin_layout Subsection
+What does it look like ?
+\end_layout
+
+\begin_layout Standard
+According to the rectangle aspect ratio, the optimal positions of the four
+ players change.
+ We will either pick a rectangle formation, or a line formation.
+ These two layouts are shown respectively on figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:rectangleFormation"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:lineFormation"
+
+\end_inset
+
+.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Rectangle formation
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/rectangleFormation.png
+	lyxscale 50
+	scale 20
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:rectangleFormation"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Line formation
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/lineFormation.png
+	lyxscale 50
+	scale 20
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:lineFormation"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The rectangle area that needs to be covered is drawn with black discontinuous
+ lines.
+ Its sides measure 
+\begin_inset Formula $w$
+\end_inset
+
+ and 
+\begin_inset Formula $h$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Rectangle or line formation ?
+\end_layout
+
+\begin_layout Standard
+The smallest possible rectangle we could have is obtained when the ball
+ is on the goal line.
+ Then the rectangle actually becomes a straight line of length 
+\begin_inset Formula $w$
+\end_inset
+
+ that we can divide in 4 equivalent segments of length 
+\begin_inset Formula $\frac{w}{4}$
+\end_inset
+
+.
+ By putting a player in the middle of each of them, we obtain the optimal
+ solution.
+ Now, as the ball moves away from the goal, the height 
+\begin_inset Formula $h$
+\end_inset
+
+ of the rectangle grows, and one could wonder when it becomes more interesting
+ to swap the line formation for a rectangle one.
+ Back to section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Description-of-the-strategy"
+
+\end_inset
+
+, we said we were looking for the repartition of circles with the 
+\bar under
+minimum
+\bar default
+ radius.
+ This gives us our swap condition: we will change the formation when the
+ radius 
+\begin_inset Formula $r_{1}$
+\end_inset
+
+ of the circles of a rectangle formation becomes smaller than the radius
+ 
+\begin_inset Formula $r_{2}$
+\end_inset
+
+ of those from a line formation.
+ First we have to formulate the expression of 
+\begin_inset Formula $r_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $r_{2}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+r_{1}=\sqrt{(\frac{w}{8})^{2}+(\frac{h}{2})^{2}}\: and\: r_{2}=\sqrt{(\frac{w}{4})^{2}+(\frac{h}{4})^{2}}\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can then find the value of 
+\begin_inset Formula $h$
+\end_inset
+
+ for which a transition should occur by resolving the equation 
+\begin_inset Formula $r_{1}=r_{2}$
+\end_inset
+
+, and we obtain 
+\begin_inset Formula $h=\frac{w}{2}$
+\end_inset
+
+.
+ We also know that 
+\begin_inset Formula $w$
+\end_inset
+
+ is a constant and its value is 
+\begin_inset Formula $68$
+\end_inset
+
+.
+ As for the height, the following condition applies: 
+\begin_inset Formula $0\leq h\leq103$
+\end_inset
+
+.
+ Notice that 
+\begin_inset Formula $h<2w$
+\end_inset
+
+ is always true, so a 
+\begin_inset Quotes eld
+\end_inset
+
+goal-to-goal
+\begin_inset Quotes erd
+\end_inset
+
+ line formation will never be better than a rectangle formation.
+\end_layout
+
+\begin_layout Subsection
+Are these formations really optimal ?
+\end_layout
+
+\begin_layout Standard
+Yes.
+ Here is a little reasoning by contradiction in order to convince yourself:
+ suppose that, for 
+\begin_inset Formula $h>\frac{w}{2}$
+\end_inset
+
+, we could find an arrangement of circles with radius 
+\begin_inset Formula $r_{3}<r_{1}$
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Optimality of the rectangle formation
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figures/rectangleFormationOptimality.png
+	lyxscale 50
+	scale 20
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:rectangleFormationOptimality"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then, each player would have to be located on one of the red arcs of circles
+ whose centers are the corners of the rectangle (cf figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:rectangleFormationOptimality"
+
+\end_inset
+
+).
+ Otherwise the corners wouldn't be covered.
+ However, the distance from one corner to the middle of the rectangle (point
+ 
+\begin_inset Formula $M$
+\end_inset
+
+) is exactly 
+\begin_inset Formula $2r_{1}$
+\end_inset
+
+, making it impossible for the circles of radius 
+\begin_inset Formula $r_{3}$
+\end_inset
+
+ to reach it.
+ Therefore, there is no better solution than the rectangle formation when
+ 
+\begin_inset Formula $\frac{w}{2}<h<2w$
+\end_inset
+
+.
+ Similar arguments hold for the line formation when 
+\begin_inset Formula $h<\frac{w}{2}$
+\end_inset
+
+.
+\end_layout
+
+\end_body
+\end_document

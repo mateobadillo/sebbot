@@ -1,0 +1,194 @@
+The \scommand{dash} command is used to accelerate the player in
+direction of its body. \scommand{dash} takes the acceleration
+\param{power} as a parameter. The valid range for the acceleration
+\param{power} can be configured in \file{server.conf}, the respective
+parameters are \sparam{minpower} and \sparam{maxpower}. For the
+current values of parameters for the dash model, see
+Tab.~\ref{tab:dashpar}. 
+
+Each player has a certain amount of stamina that will be consumed by
+\scommand{dash} commands. At the beginning of each half, the stamina
+of a player is set to \sparam{stamina\_max}. If a player accelerates
+forward (\param{power} $> 0$), stamina is reduced by \param{power}.
+Accelerating backwards (\param{power} $< 0$) is more expensive for the
+player: stamina is reduced by $-2~\cdot~$\param{power}. If the
+player's stamina is lower than the power needed for the
+\scommand{dash}, \param{power} is reduced so that the \scommand{dash}
+command does not need more stamina than available. Heterogeneous
+players will use some extra stamina every time the available power is
+lower than the needed stamina. The amount of extra stamina depends on
+the player type and the parameters \sparam{extra\_stamina\_delta\_min}
+and \sparam{extra\_stamina\_delta\_max}.
+
+After reducing the stamina, the server calculates the \emph{effective
+  dash power} for the \scommand{dash} command. The effective dash
+power \variable{edp} depends on the \sparam{dash\_power\_rate} and the
+current effort of the player. The effort of a player is a value
+between \sparam{effort\_min} and \sparam{effort\_max}; it is dependent
+on the stamina management of the player (see below).
+
+\begin{equation}
+  \label{eq:effectivedash}
+  \mathrm{edp} = \mathrm{effort} \cdot \mathrm{dash\_power\_rate} \cdot \mathrm{power}
+\end{equation}
+
+\variable{edp} and the players current body direction are tranformed
+into vector and added to the players current acceleration
+vector $\vec{a}_n$ (usually, that should be 0 before, since a player
+cannot dash more than once a cycle and a player does not get
+accelerated by other means than dashing).
+
+At the transition from simulation step $n$ to simulation step $n +
+1$, acceleration $\vec{a}_n$ is applied:
+
+\begin{enumerate}
+\item $\vec{a}_n$ is normalized to a maximum length of
+  \sparam{player\_accel\_max}.
+\item $\vec{a}_n$ is added to current players speed
+  $\vec{v}_n$. $\vec{v}_n$ will be normalized to a maximum length of
+  \sparam{player\_speed\_max}. For heterogeneous players, the
+  maximum speed is a value between \sparam{player\_speed\_max} + 
+  \sparam{player\_speed\_max\_delta\_min} and
+  \sparam{player\_speed\_max} +
+  \sparam{player\_speed\_max\_delta\_max} in \file{player.conf}.
+\item Noise $\vec{n}$ and wind $\vec{w}$ will be added to
+  $\vec{v}_{n}$. Both noise and wind are configurable in
+  \file{server.conf}. Parameters responsible for the wind are
+  \sparam{wind\_force}, \sparam{wind\_dir} and
+  \sparam{wind\_rand}. With the current settings, there is no wind on
+  the simulated soccer field. The responsible parameter for the noise
+  is \sparam{player\_rand}. Both direction and length
+  of the noise vector are within the interval $[ -|\vec{v}_{n}| \cdot
+  \mathrm{player\_rand} \ldots |\vec{v}_{n}| \cdot \mathrm{player\_rand}]$.  
+\item The new position of the player $\vec{p}_{n+1}$ is the old position
+  $\vec{p}_{n}$ plus the velocity vector $\vec{v}_{n}$ (i.e.\ the maximum
+  distance difference for the player between two simulation steps is 
+  \sparam{player\_speed\_max}).
+\item \sparam{player\_decay} is applied for the velocity of the player:
+  $\vec{v}_{n+1} = \vec{v}_{n} \cdot
+  \mathrm{player\_decay}$. Acceleration $\vec{a}_{n+1}$ is set to
+  zero. 
+\end{enumerate}
+
+\begin{table}[htbp]
+  \begin{center}
+    \begin{tabular}[h]{|l|r|l|r|r|}
+      \hline
+      \multicolumn{2}{|c|}{\textbf{Basic Parameters}} &
+      \multicolumn{3}{|c|}{\textbf{Parameters for heterogeneous
+        Players}} \\ 
+      \multicolumn{2}{|c|}{\file{server.conf}} &
+      \multicolumn{3}{|c|}{\file{player.conf}} \\ \hline
+      \textbf{Name} & \textbf{Value} & \textbf{Name} & \textbf{Value} &
+      \textbf{Range} \\ \hline
+      \sparam{minpower} & -100 & & & \\ \hline
+      \sparam{maxpower} & 100 & & & \\ \hline
+      \sparam{stamina\_max} & 4000 &  & & \\ \hline
+      \sparam{stamina\_inc\_max} & 45 &
+      \sparam{stamina\_inc\_max\_delta\_factor} & -100.0 & \\
+      & & \sparam{player\_speed\_max\_delta\_min} & 0.0 &
+      \rb{1.5ex}{25} \\
+      & & \sparam{player\_speed\_max\_delta\_max} & 0.2 &
+      \rb{1.5ex}{---~45}\\\hline
+      \sparam{extra\_stamina}$^a$ & 0.0 &
+      \sparam{extra\_stamina\_delta\_min} & 0.0 & 0.0 \\
+      & & \sparam{extra\_stamina\_delta\_max} & 100.0 & ---~100.0 \\\hline
+      \sparam{dash\_power\_rate} & 0.006 & 
+      \sparam{dash\_power\_rate\_delta\_min} & 0.0 & 0.006 \\
+      & & \sparam{dash\_power\_rate\_delta\_max} & 0.002 & ---~0.008
+      \\ \hline
+      \sparam{effort\_min} & 0.6 & \sparam{effort\_min\_delta\_factor}
+      & -0.002 & \\
+      & & \sparam{extra\_stamina\_delta\_min} & 0.0 & \rb{1.5ex}{0.4} \\
+      & & \sparam{extra\_stamina\_delta\_max} & 100.0 &
+      \rb{1.5ex}{---~0.6}\\\hline
+      \sparam{effort\_max}$^a$ & 1.0 & \sparam{effort\_max\_delta\_factor}
+      & -0.002 & \\
+      & & \sparam{extra\_stamina\_delta\_min} & 0.0 & \rb{1.5ex}{0.8}\\
+      & & \sparam{extra\_stamina\_delta\_max} & 100.0 & \rb{1.5ex}{---~1.0}\\\hline 
+      \sparam{effort\_dec\_thr} & 0.3 & & & \\\hline
+      \sparam{effort\_dec} & 0.005  & & & \\\hline
+      \sparam{effort\_inc\_thr} & 0.6  & & & \\\hline
+      \sparam{effort\_inc} & 0.01  & & & \\\hline
+      \sparam{recover\_dec\_thr} & 0.3  & & & \\ \hline
+      \sparam{recover\_dec} & 0.002  & & & \\\hline
+      \sparam{recover\_min} & 0.5  & & & \\\hline
+      \sparam{player\_accel\_max} & 1.0 & & & \\ \hline
+      \sparam{player\_speed\_max} & 1.0 &
+      \sparam{player\_speed\_max\_delta\_min} & 0.0 & 1.0 \\
+      & & \sparam{player\_speed\_max\_delta\_max} & 0.2 & ---~1.2 \\
+      \hline
+      \sparam{player\_rand} & 0.1 & & & \\\hline
+      \sparam{wind\_force} & 0.0 & & & \\\hline
+      \sparam{wind\_dir} & 0.0 & & & \\\hline
+      \sparam{wind\_rand} & 0.0 & & & \\\hline      
+      \sparam{player\_decay} & 0.4 &
+      \sparam{player\_decay\_delta\_min} & 0.0 & 0.4 \\
+       & & \sparam{player\_decay\_delta\_max} & 0.2 & ---~0.6 \\ \hline
+
+      \multicolumn{5}{l}{} \\ \cline{1-2}
+      \multicolumn{5}{l}{$^a$Not in \file{server.conf}, but compiled
+        into the server}
+    \end{tabular}
+    \caption{Dash and Stamina Model Parameters for Soccer Server 7}
+    \label{tab:dashpar}
+  \end{center}
+\end{table}
+
+\subsubsection{Stamina Model}
+
+For the stamina of a player, there are three important variables: the
+\variable{stamina} value, \variable{recovery} and \variable{effort}.
+\variable{stamina} is decreased when dashing and gets replenished
+slightly each cycle. \variable{recovery} is responsible for how much
+the \variable{stamina} recovers each cycle, and the \variable{effort}
+says how effective dashing is (see section above). Important
+parameters for the stamina model are changeable in the files
+\file{server.conf} and \file{player.conf}. Basically, the algorithm shown in
+Fig.~\ref{fig:staminamodel} says that every simulation step the
+stamina is below some threshold, effort or recovery are reduced until
+a minimum is reached. Every step the stamina of the player is above
+some threshold, \variable{effort} is increased up to a maximum. The
+\variable{recovery} value is only reset to 1.0 each half, but it will
+not be increased during a game.
+
+\begin{figure}[htbp]
+  \begin{algorithmic}
+    \STATE\COMMENT{if stamina is below recovery decrement threshold,
+      recovery is reduced}
+    \IF{stamina $\leq$ recover\_dec\_thr $\cdot$ stamina\_max}
+    \IF{recovery $>$ recover\_min}
+    \STATE recovery $\gets$ recovery $-$ recover\_dec
+    \ENDIF
+    \ENDIF
+    \STATE
+    \STATE\COMMENT{if stamina is below effort decrement threshold,
+      effort is reduced}
+    \IF{stamina $\leq$ effort\_dec\_thr $\cdot$ stamina\_max}
+    \IF{effort $>$ effort\_min}
+    \STATE effort $\gets$ effort $-$ effort\_dec
+    \ENDIF
+    \STATE effort $\gets$ max(effort, effort\_min)
+    \ENDIF
+    \STATE
+    \STATE\COMMENT{if stamina is above effort increment threshold,
+      effort is increased}
+    \IF{stamina $\geq$ effort\_inc\_thr $\cdot$ stamina\_max}
+    \IF{effort $<$ effort\_max}
+    \STATE effort $\gets$ effort $+$ effort\_inc
+    \STATE effort $\gets$ min(effort, effort\_max)
+    \ENDIF
+    \ENDIF
+    \STATE 
+    \STATE\COMMENT{recover the stamina a bit}
+    \STATE stamina $\gets$ stamina $+$ recovery $\cdot$ stamina\_inc\_max
+    \STATE stamina $\gets$ min(stamina, stamina\_max)
+  \end{algorithmic}
+  \caption{The stamina model algorithm}
+  \label{fig:staminamodel}
+\end{figure}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "manual"
+%%% End: 
