@@ -29,7 +29,7 @@ public class Sebbot
      * port (default 6000):
      * Port number for the communication with the server
      *
-     * team (default Kris):
+     * team (default Team1):
      * Team name. This name can not contain spaces.
      *
      * 
@@ -41,7 +41,7 @@ public class Sebbot
     {
         String hostname = "127.0.0.1";
         int port = 6000;
-        String team = "Team1";
+        String team = "team1";
         String strategy = "Default";
 
         try
@@ -80,8 +80,8 @@ public class Sebbot
             System.err.println("   ------------------------------------");
             System.err.println("    host        host name      localhost");
             System.err.println("    port        port number    6000");
-            System.err.println("    team        team name      Team1");
-            System.err.println("    strategy    strategy name  Team1");
+            System.err.println("    team        team name      team1");
+            System.err.println("    strategy    strategy name  Default");
             System.err.println("");
             return;
         }

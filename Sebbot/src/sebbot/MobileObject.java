@@ -1,5 +1,7 @@
 package sebbot;
 
+import java.util.ArrayList;
+
 /**
  * @author Sebastien Lentz
  *
@@ -146,6 +148,31 @@ public abstract class MobileObject
     {
         return nextVelocity(this.velocity, decay, maxVelocity, maxAccel,
                 powerRate, power, angle);
+    }
+
+    public ArrayList<Vector2D> trajectory(Vector2D initialPosition,
+            Vector2D initialVelocity, double decay)
+    {
+        Vector2D oldPosition = initialPosition;
+        Vector2D oldVelocity = initialVelocity;
+        ArrayList<Vector2D> trajectory = new ArrayList<Vector2D>();
+        trajectory.add(oldPosition);
+        Vector2D newPosition = nextPosition(oldPosition, oldVelocity);
+
+        while (newPosition.distanceTo(oldPosition) > SoccerParams.KICKABLE_MARGIN/5.0d)
+        {
+            trajectory.add(newPosition);
+            oldPosition = newPosition;
+            newPosition = nextPosition(oldPosition, oldVelocity);
+            oldVelocity = nextVelocity(oldVelocity, decay);
+        }
+
+        return trajectory;
+    }
+
+    public ArrayList<Vector2D> trajectory(double decay)
+    {
+        return trajectory(this.position, this.velocity, decay);
     }
 
     /*

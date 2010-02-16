@@ -63,13 +63,23 @@ public class Vector2D implements Cloneable
         this.y = y;
     }
 
-    public Vector2D subtract(Vector2D v)
+    public Vector2D subtract(Vector2D v) throws NullVectorException
     {
+        if (v == null)
+        {
+            throw new NullVectorException();
+        }
+        
         return new Vector2D(x - v.getX(), y - v.getY());
     }
 
-    public Vector2D add(Vector2D v)
+    public Vector2D add(Vector2D v) throws NullVectorException
     {
+        if (v == null)
+        {
+            throw new NullVectorException();
+        }
+
         return new Vector2D(x + v.getX(), y + v.getY());
     }
 
@@ -78,8 +88,13 @@ public class Vector2D implements Cloneable
         return new Vector2D(x * f, y * f);
     }
 
-    public double multiply(Vector2D v)
+    public double multiply(Vector2D v) throws NullVectorException
     {
+        if (v == null)
+        {
+            throw new NullVectorException();
+        }
+
         return x * v.getX() + y * v.getY();
     }
 
@@ -115,8 +130,13 @@ public class Vector2D implements Cloneable
     }
 
 
-    public double distanceTo(Vector2D v)
+    public double distanceTo(Vector2D v) throws NullVectorException
     {
+        if (v == null)
+        {
+            throw new NullVectorException();
+        }
+
         return v.subtract(this).getPolarRadius();
     }
     
@@ -125,8 +145,13 @@ public class Vector2D implements Cloneable
         return (new Vector2D(x, y)).subtract(this).getPolarRadius();
     }
 
-    public double directionOf(Vector2D v)
+    public double directionOf(Vector2D v) throws NullVectorException
     {
+        if (v == null)
+        {
+            throw new NullVectorException();
+        }
+
         return v.subtract(this).getPolarAngle();
     }
 

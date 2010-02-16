@@ -1,6 +1,6 @@
 package sebbot;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 /**
  * @author Sebastien Lentz
@@ -192,6 +192,18 @@ public class Player extends MobileObject
         return this.nextVelocity(this.velocity, power);
     }
 
+    public ArrayList<Vector2D> trajectory(Vector2D initialPosition,
+            Vector2D initialVelocity)
+    {
+        return super.trajectory(initialPosition, initialVelocity,
+                SoccerParams.PLAYER_DECAY);
+    }
+
+    public ArrayList<Vector2D> trajectory()
+    {
+        return this.trajectory(this.position, this.velocity);
+    }
+
     public int timeToReach(Vector2D position)
     {
         double bodyDirectionBackup = this.bodyDirection;
@@ -199,48 +211,31 @@ public class Player extends MobileObject
 
         if (position == null)
         {
-            System.out.println("null");
+            throw new NullVectorException();
         }
 
+        Vector2D oldVelocity = this.velocity;
+        Vector2D oldPosition = this.position;
+        Vector2D newPosition = this.position;
+        
         if (this.position.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         {
-            if (Math.abs(angleFromBody(position)) > 1.0d)
+            if (Math.abs(this.angleFromBody(position)) > 10.0d)
             {
-                this.bodyDirection = MathTools
-                        .normalizeAngle(this.bodyDirection
-                                + angleFromBody(position));
+                this.bodyDirection = angleFromBody(position);
                 nbOfSteps++;
             }
 
-            Vector2D oldVelocity = this.velocity;
-            Vector2D oldPosition = this.position;
-            Vector2D newPosition = this.position;
-            Vector2D oldRelativePosition = position.subtract(this.position);
-            Vector2D newRelativePosition = position.subtract(this.position);
             while (newPosition.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
             {
                 oldPosition = newPosition;
                 newPosition = nextPosition(oldPosition, oldVelocity, 100.0d);
-                oldRelativePosition = newRelativePosition;
-                newRelativePosition = position.subtract(oldPosition);
                 oldVelocity = nextVelocity(oldVelocity, 100.0d);
                 nbOfSteps++;
 
                 if (newPosition.distanceTo(position) > oldPosition
                         .distanceTo(position))
                 {
-                    System.out.println("----------");
-                    System.out.println("position: " + this.position);
-                    System.out.println("position to reach: " + position);
-                    System.out.println("new relative position: "
-                            + newRelativePosition);
-                    System.out.println("old relative position: "
-                            + oldRelativePosition);
-                    System.out.println("angle from body: "
-                            + angleFromBody(position));
-                    System.out.println("Nb of steps: " + nbOfSteps);
-                    System.out.println("----------");
-
                     break;
                 }
             }
@@ -248,23 +243,43 @@ public class Player extends MobileObject
 
         this.bodyDirection = bodyDirectionBackup;
 
+        //        System.out.println("----------");
+        //        System.out.println("position: " + this.position);
+        //        System.out.println("position to reach: " + position);
+        //        System.out.println("new relative position: " + newRelativePosition);
+        //        System.out.println("old relative position: " + oldRelativePosition);
+        //        System.out.println("angle from body: " + angleFromBody(position));
+        //        System.out.println("Nb of steps: " + nbOfSteps);
+        //        System.out.println("----------");
+
         return nbOfSteps;
     }
 
-    public Vector2D interceptionPoint(Collection<Vector2D> trajectory)
+    public Vector2D interceptionPoint(ArrayList<Vector2D> trajectory)
     {
         Vector2D interceptionPoint = null;
-        int nbOfTimeSteps = 999;
+        int nbOfTimeSteps = 9999;
 
-        for (Vector2D point : trajectory)
+        Vector2D pos = null;
+        int timeToReachPos = 9999;
+
+        for (int i = 0; i < trajectory.size() - 1; i++)
         {
-            if (timeToReach(point) < nbOfTimeSteps)
+            pos = trajectory.get(i);
+            timeToReachPos = timeToReach(pos);
+            if (timeToReachPos < i && timeToReachPos < nbOfTimeSteps)
             {
-                interceptionPoint = point;
-                nbOfTimeSteps = timeToReach(point);
+                interceptionPoint = pos;
+                nbOfTimeSteps = timeToReachPos;
             }
         }
-
+        
+        if(interceptionPoint == null)
+        {
+            interceptionPoint = trajectory.get(trajectory.size() - 1);
+            timeToReachPos = timeToReach(interceptionPoint);
+        }
+        
         return interceptionPoint;
     }
 

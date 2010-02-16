@@ -14,6 +14,10 @@ public class PlayerAction
     private double           direction; // The direction arg of a KICK or TURN cmd.
     private RobocupClient    client;    // The client to send actions to the server.
 
+    private static int       turnCount = 0;
+    private static int       dashCount = 0;
+    private static int       kickCount = 0;
+
     /*
      * =========================================================================
      * 
@@ -45,6 +49,30 @@ public class PlayerAction
      * 
      * =========================================================================
      */
+    /**
+     * @return the turnCount
+     */
+    public static int getTurnCount()
+    {
+        return turnCount;
+    }
+
+    /**
+     * @return the dashCount
+     */
+    public static int getDashCount()
+    {
+        return dashCount;
+    }
+
+    /**
+     * @return the kickCount
+     */
+    public static int getKickCount()
+    {
+        return kickCount;
+    }
+    
     /**
      * @return the actionType
      */
@@ -109,16 +137,18 @@ public class PlayerAction
         {
         case DASH:
             client.dash(power);
+            dashCount++;
             break;
         case KICK:
             client.kick(power, direction);
+            kickCount++;
             break;
         case TURN:
             client.turn(direction);
+            turnCount++;
             break;
         default:
             break;
         }
     }
-
 }
