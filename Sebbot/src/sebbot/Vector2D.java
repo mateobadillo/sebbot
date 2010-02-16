@@ -98,12 +98,12 @@ public class Vector2D implements Cloneable
         return x * v.getX() + y * v.getY();
     }
 
-    public double getPolarRadius()
+    public double polarRadius()
     {
         return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
     }
 
-    public double getPolarAngle()
+    public double polarAngle()
     {
         double angle;
         if ((y == 0) && (x == 0))
@@ -121,7 +121,7 @@ public class Vector2D implements Cloneable
     
     public void normalize(double modulusMax)
     {
-        double currentModulus = getPolarRadius();
+        double currentModulus = polarRadius();
         if (currentModulus > modulusMax)
         {
             this.x *= (modulusMax / currentModulus);
@@ -137,12 +137,12 @@ public class Vector2D implements Cloneable
             throw new NullVectorException();
         }
 
-        return v.subtract(this).getPolarRadius();
+        return v.subtract(this).polarRadius();
     }
     
     public double distanceTo(double x, double y)
     {
-        return (new Vector2D(x, y)).subtract(this).getPolarRadius();
+        return (new Vector2D(x, y)).subtract(this).polarRadius();
     }
 
     public double directionOf(Vector2D v) throws NullVectorException
@@ -152,12 +152,12 @@ public class Vector2D implements Cloneable
             throw new NullVectorException();
         }
 
-        return v.subtract(this).getPolarAngle();
+        return v.subtract(this).polarAngle();
     }
 
     public double directionOf(double x, double y)
     {
-        return (new Vector2D(x, y)).subtract(this).getPolarAngle();
+        return (new Vector2D(x, y)).subtract(this).polarAngle();
     }
     
     /*

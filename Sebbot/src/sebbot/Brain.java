@@ -161,13 +161,18 @@ public class Brain implements Runnable
         {
             s1 = new UniformCover(5);
         }
+        else if (strategy.equalsIgnoreCase("GoToBallAndShoot"))
+        {
+            s1 = new GoToBallAndShoot();
+        }
         else if (strategy.equalsIgnoreCase("GoToBallAndShoot2"))
         {
             s1 = new GoToBallAndShoot2();
         }
+
         else
         {
-            s1 = new GoToBallAndShoot();
+            s1 = new GoToBallAndShoot2();
         }
         int lastTimeStep = 0;
         int currentTimeStep = 0;
