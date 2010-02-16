@@ -84,9 +84,6 @@ public class BasicStrategy
                 PlayerAction action = new PlayerAction(PlayerActionType.TURN,
                         0.0d, p.angleFromBody(position), c);
                 c.getBrain().getActionsQueue().addLast(action);
-
-                System.out.println("turn: " + PlayerAction.getTurnCount());
-                System.out.println("kick: " + PlayerAction.getKickCount());
             }
 
             return false; // Order is not yet accomplished.
@@ -96,13 +93,58 @@ public class BasicStrategy
             return true; // Order is accomplished.
         }
     }
+    
+    public static boolean goTo2(Vector2D position, RobocupClient c,
+            FullstateInfo fsi, Player p)
+    {
+        if (p.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
+        { // We are too far away from the position.
+            int nbOfActions = p.timeToReach(position);
+            System.out.println("Begin seq: " + fsi.getTimeStep() + ", action length: " + nbOfActions);
+            if (Math.abs(p.angleFromBody(position)) < 10.0d)
+            { // The player is directed at the position.  
+                PlayerAction action = new PlayerAction(PlayerActionType.DASH,
+                        100.0d, 0.0d, c);
+                c.getBrain().getActionsQueue().addLast(action);
+                
+                for (int i =0; i<nbOfActions - 1; i++)
+                {
+                    action = new PlayerAction(PlayerActionType.DASH,
+                            100.0d, 0.0d, c);
+                    c.getBrain().getActionsQueue().addLast(action);
+                }
+            }
+            else
+            { // The player needs to turn in the direction of the position.
+                PlayerAction action = new PlayerAction(PlayerActionType.TURN,
+                        0.0d, p.angleFromBody(position), c);
+                c.getBrain().getActionsQueue().addLast(action);
+                
+                for (int i =0; i<nbOfActions - 1; i++)
+                {
+                    action = new PlayerAction(PlayerActionType.DASH,
+                            100.0d, 0.0d, c);
+                    c.getBrain().getActionsQueue().addLast(action);
+                }
+
+            }
+
+            return false; // Order is not yet accomplished.
+        }
+        else
+        {
+            System.out.println("End seq: " + fsi.getTimeStep());
+            return true; // Order is accomplished.
+        }
+    }
+
 
     public static boolean goToBallAndShootToGoal(RobocupClient c,
             FullstateInfo fsi, Player p)
     {
         Vector2D interceptionPoint = p.interceptionPoint(fsi.getBall()
                 .trajectory());
-        if (goTo(interceptionPoint, c, fsi, p))
+        if (goTo2(interceptionPoint, c, fsi, p))
         { // The ball is in the kickable margin => kick it towards the goal!
             double goalPosX = p.isLeftSide() ? 52.5d : -52.5d;
 
