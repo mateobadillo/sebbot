@@ -4,6 +4,7 @@ import java.lang.Math;
 import java.util.ArrayDeque;
 
 import sebbot.strategy.GoToBallAndShoot;
+import sebbot.strategy.GoToBallAndShoot2;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
 
@@ -147,11 +148,7 @@ public class Brain implements Runnable
      * =========================================================================
      */
     /**
-     * This is the main function of the Brain. The strategy is straight forward:
-     * 
-     * If the ball is the agent's kickable margin, then kick it in the direction
-     * of the opposite goal.     * 
-     * If not, turn in the direction of the ball then run towards it.
+     * This is the main function of the Brain.
      */
     public void run()
     {
@@ -163,6 +160,10 @@ public class Brain implements Runnable
         if (strategy.equalsIgnoreCase("UniformCover"))
         {
             s1 = new UniformCover(5);
+        }
+        else if (strategy.equalsIgnoreCase("GoToBallAndShoot2"))
+        {
+            s1 = new GoToBallAndShoot2();
         }
         else
         {

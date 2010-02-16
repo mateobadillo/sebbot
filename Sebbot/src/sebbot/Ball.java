@@ -66,25 +66,11 @@ public class Ball extends MobileObject
                 SoccerParams.BALL_SPEED_MAX, SoccerParams.BALL_ACCEL_MAX,
                 SoccerParams.KICK_POWER_RATE, power, angle);
     }
-
+    
     public ArrayList<Vector2D> trajectory(Vector2D initialPosition,
             Vector2D initialVelocity)
     {
-        Vector2D lastPosition = initialPosition;
-        Vector2D lastVelocity = initialVelocity;
-        ArrayList<Vector2D> trajectory = new ArrayList<Vector2D>();
-        trajectory.add(lastPosition);
-        Vector2D currentPosition = nextPosition(lastPosition, lastVelocity);
-
-        while (currentPosition.distanceTo(lastPosition) > SoccerParams.KICKABLE_MARGIN)
-        {
-            trajectory.add(currentPosition);
-            lastPosition = currentPosition;
-            currentPosition = nextPosition(lastPosition, lastVelocity);
-            lastVelocity = nextVelocity(lastVelocity);
-        }
-
-        return trajectory;
+        return super.trajectory(initialPosition, initialVelocity, SoccerParams.BALL_DECAY);
     }
 
     public ArrayList<Vector2D> trajectory()
