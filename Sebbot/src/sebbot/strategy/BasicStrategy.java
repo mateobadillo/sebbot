@@ -8,6 +8,7 @@ import sebbot.PlayerActionType;
 import sebbot.RobocupClient;
 import sebbot.SoccerParams;
 import sebbot.Vector2D;
+import sebbot.algorithm.Qiteration;
 
 /**
  * @author Sebastien Lentz
@@ -159,5 +160,53 @@ public class BasicStrategy
             return false; // Order is not yet accomplished.
         }
     }
+    
+    
+    /**************************************************************************/
+    
+    
+    
+    public static boolean qIterationGoToBall(RobocupClient c,
+            FullstateInfo fsi, Player p, Qiteration q)
+    {
+        float[] state = new float[6];
+        
+        state[0] = (float) fsi.getBall().getVelocity().polarRadius();
+        state[1] = (float) fsi.getBall().getVelocity().polarAngle();
+        state[2] = (float) p.getVelocity().polarRadius();
+        state[3] = (float) p.getVelocity().polarAngle();
+        state[4] = (float) p.distanceTo(fsi.getBall());
+        state[5] = (float) p.angleFromBody(fsi.getBall());
+        
+//        System.out.println("state:");
+//        for (int i = 0; i < state.length; i++)
+//        {
+//            System.out.println(state[i]);
+//        }
+        
+        float[] action = q.getAction(state);
+        
+        System.out.println("action:");
+        for (int i = 0; i < action.length; i++)
+        {
+            System.out.println(action[i]);
+        }
 
+        
+        if(action[2] == 0.0f)
+        {
+            PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
+                    action[0], 0, c);
+            c.getBrain().getActionsQueue().addLast(pAction);
+        }
+        else
+        {
+            PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
+                    0, action[1], c);
+            c.getBrain().getActionsQueue().addLast(pAction);
+        }
+        
+        
+        return true;
+    }
 }
