@@ -69,7 +69,7 @@ public class Vector2D implements Cloneable
         {
             throw new NullVectorException();
         }
-        
+
         return new Vector2D(x - v.getX(), y - v.getY());
     }
 
@@ -118,7 +118,7 @@ public class Vector2D implements Cloneable
         return angle;
 
     }
-    
+
     public void normalize(double modulusMax)
     {
         double currentModulus = polarRadius();
@@ -129,6 +129,10 @@ public class Vector2D implements Cloneable
         }
     }
 
+    public double distanceTo(double x, double y)
+    {
+        return (new Vector2D(x, y)).subtract(this).polarRadius();
+    }
 
     public double distanceTo(Vector2D v) throws NullVectorException
     {
@@ -139,12 +143,22 @@ public class Vector2D implements Cloneable
 
         return v.subtract(this).polarRadius();
     }
-    
-    public double distanceTo(double x, double y)
+
+    public double distanceTo(MobileObject o) throws NullVectorException
     {
-        return (new Vector2D(x, y)).subtract(this).polarRadius();
+        if (o == null)
+        {
+            throw new NullVectorException();
+        }
+
+        return distanceTo(o.getPosition());
     }
 
+    public double directionOf(double x, double y)
+    {
+        return (new Vector2D(x, y)).subtract(this).polarAngle();
+    }
+    
     public double directionOf(Vector2D v) throws NullVectorException
     {
         if (v == null)
@@ -154,12 +168,18 @@ public class Vector2D implements Cloneable
 
         return v.subtract(this).polarAngle();
     }
-
-    public double directionOf(double x, double y)
-    {
-        return (new Vector2D(x, y)).subtract(this).polarAngle();
-    }
     
+    public double directionOf(MobileObject o) throws NullVectorException
+    {
+        if (o == null)
+        {
+            throw new NullVectorException();
+        }
+
+        return directionOf(o.getPosition());
+    }
+
+
     /*
      * =========================================================================
      * 
@@ -172,5 +192,4 @@ public class Vector2D implements Cloneable
         return String.format("(%g - %g)", x, y);
     }
 
-    
 }

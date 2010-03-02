@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.GoToBallAndShoot2;
+import sebbot.strategy.QiterationGoTo;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
 
@@ -169,10 +170,15 @@ public class Brain implements Runnable
         {
             s1 = new GoToBallAndShoot2();
         }
+        else if (strategy.equalsIgnoreCase("QiterationGoTo"))
+        {
+            s1 = new QiterationGoTo();
+        }
+
 
         else
         {
-            s1 = new GoToBallAndShoot2();
+            s1 = new QiterationGoTo();
         }
         int lastTimeStep = 0;
         int currentTimeStep = 0;
@@ -214,7 +220,7 @@ public class Brain implements Runnable
                 System.out.println(lastTimeStep);
                 System.out.println(currentTimeStep);
             }
-
+            
             // Wait for next cycle before sending another command.
             try
             {

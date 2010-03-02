@@ -35,7 +35,7 @@ public class Player extends MobileObject
      * @param bodyDirection
      */
     public Player(double posX, double posY, double velX, double velY,
-            boolean team, char playerType, double bodyDirection)
+            boolean team, int playerType, double bodyDirection)
     {
         super(posX, posY, velX, velY);
         this.leftSide = team;

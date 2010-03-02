@@ -15,7 +15,7 @@ public class Ball extends MobileObject
      * @param velX
      * @param velY
      */
-    public Ball(float posX, float posY, float velX, float velY)
+    public Ball(double posX, double posY, double velX, double velY)
     {
         super(posX, posY, velX, velY);
     }
