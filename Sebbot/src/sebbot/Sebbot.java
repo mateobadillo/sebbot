@@ -86,13 +86,29 @@ public class Sebbot
             return;
         }
 
-        RobocupClient client = new RobocupClient(InetAddress
-                .getByName(hostname), port, team);
-        client.init(strategy);
+        RobocupClient client;
+        Brain brain;
+        int nbOfPlayers = 5;
+        
+        for (int i =0; i < nbOfPlayers; i++)
+        {
+            client = new RobocupClient(InetAddress.getByName(hostname), port, team);
+            client.init(strategy);
+            brain = client.getBrain();
+            new Thread(client).start();
+            new Thread(brain).start();
+        }
+        
+        for (int i =0; i < nbOfPlayers; i++)
+        {
+            client = new RobocupClient(InetAddress.getByName(hostname), port, "team2");
+            client.init("UniformCover");
+            brain = client.getBrain();
+            new Thread(client).start();
+            new Thread(brain).start();
+        }
 
-        Brain brain = client.getBrain();
-
-        new Thread(client, "client").start();
-        new Thread(brain, "brain").start();
+        
+        
     }
 }

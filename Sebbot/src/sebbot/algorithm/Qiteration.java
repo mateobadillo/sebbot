@@ -1,5 +1,13 @@
 package sebbot.algorithm;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
 import sebbot.Ball;
 import sebbot.MathTools;
 import sebbot.Player;
@@ -11,15 +19,16 @@ import sebbot.SoccerParams;
  */
 public class Qiteration
 {
-    float[][][][][][][][][] ql;
+    private static Qiteration       instance;
 
-    int                     nbOfStepsForVelocityModulus;
-    int                     nbOfStepsForVelocityAngle;
-    int                     nbOfStepsForDistance;
-    int                     nbOfStepsForRelativeAngle;
-    int                     nbOfStepsForDash;
-    int                     nbOfStepsForTurn;
+    private float[][][][][][][][][] ql;
 
+    private int                     nbOfStepsForVelocityModulus;
+    private int                     nbOfStepsForVelocityAngle;
+    private int                     nbOfStepsForDistance;
+    private int                     nbOfStepsForRelativeAngle;
+    private int                     nbOfStepsForDash;
+    private int                     nbOfStepsForTurn;
 
     /**
      * @param nbOfStepsForVelocityModulus
@@ -29,7 +38,7 @@ public class Qiteration
      * @param nbOfStepsForDash
      * @param nbOfStepsForTurn
      */
-    public Qiteration(int nbOfStepsForVelocityModulus,
+    protected Qiteration(int nbOfStepsForVelocityModulus,
             int nbOfStepsForVelocityAngle, int nbOfStepsForDistance,
             int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
             int nbOfStepsForTurn)
@@ -40,6 +49,25 @@ public class Qiteration
         this.nbOfStepsForRelativeAngle = nbOfStepsForRelativeAngle;
         this.nbOfStepsForDash = nbOfStepsForDash;
         this.nbOfStepsForTurn = nbOfStepsForTurn;
+
+        //computeQl();
+        ql = loadQl("backupQl.zip");
+    }
+
+    public static synchronized Qiteration instance(
+            int nbOfStepsForVelocityModulus, int nbOfStepsForVelocityAngle,
+            int nbOfStepsForDistance, int nbOfStepsForRelativeAngle,
+            int nbOfStepsForDash, int nbOfStepsForTurn)
+    {
+        if (instance == null)
+        {
+            instance = new Qiteration(nbOfStepsForVelocityModulus,
+                    nbOfStepsForVelocityAngle, nbOfStepsForDistance,
+                    nbOfStepsForRelativeAngle, nbOfStepsForDash,
+                    nbOfStepsForTurn);
+        }
+
+        return instance;
     }
 
     private float reward(float stateAction[])
@@ -67,8 +95,8 @@ public class Qiteration
             return 0.0f;
         }
 
-        double nextStepDistance = p.nextPosition(dashPower*(1.0f-dashOrTurn)).distanceTo(
-                b.nextPosition());
+        double nextStepDistance = p.nextPosition(
+                dashPower * (1.0f - dashOrTurn)).distanceTo(b.nextPosition());
 
         float reward = (float) (1000.0d - nextStepDistance);
 
@@ -102,17 +130,18 @@ public class Qiteration
                 * Math.sin(ballVelocityAngle));
 
         float[] nextState = new float[6];
-        
+
         nextState[0] = ballVelocityModulus * SoccerParams.BALL_DECAY;
         nextState[1] = ballVelocityAngle;
         nextState[2] = (playerVelocityModulus + dashPower * (1.0f - dashOrTurn))
                 * SoccerParams.PLAYER_DECAY;
         nextState[3] = playerVelocityAngle;
-        
-        p.setBodyDirection(MathTools.normalizeAngle(p.angleFromBody(b) + turnAngle * dashOrTurn));
-        p.setPosition(p.nextPosition(dashPower*(1.0f-dashOrTurn)));
+
+        p.setBodyDirection(MathTools.normalizeAngle(p.angleFromBody(b)
+                + turnAngle * dashOrTurn));
+        p.setPosition(p.nextPosition(dashPower * (1.0f - dashOrTurn)));
         b.setPosition(b.nextPosition());
-        
+
         nextState[4] = (float) p.distanceTo(b);
         nextState[5] = (float) p.angleFromBody(b);
 
@@ -142,7 +171,7 @@ public class Qiteration
     {
         return indexToValue(index, 360.0d, nbOfStepsForVelocityAngle) - 180.0f;
     }
-    
+
     private int turnAngleValueToIndex(double value)
     {
         return valueToIndex(value + 180.0d, 360.0d, nbOfStepsForTurn);
@@ -152,7 +181,7 @@ public class Qiteration
     {
         return indexToValue(index, 360.0d, nbOfStepsForTurn) - 180.0f;
     }
-    
+
     private int relAngleValueToIndex(double value)
     {
         return valueToIndex(value + 180.0d, 360.0d, nbOfStepsForRelativeAngle);
@@ -163,10 +192,10 @@ public class Qiteration
         return indexToValue(index, 360.0d, nbOfStepsForRelativeAngle) - 180.0f;
     }
 
-
-
     public void computeQl()
     {
+        System.out.println("q iteration starting...");
+
         float[][][][][][][][][] q0 = new float[nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash][nbOfStepsForTurn][2];
         float[][][][][][][][][] q1 = new float[nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash][nbOfStepsForTurn][2];
         float tmp;
@@ -263,7 +292,7 @@ public class Qiteration
                                                 tmp = q1[i][j][k][l][m][n][o][p][q];
 
                                                 q1[i][j][k][l][m][n][o][p][q] = reward(currentStateAction)
-                                                        + 0.5f
+                                                        + 0.95f
                                                         * maxUq(
                                                                 nextState(currentStateAction),
                                                                 q0);
@@ -289,10 +318,14 @@ public class Qiteration
 
             System.out.println(nbOfIterations + " iterations done.");
         }
-        while (!q0EqualsQ1(q0, q1) && nbOfIterations < 200);
+        while (!q0EqualsQ1(q0, q1) && nbOfIterations < 500);
 
         System.out.println("nb of iterations: " + nbOfIterations);
+        System.out.println("q iteration table computed.");
+
         ql = q1;
+        
+        saveQl("backupQl.zip", ql);
     }
 
     private float maxUq(float[] state, float[][][][][][][][][] q0)
@@ -367,8 +400,7 @@ public class Qiteration
                     if (q0[s0][s1][s2][s3][s4][s5][i][j][k] > max)
                     {
                         max = q0[s0][s1][s2][s3][s4][s5][i][j][k];
-                        argMaxUq[0] = indexToValue(i, 100.0d,
-                                nbOfStepsForDash);
+                        argMaxUq[0] = indexToValue(i, 100.0d, nbOfStepsForDash);
                         argMaxUq[1] = turnAngleIndexToValue(j);
                         argMaxUq[2] = k;
                     }
@@ -429,6 +461,44 @@ public class Qiteration
 
         return true;
 
+    }
+
+    public void saveQl(String filename, float[][][][][][][][][] q)
+    {
+        try
+        {
+            FileOutputStream fos = new FileOutputStream(filename);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos);
+            ObjectOutputStream out = new ObjectOutputStream(gzos);
+            out.writeObject(q);
+            out.flush();
+            out.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    public float[][][][][][][][][] loadQl(String filename)
+    {
+        float[][][][][][][][][] q = null;
+        
+        try
+        {
+            FileInputStream fis = new FileInputStream(filename);
+            GZIPInputStream gzis = new GZIPInputStream(fis);
+            ObjectInputStream in = new ObjectInputStream(gzis);
+            q = (float[][][][][][][][][]) in.readObject();
+            in.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+        return q;
     }
 
     public void printQl()

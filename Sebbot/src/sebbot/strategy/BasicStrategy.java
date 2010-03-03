@@ -94,24 +94,25 @@ public class BasicStrategy
             return true; // Order is accomplished.
         }
     }
-    
+
     public static boolean goTo2(Vector2D position, RobocupClient c,
             FullstateInfo fsi, Player p)
     {
         if (p.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         { // We are too far away from the position.
             int nbOfActions = p.timeToReach(position);
-            System.out.println("Begin seq: " + fsi.getTimeStep() + ", action length: " + nbOfActions);
+            System.out.println("Begin seq: " + fsi.getTimeStep()
+                    + ", action length: " + nbOfActions);
             if (Math.abs(p.angleFromBody(position)) < 10.0d)
             { // The player is directed at the position.  
                 PlayerAction action = new PlayerAction(PlayerActionType.DASH,
                         100.0d, 0.0d, c);
                 c.getBrain().getActionsQueue().addLast(action);
-                
-                for (int i =0; i<nbOfActions - 1; i++)
+
+                for (int i = 0; i < nbOfActions - 1; i++)
                 {
-                    action = new PlayerAction(PlayerActionType.DASH,
-                            100.0d, 0.0d, c);
+                    action = new PlayerAction(PlayerActionType.DASH, 100.0d,
+                            0.0d, c);
                     c.getBrain().getActionsQueue().addLast(action);
                 }
             }
@@ -120,11 +121,11 @@ public class BasicStrategy
                 PlayerAction action = new PlayerAction(PlayerActionType.TURN,
                         0.0d, p.angleFromBody(position), c);
                 c.getBrain().getActionsQueue().addLast(action);
-                
-                for (int i =0; i<nbOfActions - 1; i++)
+
+                for (int i = 0; i < nbOfActions - 1; i++)
                 {
-                    action = new PlayerAction(PlayerActionType.DASH,
-                            100.0d, 0.0d, c);
+                    action = new PlayerAction(PlayerActionType.DASH, 100.0d,
+                            0.0d, c);
                     c.getBrain().getActionsQueue().addLast(action);
                 }
 
@@ -138,7 +139,6 @@ public class BasicStrategy
             return true; // Order is accomplished.
         }
     }
-
 
     public static boolean goToBallAndShootToGoal(RobocupClient c,
             FullstateInfo fsi, Player p)
@@ -160,53 +160,76 @@ public class BasicStrategy
             return false; // Order is not yet accomplished.
         }
     }
-    
-    
+
     /**************************************************************************/
-    
-    
-    
+
     public static boolean qIterationGoToBall(RobocupClient c,
             FullstateInfo fsi, Player p, Qiteration q)
     {
-        float[] state = new float[6];
-        
-        state[0] = (float) fsi.getBall().getVelocity().polarRadius();
-        state[1] = (float) fsi.getBall().getVelocity().polarAngle();
-        state[2] = (float) p.getVelocity().polarRadius();
-        state[3] = (float) p.getVelocity().polarAngle();
-        state[4] = (float) p.distanceTo(fsi.getBall());
-        state[5] = (float) p.angleFromBody(fsi.getBall());
-        
-//        System.out.println("state:");
-//        for (int i = 0; i < state.length; i++)
-//        {
-//            System.out.println(state[i]);
-//        }
-        
-        float[] action = q.getAction(state);
-        
-        System.out.println("action:");
-        for (int i = 0; i < action.length; i++)
+        if (p.distanceTo(fsi.getBall()) < SoccerParams.KICKABLE_MARGIN)
         {
-            System.out.println(action[i]);
+            return true;
         }
 
-        
-        if(action[2] == 0.0f)
+        else
         {
-            PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
-                    action[0], 0, c);
-            c.getBrain().getActionsQueue().addLast(pAction);
+            float[] state = new float[6];
+
+            state[0] = (float) fsi.getBall().getVelocity().polarRadius();
+            state[1] = (float) fsi.getBall().getVelocity().polarAngle();
+            state[2] = (float) p.getVelocity().polarRadius();
+            state[3] = (float) p.getVelocity().polarAngle();
+            state[4] = (float) p.distanceTo(fsi.getBall());
+            state[5] = (float) p.angleFromBody(fsi.getBall());
+
+            //        System.out.println("state:");
+            //        for (int i = 0; i < state.length; i++)
+            //        {
+            //            System.out.println(state[i]);
+            //        }
+
+            float[] action = q.getAction(state);
+
+            System.out.println("action:");
+            for (int i = 0; i < action.length; i++)
+            {
+                System.out.println(action[i]);
+            }
+
+            if (action[2] == 0.0f)
+            {
+                PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
+                        action[0] + 10.0d, 0, c);
+                c.getBrain().getActionsQueue().addLast(pAction);
+            }
+            else
+            {
+                PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
+                        0, action[1], c);
+                c.getBrain().getActionsQueue().addLast(pAction);
+            }
+            
+            return false;
+        }
+    }
+    
+    public static boolean qIterationGoToBallandShootToGoal(RobocupClient c,
+            FullstateInfo fsi, Player p, Qiteration q)
+    {
+        if (qIterationGoToBall(c, fsi, p, q))
+        { // The ball is in the kickable margin => kick it towards the goal!
+            double goalPosX = p.isLeftSide() ? 52.5d : -52.5d;
+
+            PlayerAction action = new PlayerAction(PlayerActionType.KICK,
+                    100.0d, p.angleFromBody(goalPosX, 0.0d), c);
+            c.getBrain().getActionsQueue().addLast(action);
+
+            return true; // Order is accomplished.
         }
         else
         {
-            PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
-                    0, action[1], c);
-            c.getBrain().getActionsQueue().addLast(pAction);
+            return false; // Order is not yet accomplished.
         }
-        
-        
-        return true;
     }
+
 }
