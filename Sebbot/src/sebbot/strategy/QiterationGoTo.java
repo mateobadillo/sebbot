@@ -11,24 +11,10 @@ import sebbot.algorithm.Qiteration;
  */
 public class QiterationGoTo implements Strategy
 {
-    Qiteration q;
-    
-    
-    /**
-     * @param q
-     */
-    public QiterationGoTo()
-    {
-        System.out.println("q iteration starting...");
-        this.q = new Qiteration(1, 1, 20, 5, 1, 5);
-        q.computeQl();
-        System.out.println("q iteration table computed.");
-        
-    }
-
+    private static Qiteration q = Qiteration.instance(1, 1, 40, 20, 5, 20);
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {
-        BasicStrategy.qIterationGoToBall(c, fsi, p, q);
+        BasicStrategy.qIterationGoToBallandShootToGoal(c, fsi, p, q);
     }
 }
