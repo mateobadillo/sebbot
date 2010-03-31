@@ -2,7 +2,6 @@ package sebbot.learning;
 
 import sebbot.MathTools;
 import sebbot.SoccerParams;
-import sebbot.Vector2D;
 
 public class State
 {
@@ -21,7 +20,6 @@ public class State
     private float      playerBodyDirection;
     private float      relativeDistance;
     private float      relativeDirection;
-    private boolean    isTerminal;
 
     /*
      * =========================================================================
@@ -43,7 +41,7 @@ public class State
     public State(float ballVelocityNorm, float ballVelocityDirection,
                  float playerVelocityNorm, float playerVelocityDirection,
                  float playerBodyDirection, float relativeDistance,
-                 float relativeDirection, boolean isTerminal)
+                 float relativeDirection)
     {
         this.ballVelocityNorm = ballVelocityNorm;
         this.ballVelocityDirection = ballVelocityDirection;
@@ -52,34 +50,11 @@ public class State
         this.playerBodyDirection = playerBodyDirection;
         this.relativeDistance = relativeDistance;
         this.relativeDirection = relativeDirection;
-        this.isTerminal = isTerminal;
     }
 
-    /**
-     * @param ballVelocityNorm
-     * @param ballVelocityDirection
-     * @param playerVelocityNorm
-     * @param playerVelocityDirection
-     * @param playerBodyDirection
-     * @param relativeDistance
-     * @param relativeDirection
-     */
-    public State(float ballVelocityNorm, float ballVelocityDirection,
-                 float playerVelocityNorm, float playerVelocityDirection,
-                 float playerBodyDirection, float relativeDistance,
-                 float relativeDirection)
+    public State()
     {
-        this(ballVelocityNorm, ballVelocityDirection, playerVelocityNorm,
-            playerVelocityDirection, playerBodyDirection, relativeDistance,
-            relativeDirection, false);
-    }
-
-    /**
-     * @param isTerminal
-     */
-    public State(boolean isTerminal)
-    {
-        this(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 99.0f, 0.0f, isTerminal);
+        this(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 99.0f, 0.0f);
     }
 
     /*
@@ -320,15 +295,7 @@ public class State
      */
     public boolean isTerminal()
     {
-        return isTerminal;
-    }
-
-    /**
-     * @param isTerminal the isTerminal to set
-     */
-    public void setTerminal(boolean isTerminal)
-    {
-        this.isTerminal = isTerminal;
+        return (relativeDistance < SoccerParams.KICKABLE_MARGIN ? true : false);
     }
 
     /*
@@ -338,76 +305,16 @@ public class State
      * 
      * =========================================================================
      */
-    public State nextState(Action a)
-    {
-        State nextState;
-
-        if (isTerminal)
-        {
-            nextState = this;
-        }
-        else if (relativeDistance < SoccerParams.KICKABLE_MARGIN)
-        {
-            nextState = new State(true); // Terminal state
-        }
-        else
-        {
-            nextState = new State(false); // Non terminal state
-
-            /* ------------ First compute the useful vectors ---------------- */
-            Vector2D ballVelocity = new Vector2D(ballVelocityNorm,
-                ballVelocityDirection, true);
-
-            Vector2D oldPlayerSpeed = new Vector2D(playerVelocityNorm,
-                playerVelocityDirection, true);
-
-            Vector2D newPlayerSpeed;
-            if (a.isTurn())
-            {
-                newPlayerSpeed = oldPlayerSpeed;
-            }
-            else
-            {
-                Vector2D playerAcceleration = (new Vector2D(a.getValue()
-                        * SoccerParams.DASH_POWER_RATE, playerBodyDirection,
-                    true)).normalize(SoccerParams.PLAYER_ACCEL_MAX);
-
-                newPlayerSpeed = oldPlayerSpeed.add(playerAcceleration)
-                    .normalize(SoccerParams.PLAYER_SPEED_MAX);
-            }
-
-            Vector2D oldRelPosition = new Vector2D(relativeDistance, MathTools
-                .normalizeAngle(relativeDirection + playerBodyDirection), true);
-
-            Vector2D newRelPosition = oldRelPosition.add(ballVelocity)
-                .subtract(newPlayerSpeed);
-
-            /* ----- Now build the next state using the computed vectors ---- */
-            nextState.setBallVelocityNorm(this.ballVelocityNorm
-                    * SoccerParams.BALL_DECAY);
-
-            nextState.setBallVelocityDirection(this.ballVelocityDirection);
-
-            nextState.setPlayerVelocityNorm((float) (newPlayerSpeed
-                .polarRadius() * SoccerParams.PLAYER_DECAY));
-
-            nextState.setPlayerVelocityDirection((float) newPlayerSpeed
-                .polarAngle());
-
-            nextState.setPlayerBodyDirection((float) MathTools
-                .normalizeAngle(playerBodyDirection
-                        + (a.isTurn() ? a.getValue() : 0.0f)));
-
-            nextState.setRelativeDistance((float) newRelPosition.polarRadius());
-
-            nextState.setRelativeDirection((float) MathTools
-                .normalizeAngle(newRelPosition.polarAngle()
-                        - nextState.getPlayerBodyDirection()));
-        }
-
-        return nextState;
-    }
-
+    /**
+     * @param ballVelocityNormSteps
+     * @param ballVelocityDirectionSteps
+     * @param playerVelocityNormSteps
+     * @param playerVelocityDirectionSteps
+     * @param playerBodyDirectionSteps
+     * @param relativeDistanceSteps
+     * @param relativeDirectionSteps
+     * @return
+     */
     public State discretize(int ballVelocityNormSteps,
                             int ballVelocityDirectionSteps,
                             int playerVelocityNormSteps,
@@ -443,6 +350,9 @@ public class State
         return this;
     }
 
+    /**
+     * @return
+     */
     public State discretize()
     {
         discretize(ballVelocityNormSteps, ballVelocityDirectionSteps,
