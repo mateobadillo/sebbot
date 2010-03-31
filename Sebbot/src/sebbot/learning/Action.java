@@ -1,7 +1,6 @@
 package sebbot.learning;
 
 import sebbot.MathTools;
-import sebbot.SoccerParams;
 
 /**
  * @author Sebastien Lentz

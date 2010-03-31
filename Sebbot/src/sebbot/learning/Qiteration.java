@@ -15,7 +15,7 @@ import sebbot.SoccerParams;
  * @author Sebastien Lentz
  *
  */
-public class Qiteration
+public class Qiteration implements Policy
 {
     private static Qiteration     instance;
 
@@ -56,12 +56,39 @@ public class Qiteration
         State.setPlayerBodyDirectionSteps(nbOfStepsForRelativeAngle);
         State.setRelativeDistanceSteps(nbOfStepsForDistance);
         State.setRelativeDirectionSteps(nbOfStepsForRelativeAngle);
-        
+
         Action.setDashSteps(nbOfStepsForDash);
         Action.setTurnSteps(nbOfStepsForTurn);
 
-        computeQl();
-        //qTable = loadQl("backupQl.zip");
+        //computeQl();
+        qTable = loadQl("backupQl.zip");
+
+        State s;
+        float reward;
+        for (int i = 0; i < 10; i++)
+        {
+            s = new State((float) (Math.random() * 3.0D),
+                (float) (Math.random() * 360D - 180D),
+                (float) (Math.random() * 1.05D),
+                (float) (Math.random() * 360D - 180D),
+                (float) (Math.random() * 360D - 180D),
+                (float) (Math.random() * 125D),
+                (float) (Math.random() * 360D - 180D));
+            
+            reward = MarkovDecisionProcess.infiniteReward(s, this);
+            
+            System.out.println("init state: " + s);
+            System.out.println("infinite reward: " + reward);
+            
+        }
+        
+        printQl();
+        printQl();
+        printQl();
+        printQl();
+        printQl();
+        
+        testQ();
     }
 
     public static synchronized Qiteration instance(
@@ -80,32 +107,6 @@ public class Qiteration
         }
 
         return instance;
-    }
-
-    private float reward(State s, Action a)
-    {
-        float reward;
-        State nextState = s.nextState(a).discretize();
-
-        if (nextState.isTerminal())
-        {
-            reward = 0.0f;
-        }
-        else
-        {
-            float nextStepDistance = nextState.getRelativeDistance();
-
-            if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
-            {
-                reward = 10000.0f;
-            }
-            else
-            {
-                reward = 0.0f - nextStepDistance;
-            }
-        }
-
-        return reward;
     }
 
     public void computeQl()
@@ -163,7 +164,7 @@ public class Qiteration
         }
 
         int nbOfIterations = 0;
-        State s = new State(false);
+        State s = new State();
         Action a = new Action(0, false);
         do
         {
@@ -264,19 +265,21 @@ public class Qiteration
 
                                             tmp = qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act];
 
-                                            qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = reward(
-                                                s, a)
+                                            qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = MarkovDecisionProcess
+                                                .reward(s, a)
                                                     + 0.85f
-                                                    * maxUq(s.nextState(a),
+                                                    * maxUq(
+                                                        MarkovDecisionProcess
+                                                            .nextState(s, a).discretize(),
                                                         oldQtable);
 
-                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000.0f)
-                                            {
-                                                System.out
-                                                    .println("prob: "
-                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
-                                                            + " " + s + " " + a);
-                                            }
+//                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000f)
+//                                            {
+//                                                System.out
+//                                                    .println("prob: "
+//                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
+//                                                            + " " + s + " " + a);
+//                                            }
 
                                             oldQtable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = tmp;
 
@@ -296,7 +299,7 @@ public class Qiteration
 
             }
 
-            printQl();
+            //printQl();
             System.out.println(nbOfIterations + " iterations done.");
         }
         while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 300);
@@ -371,7 +374,7 @@ public class Qiteration
         return max;
     }
 
-    private float[] argMaxUq(State s, float[][][][][][][][] q0)
+    public Action chooseAction(State s)
     {
         int s0, s1, s2, s3, s4, s5, s6;
         s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
@@ -390,38 +393,29 @@ public class Qiteration
             nbOfStepsForRelativeAngle);
 
         float max = -1000000.0f;
-        float[] argMaxUq = new float[2];
-        argMaxUq[0] = -1.0f;
-        argMaxUq[1] = -1.0f;
-        for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
+        Action a = null;
+        for (int i = 0; i < qTable[s0][s1][s2][s3][s4][s5][s6].length; i++)
         {
-            if (q0[s0][s1][s2][s3][s4][s5][s6][i] > max)
+            if (qTable[s0][s1][s2][s3][s4][s5][s6][i] > max)
             {
-                max = q0[s0][s1][s2][s3][s4][s5][s6][i];
+                max = qTable[s0][s1][s2][s3][s4][s5][s6][i];
 
                 if (i < nbOfStepsForTurn)
                 {
-                    argMaxUq[0] = 1.0f;
-                    argMaxUq[1] = (float) MathTools.indexToValue(i, -180.0f,
-                        180.0f, nbOfStepsForTurn, 0.5f);
+                    a = new Action((float) MathTools.indexToValue(i, -180.0f,
+                        180.0f, nbOfStepsForTurn, 0.5f), true);
                 }
                 else
                 {
-                    argMaxUq[0] = 0.0f;
-                    argMaxUq[1] = (float) MathTools.indexToValue(i
+                    a = new Action((float) MathTools.indexToValue(i
                             - nbOfStepsForTurn, 0.0f, 100.0f, nbOfStepsForDash,
-                        1.0f);
+                        1.0f), false);
                 }
             }
 
         }
 
-        return argMaxUq;
-    }
-
-    public float[] getAction(State s)
-    {
-        return argMaxUq(s, qTable);
+        return a;
     }
 
     private boolean q0EqualsQ1(float[][][][][][][][] q0,
@@ -465,6 +459,49 @@ public class Qiteration
         }
 
         return true;
+
+    }
+    
+    private void testQ()
+    {
+        
+        for (int i = 0; i < qTable.length; i++)
+        {
+            for (int j = 0; j < qTable[i].length; j++)
+            {
+                for (int k = 0; k < qTable[i][j].length; k++)
+                {
+                    for (int l = 0; l < qTable[i][j][k].length; l++)
+                    {
+                        for (int m = 0; m < qTable[i][j][k][l].length; m++)
+                        {
+                            for (int n = 0; n < qTable[i][j][k][l][m].length; n++)
+                            {
+                                for (int o = 0; o < qTable[i][j][k][l][m][n].length; o++)
+                                {
+                                    for (int p = 0; p < qTable[i][j][k][l][m][n][o].length; p++)
+                                    {
+                                        if (qTable[i][j][k][l][m][n][o][p] > 10000f)
+                                        {
+                                            System.out
+                                                .println("prob: "
+                                                        + qTable[i][j][k][l][m][n][o][p]);
+                                        }
+                                   }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
 
     }
 

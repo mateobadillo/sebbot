@@ -23,14 +23,14 @@ public class BasicStrategy
     {
         if (p.distanceTo(position) > SoccerParams.KICKABLE_MARGIN)
         { // We are too far away from the position.           
-            
+
             if (Math.abs(p.angleFromBody(position)) < 30.0d)
             { // The player is directed at the position.
                 PlayerAction action = new PlayerAction(PlayerActionType.DASH,
                     100.0d, 0.0d, c);
                 c.getBrain().getActionsQueue().addLast(action);
             }
-            
+
             else
             { // The player needs to turn in the direction of the position.
                 PlayerAction action = new PlayerAction(PlayerActionType.TURN,
@@ -176,7 +176,7 @@ public class BasicStrategy
 
         else
         {
-            State state = new State(false);
+            State state = new State();
 
             state.setBallVelocityNorm((float) fsi.getBall().getVelocity()
                 .polarRadius());
@@ -189,28 +189,18 @@ public class BasicStrategy
             state.setRelativeDistance((float) p.distanceTo(fsi.getBall()));
             state.setRelativeDirection((float) p.angleFromBody(fsi.getBall()));
 
-            float[] action = q.getAction(state);
-
-            System.out.println("action:");
-            for (int i = 0; i < action.length; i++)
+            Action action = q.chooseAction(state);
+            if (action.isTurn())
             {
-                System.out.println(action[i]);
-            }
-
-            //System.out.println("Current state: " + state);
-            if (action[0] == 0.0f)
-            {
-                PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
-                    action[1], 0, c);
+                PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
+                    0, action.getValue(), c);
                 c.getBrain().getActionsQueue().addLast(pAction);
-            //    System.out.println("Next state: " + state.nextState(new Action(action[0], false)));
             }
             else
             {
-                PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
-                    0, action[1], c);
+                PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
+                    action.getValue(), 0, c);
                 c.getBrain().getActionsQueue().addLast(pAction);
-            //    System.out.println("Next state: " + state.nextState(new Action(action[1], true)));
             }
 
             return false;
