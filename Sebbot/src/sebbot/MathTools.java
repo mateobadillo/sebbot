@@ -48,18 +48,40 @@ public class MathTools
     }
 
     /**
-     * This function discretizes the input value to the middle value of an
-     * interval.
+     * This function returns the number of the interval that contains the input
+     * value according to the number of the steps, the min and max values of
+     * the continuous range that is being considered.
      * 
-     * @param value
-     * @param minValue
-     * @param maxValue
-     * @param nbOfSteps
+     * @param value the input value to index.
+     * @param minValue the min value of the continuous range.
+     * @param maxValue the max value of the continuous range.
+     * @param nbOfSteps the number of intervals in the continuous range.
      * @return
      */
-    public static double discretize(double value, double minValue,
-                                    double maxValue, int nbOfSteps,
-                                    float intervalPosition)
+    public static int valueToIndex(double value, double minValue,
+                                   double maxValue, int nbOfSteps)
+    {
+        int index = (int) Math.rint((value - minValue) / (maxValue - minValue)
+                * nbOfSteps);
+
+        return index >= nbOfSteps ? nbOfSteps - 1 : index;
+    }
+
+    /**
+     * This function returns a representative value of the the interval indexed
+     * by the input integer.
+     * 
+     * @param index the index of the interval in the continuous range.
+     * @param minValue the min value of the continuous range.
+     * @param maxValue the max value of the continuous range.
+     * @param nbOfSteps the number of intervals in the continuous range.
+     * @param intervalPosition the position of the representative value inside
+     *                         the interval. 0<=intervalPosition<=1.
+     * @return
+     */
+    public static double indexToValue(int index, double minValue,
+                                      double maxValue, int nbOfSteps,
+                                      float intervalPosition)
     {
         if (intervalPosition > 1.0f || intervalPosition < 0.0f)
         { // Invalid intervalPosition
@@ -68,9 +90,38 @@ public class MathTools
 
         double intervalLength = Math.abs((maxValue - minValue) / nbOfSteps);
 
-        return Math.min(value - (value % intervalLength) + intervalLength
-                * intervalPosition, maxValue - intervalLength
-                * (1.0f - intervalPosition * intervalLength));
+        return minValue + intervalLength * (intervalPosition + index);
+    }
+
+    /**
+     * This function discretizes the input value to the middle value of an
+     * interval.
+     * 
+     * @param value the input value to discretize.
+     * @param minValue the min value of the continuous range.
+     * @param maxValue the max value of the continuous range.
+     * @param nbOfSteps the number of intervals in the continuous range.
+     * @param intervalPosition the position of the representative value inside
+     *                         the interval. 0<=intervalPosition<=1.
+     * @return
+     */
+    public static double discretize(double value, double minValue,
+                                    double maxValue, int nbOfSteps,
+                                    float intervalPosition)
+    {
+        return indexToValue(valueToIndex(value, minValue, maxValue, nbOfSteps),
+            minValue, maxValue, nbOfSteps, intervalPosition);
+
+        //        if (intervalPosition > 1.0f || intervalPosition < 0.0f)
+        //        { // Invalid intervalPosition
+        //            intervalPosition = 0.5f;
+        //        }
+        //
+        //        double intervalLength = Math.abs((maxValue - minValue) / nbOfSteps);
+        //
+        //        return Math.min(value - (value % intervalLength) + intervalLength
+        //                * intervalPosition, maxValue - intervalLength
+        //                * (1.0f - intervalPosition * intervalLength));
     }
 
     public static Vector2D toCartesianCoordinates(double radius, double angle)

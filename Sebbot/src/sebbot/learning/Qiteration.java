@@ -10,7 +10,6 @@ import java.util.zip.GZIPOutputStream;
 
 import sebbot.MathTools;
 import sebbot.SoccerParams;
-import sebbot.Vector2D;
 
 /**
  * @author Sebastien Lentz
@@ -22,8 +21,8 @@ public class Qiteration
 
     private float[][][][][][][][] qTable;
 
-    private int                   nbOfStepsForVelocityModulus;
-    private int                   nbOfStepsForVelocityAngle;
+    private int                   nbOfStepsForVelocityNorm;
+    private int                   nbOfStepsForVelocityDirection;
     private int                   nbOfStepsForDistance;
     private int                   nbOfStepsForRelativeAngle;
     private int                   nbOfStepsForDash;
@@ -43,12 +42,23 @@ public class Qiteration
                          int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
                          int nbOfStepsForTurn)
     {
-        this.nbOfStepsForVelocityModulus = nbOfStepsForVelocityModulus;
-        this.nbOfStepsForVelocityAngle = nbOfStepsForVelocityAngle;
+        this.nbOfStepsForVelocityNorm = nbOfStepsForVelocityModulus;
+        this.nbOfStepsForVelocityDirection = nbOfStepsForVelocityAngle;
         this.nbOfStepsForDistance = nbOfStepsForDistance;
         this.nbOfStepsForRelativeAngle = nbOfStepsForRelativeAngle;
         this.nbOfStepsForDash = nbOfStepsForDash;
         this.nbOfStepsForTurn = nbOfStepsForTurn;
+
+        State.setBallVelocityNormSteps(nbOfStepsForVelocityModulus);
+        State.setBallVelocityDirectionSteps(nbOfStepsForVelocityAngle);
+        State.setPlayerVelocityNormSteps(nbOfStepsForVelocityModulus);
+        State.setPlayerVelocityDirectionSteps(nbOfStepsForVelocityAngle);
+        State.setPlayerBodyDirectionSteps(nbOfStepsForRelativeAngle);
+        State.setRelativeDistanceSteps(nbOfStepsForDistance);
+        State.setRelativeDirectionSteps(nbOfStepsForRelativeAngle);
+        
+        Action.setDashSteps(nbOfStepsForDash);
+        Action.setTurnSteps(nbOfStepsForTurn);
 
         computeQl();
         //qTable = loadQl("backupQl.zip");
@@ -75,11 +85,7 @@ public class Qiteration
     private float reward(State s, Action a)
     {
         float reward;
-        State nextState = s.nextState(a).discretize(
-            nbOfStepsForVelocityModulus, nbOfStepsForVelocityAngle,
-            nbOfStepsForVelocityModulus, nbOfStepsForVelocityAngle,
-            nbOfStepsForRelativeAngle, nbOfStepsForDistance,
-            nbOfStepsForRelativeAngle);
+        State nextState = s.nextState(a).discretize();
 
         if (nextState.isTerminal())
         {
@@ -102,55 +108,22 @@ public class Qiteration
         return reward;
     }
 
-    private float turnValue(float action)
-    {
-        float tv = 0.0f;
-
-        if (action < nbOfStepsForTurn)
-        {
-            tv = ((action + 1.0f) / nbOfStepsForTurn * 360.0f) - 180.0f;
-        }
-
-        return tv;
-    }
-
-    private float dashValue(float action)
-    {
-        float dv = 0.0f;
-
-        if (action >= nbOfStepsForTurn)
-        {
-            dv = (action - nbOfStepsForTurn + 1.0f) / nbOfStepsForDash * 100.0f;
-        }
-
-        return dv;
-    }
-
-    private int valueToIndex(double value, double minValue, double maxValue,
-                             int nbOfDiscreteSteps)
-    {
-        int index = (int) Math.rint((value - minValue) / (maxValue - minValue)
-                * nbOfDiscreteSteps);
-
-        return index >= nbOfDiscreteSteps ? nbOfDiscreteSteps - 1 : index;
-    }
-
     public void computeQl()
     {
         System.out.println("q iteration starting...");
-        int stateSpaceSize = nbOfStepsForDistance * nbOfStepsForVelocityAngle
-                * nbOfStepsForVelocityAngle * nbOfStepsForVelocityModulus
-                * nbOfStepsForVelocityModulus * nbOfStepsForRelativeAngle
-                * nbOfStepsForRelativeAngle;
+        int stateSpaceSize = nbOfStepsForDistance
+                * nbOfStepsForVelocityDirection * nbOfStepsForVelocityDirection
+                * nbOfStepsForVelocityNorm * nbOfStepsForVelocityNorm
+                * nbOfStepsForRelativeAngle * nbOfStepsForRelativeAngle;
         int actionSpaceSize = (nbOfStepsForTurn + nbOfStepsForDash);
 
         System.out.println("X x U² = "
                 + (stateSpaceSize * actionSpaceSize * actionSpaceSize));
 
-        float[][][][][][][][] oldQtable = new float[nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
+        float[][][][][][][][] oldQtable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
                 + nbOfStepsForTurn];
 
-        qTable = new float[nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForVelocityModulus][nbOfStepsForVelocityAngle][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
+        qTable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
                 + nbOfStepsForTurn];
 
         float tmp;
@@ -212,44 +185,81 @@ public class Qiteration
                                         for (int act = 0; act < oldQtable[bvn][bvd][pvn][pvd][pbd][rdist][rdir].length; act++)
                                         {
                                             s
-                                                .setBallVelocityNorm((float) (SoccerParams.BALL_SPEED_MAX
-                                                        / nbOfStepsForVelocityModulus * (bvn)));
+                                                .setBallVelocityNorm((float) MathTools
+                                                    .indexToValue(
+                                                        bvn,
+                                                        0.0f,
+                                                        SoccerParams.BALL_SPEED_MAX,
+                                                        nbOfStepsForVelocityNorm,
+                                                        0.0f));
                                             s
-                                                .setBallVelocityDirection((float) (360.0f
-                                                        / nbOfStepsForVelocityAngle
-                                                        * (bvd) - 180f));
+                                                .setBallVelocityDirection((float) MathTools
+                                                    .indexToValue(
+                                                        bvd,
+                                                        -180.0f,
+                                                        180.0f,
+                                                        nbOfStepsForVelocityDirection,
+                                                        0.0f));
                                             s
-                                                .setPlayerVelocityNorm((float) (SoccerParams.PLAYER_SPEED_MAX
-                                                        / nbOfStepsForVelocityModulus * (pvn)));
+                                                .setPlayerVelocityNorm((float) MathTools
+                                                    .indexToValue(
+                                                        pvn,
+                                                        0,
+                                                        SoccerParams.PLAYER_SPEED_MAX,
+                                                        nbOfStepsForVelocityNorm,
+                                                        0.0f));
                                             s
-                                                .setPlayerVelocityDirection((float) (360.0f
-                                                        / nbOfStepsForVelocityAngle
-                                                        * (pvd) - 180.0f));
+                                                .setPlayerVelocityDirection((float) MathTools
+                                                    .indexToValue(
+                                                        pvd,
+                                                        -180.0f,
+                                                        180.0f,
+                                                        nbOfStepsForVelocityDirection,
+                                                        0.0f));
                                             s
-                                                .setPlayerBodyDirection((float) (360.0f / nbOfStepsForRelativeAngle * (pbd)) - 180.0f);
+                                                .setPlayerBodyDirection((float) MathTools
+                                                    .indexToValue(
+                                                        pbd,
+                                                        -180.0f,
+                                                        180.0f,
+                                                        nbOfStepsForRelativeAngle,
+                                                        0.0f));
                                             s
-                                                .setRelativeDistance((float) (125.0f / nbOfStepsForDistance * (rdist)));
+                                                .setRelativeDistance((float) MathTools
+                                                    .indexToValue(rdist, 0.0f,
+                                                        125.0f,
+                                                        nbOfStepsForDistance,
+                                                        0.0f));
                                             s
-                                                .setRelativeDirection((float) (360.0f
-                                                        / nbOfStepsForRelativeAngle
-                                                        * (rdir) - 180.0f));
+                                                .setRelativeDirection((float) MathTools
+                                                    .indexToValue(
+                                                        rdir,
+                                                        -180.0f,
+                                                        180.0f,
+                                                        nbOfStepsForRelativeAngle,
+                                                        0.0f));
 
                                             if (act >= nbOfStepsForTurn)
                                             {
                                                 a.setTurn(false);
                                                 a
-                                                    .setValue(100.0f
-                                                            / nbOfStepsForDash
-                                                            * (1.0f + (act - nbOfStepsForTurn)));
+                                                    .setValue((float) MathTools
+                                                        .indexToValue(
+                                                            act
+                                                                    - nbOfStepsForTurn,
+                                                            0.0f, 100.0f,
+                                                            nbOfStepsForDash,
+                                                            1.0f));
                                             }
                                             else
                                             {
                                                 a.setTurn(true);
                                                 a
-                                                    .setValue(360.0f
-                                                            / nbOfStepsForTurn
-                                                            * (0.5f + act)
-                                                            - 180.0f);
+                                                    .setValue((float) MathTools
+                                                        .indexToValue(act,
+                                                            -180.0f, 180.0f,
+                                                            nbOfStepsForTurn,
+                                                            0.5f));
                                             }
 
                                             tmp = qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act];
@@ -260,13 +270,13 @@ public class Qiteration
                                                     * maxUq(s.nextState(a),
                                                         oldQtable);
 
-//                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000.0f)
-//                                            {
-//                                                System.out
-//                                                    .println("prob: "
-//                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
-//                                                            + " " + s + " " + a);
-//                                            }
+                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000.0f)
+                                            {
+                                                System.out
+                                                    .println("prob: "
+                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
+                                                            + " " + s + " " + a);
+                                            }
 
                                             oldQtable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = tmp;
 
@@ -286,31 +296,7 @@ public class Qiteration
 
             }
 
-            //            for (int i = 0; i < 10; i++)
-            //            {
-            //                int i0, i1, i2, i3, i4, i5, i6, i7;
-            //                i0 = (int) (Math.ceil(Math.random()
-            //                        * (nbOfStepsForVelocityModulus - 1)));
-            //                i1 = (int) (Math.ceil(Math.random()
-            //                        * (nbOfStepsForVelocityAngle - 1)));
-            //                i2 = (int) (Math.ceil(Math.random()
-            //                        * (nbOfStepsForVelocityModulus - 1)));
-            //                i3 = (int) Math.ceil(Math.random()
-            //                        * (nbOfStepsForVelocityAngle - 1));
-            //                i4 = (int) (Math.ceil(Math.random()
-            //                        * (nbOfStepsForRelativeAngle - 1)));
-            //                i5 = (int) (Math.ceil(Math.random()
-            //                        * (nbOfStepsForDistance - 1)));
-            //                i6 = (int) Math.ceil(Math.random()
-            //                        * (nbOfStepsForRelativeAngle - 1));
-            //                i7 = (int) (Math.ceil(Math.random()
-            //                        * ((nbOfStepsForDash + nbOfStepsForTurn - 1))));
-            //
-            //                System.out.println(i0 + " " + i1 + " " + i2 + " " + i3 + " "
-            //                        + i4 + " " + i5 + " " + i6 + " " + i7 + " ");
-            //                System.out.println(qTable[i0][i1][i2][i3][i4][i5][i6][i7]);
-            //            }
-
+            printQl();
             System.out.println(nbOfIterations + " iterations done.");
         }
         while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 300);
@@ -324,29 +310,31 @@ public class Qiteration
     public float qFunction(State s, Action a)
     {
         int i0, i1, i2, i3, i4, i5, i6, i7;
-        i0 = valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityModulus);
-        i1 = valueToIndex(s.getBallVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        i2 = valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityModulus);
-        i3 = valueToIndex(s.getPlayerVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        i4 = valueToIndex(s.getPlayerBodyDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
-        i5 = valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
+        i0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
+            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
+        i1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        i2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
+            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
+        i3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        i4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
+            180.0f, nbOfStepsForRelativeAngle);
+        i5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
             nbOfStepsForDistance);
-        i6 = valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
+        i6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
             nbOfStepsForRelativeAngle);
 
         if (a.isTurn())
         {
-            i7 = valueToIndex(a.getValue(), -180.0f, 180.0f, nbOfStepsForTurn);
+            i7 = MathTools.valueToIndex(a.getValue(), -180.0f, 180.0f,
+                nbOfStepsForTurn);
         }
         else
         {
             i7 = nbOfStepsForTurn
-                    + valueToIndex(a.getValue(), 0.0f, 100.0f, nbOfStepsForDash);
+                    + MathTools.valueToIndex(a.getValue(), 0.0f, 100.0f,
+                        nbOfStepsForDash);
         }
 
         return qTable[i0][i1][i2][i3][i4][i5][i6][i7];
@@ -355,28 +343,20 @@ public class Qiteration
     private float maxUq(State s, float[][][][][][][][] q0)
     {
         int s0, s1, s2, s3, s4, s5, s6;
-        s0 = valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityModulus);
-        s1 = valueToIndex(s.getBallVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        s2 = valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityModulus);
-        s3 = valueToIndex(s.getPlayerVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        s4 = valueToIndex(s.getPlayerBodyDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
-        s5 = valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
+        s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
+            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
+        s1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        s2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
+            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
+        s3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        s4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
+            180.0f, nbOfStepsForRelativeAngle);
+        s5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
             nbOfStepsForDistance);
-        s6 = valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
+        s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
             nbOfStepsForRelativeAngle);
-
-        //                System.out.println("s0: " + s0);
-        //                System.out.println("s1: " + s1);
-        //                System.out.println("s2: " + s2);
-        //                System.out.println("s3: " + s3);
-        //                System.out.println("s4: " + s4);
-        //                System.out.println("s5: " + s5);
-        //                System.out.println("s6: " + s6);
 
         float max = -1000000.0f;
         for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
@@ -394,44 +374,44 @@ public class Qiteration
     private float[] argMaxUq(State s, float[][][][][][][][] q0)
     {
         int s0, s1, s2, s3, s4, s5, s6;
-        s0 = valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityModulus);
-        s1 = valueToIndex(s.getBallVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        s2 = valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityModulus);
-        s3 = valueToIndex(s.getPlayerVelocityDirection(), -180.0f, 180.0f,
-            nbOfStepsForVelocityAngle);
-        s4 = valueToIndex(s.getPlayerBodyDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
-        s5 = valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
+        s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
+            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
+        s1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        s2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
+            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
+        s3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
+            180.0f, nbOfStepsForVelocityDirection);
+        s4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
+            180.0f, nbOfStepsForRelativeAngle);
+        s5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
             nbOfStepsForDistance);
-        s6 = valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
+        s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
             nbOfStepsForRelativeAngle);
-
-        //        System.out.println("s0: " + s0);
-        //        System.out.println("s1: " + s1);
-        //        System.out.println("s2: " + s2);
-        //        System.out.println("s3: " + s3);
-        //        System.out.println("s4: " + s4);
-        //        System.out.println("s5: " + s5);
-        //        System.out.println("s6: " + s6);
 
         float max = -1000000.0f;
-        float[] argMaxUq = new float[3];
+        float[] argMaxUq = new float[2];
         argMaxUq[0] = -1.0f;
         argMaxUq[1] = -1.0f;
-        argMaxUq[2] = -1.0f;
         for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
         {
             if (q0[s0][s1][s2][s3][s4][s5][s6][i] > max)
             {
                 max = q0[s0][s1][s2][s3][s4][s5][s6][i];
-                argMaxUq[0] = i >= nbOfStepsForTurn ? dashValue(i)
-                        : turnValue(i);
-                argMaxUq[1] = i >= nbOfStepsForTurn ? dashValue(i)
-                        : turnValue(i);
-                argMaxUq[2] = i >= nbOfStepsForTurn ? 0.0f : 1.0f;
+
+                if (i < nbOfStepsForTurn)
+                {
+                    argMaxUq[0] = 1.0f;
+                    argMaxUq[1] = (float) MathTools.indexToValue(i, -180.0f,
+                        180.0f, nbOfStepsForTurn, 0.5f);
+                }
+                else
+                {
+                    argMaxUq[0] = 0.0f;
+                    argMaxUq[1] = (float) MathTools.indexToValue(i
+                            - nbOfStepsForTurn, 0.0f, 100.0f, nbOfStepsForDash,
+                        1.0f);
+                }
             }
 
         }
@@ -528,40 +508,28 @@ public class Qiteration
 
     public void printQl()
     {
-        for (int i = 0; i < qTable.length; i++)
+        for (int i = 0; i < 10; i++)
         {
-            for (int j = 0; j < qTable[i].length; j++)
-            {
-                for (int k = 0; k < qTable[i][j].length; k++)
-                {
-                    for (int l = 0; l < qTable[i][j][k].length; l++)
-                    {
-                        for (int m = 0; m < qTable[i][j][k][l].length; m++)
-                        {
-                            for (int n = 0; n < qTable[i][j][k][l][m].length; n++)
-                            {
-                                for (int o = 0; o < qTable[i][j][k][l][m][n].length; o++)
-                                {
-                                    for (int p = 0; p < qTable[i][j][k][l][m][n][o].length; p++)
-                                    {
-                                        System.out
-                                            .print(" "
-                                                    + qTable[i][j][k][l][m][n][o][p]);
-                                    }
+            int i0, i1, i2, i3, i4, i5, i6, i7;
+            i0 = (int) (Math.ceil(Math.random()
+                    * (nbOfStepsForVelocityNorm - 1)));
+            i1 = (int) (Math.ceil(Math.random()
+                    * (nbOfStepsForVelocityDirection - 1)));
+            i2 = (int) (Math.ceil(Math.random()
+                    * (nbOfStepsForVelocityNorm - 1)));
+            i3 = (int) Math.ceil(Math.random()
+                    * (nbOfStepsForVelocityDirection - 1));
+            i4 = (int) (Math.ceil(Math.random()
+                    * (nbOfStepsForRelativeAngle - 1)));
+            i5 = (int) (Math.ceil(Math.random() * (nbOfStepsForDistance - 1)));
+            i6 = (int) Math.ceil(Math.random()
+                    * (nbOfStepsForRelativeAngle - 1));
+            i7 = (int) (Math.ceil(Math.random()
+                    * ((nbOfStepsForDash + nbOfStepsForTurn - 1))));
 
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
+            System.out.println(i0 + " " + i1 + " " + i2 + " " + i3 + " " + i4
+                    + " " + i5 + " " + i6 + " " + i7 + " ");
+            System.out.println(qTable[i0][i1][i2][i3][i4][i5][i6][i7]);
         }
     }
-
 }
