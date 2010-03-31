@@ -77,7 +77,7 @@ public class MarkovDecisionProcess
                         - nextState.getPlayerBodyDirection()));
         }
 
-        return nextState;
+        return nextState.discretize(); //TODO change for non discrete!
     }
 
     public static float reward(State s, Action a)

@@ -60,8 +60,8 @@ public class Qiteration implements Policy
         Action.setDashSteps(nbOfStepsForDash);
         Action.setTurnSteps(nbOfStepsForTurn);
 
-        //computeQl();
-        qTable = loadQl("backupQl.zip");
+        computeQl();
+        //qTable = loadQl("backupQl.zip");
 
         State s;
         float reward;
@@ -273,13 +273,13 @@ public class Qiteration implements Policy
                                                             .nextState(s, a).discretize(),
                                                         oldQtable);
 
-//                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000f)
-//                                            {
-//                                                System.out
-//                                                    .println("prob: "
-//                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
-//                                                            + " " + s + " " + a);
-//                                            }
+                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000f)
+                                            {
+                                                System.out
+                                                    .println("prob: "
+                                                            + qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act]
+                                                            + " " + s + " " + a);
+                                            }
 
                                             oldQtable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = tmp;
 
