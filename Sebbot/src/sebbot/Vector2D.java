@@ -9,11 +9,26 @@ public class Vector2D implements Cloneable
     private double x;
     private double y;
 
+    public Vector2D(double component1, double component2,
+            boolean arePolarCoordinates)
+    {
+        if (arePolarCoordinates)
+        { // component1 = radius, component2 = angle.
+            this.x = component1 * Math.cos(Math.toRadians(component2));
+            this.y = component1 * Math.sin(Math.toRadians(component2));
+        }
+        else
+        { // component1 = x, component2 = y.
+            this.x = component1;
+            this.y = component2;
+        }
+    }
+    
     public Vector2D(double x, double y)
     {
-        this.x = x;
-        this.y = y;
+        this(x,y,false);
     }
+
 
     public Object clone()
     {
@@ -119,7 +134,7 @@ public class Vector2D implements Cloneable
 
     }
 
-    public void normalize(double modulusMax)
+    public Vector2D normalize(double modulusMax)
     {
         double currentModulus = polarRadius();
         if (currentModulus > modulusMax)
@@ -127,6 +142,8 @@ public class Vector2D implements Cloneable
             this.x *= (modulusMax / currentModulus);
             this.y *= (modulusMax / currentModulus);
         }
+        
+        return this;
     }
 
     public double distanceTo(double x, double y)
@@ -158,7 +175,7 @@ public class Vector2D implements Cloneable
     {
         return (new Vector2D(x, y)).subtract(this).polarAngle();
     }
-    
+
     public double directionOf(Vector2D v) throws NullVectorException
     {
         if (v == null)
@@ -168,7 +185,7 @@ public class Vector2D implements Cloneable
 
         return v.subtract(this).polarAngle();
     }
-    
+
     public double directionOf(MobileObject o) throws NullVectorException
     {
         if (o == null)
@@ -178,7 +195,6 @@ public class Vector2D implements Cloneable
 
         return directionOf(o.getPosition());
     }
-
 
     /*
      * =========================================================================
