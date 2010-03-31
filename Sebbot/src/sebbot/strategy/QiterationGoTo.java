@@ -3,7 +3,7 @@ package sebbot.strategy;
 import sebbot.FullstateInfo;
 import sebbot.Player;
 import sebbot.RobocupClient;
-import sebbot.algorithm.Qiteration;
+import sebbot.learning.Qiteration;
 
 /**
  * @author Sebastien Lentz
@@ -11,7 +11,7 @@ import sebbot.algorithm.Qiteration;
  */
 public class QiterationGoTo implements Strategy
 {
-    private static Qiteration q = Qiteration.instance(1, 1, 40, 20, 5, 20);
+    private static Qiteration q = Qiteration.instance(1, 1, 162, 9, 1, 9);
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {

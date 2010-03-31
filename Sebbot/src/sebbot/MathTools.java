@@ -47,6 +47,32 @@ public class MathTools
         return Math.rint(nb / step) * step;
     }
 
+    /**
+     * This function discretizes the input value to the middle value of an
+     * interval.
+     * 
+     * @param value
+     * @param minValue
+     * @param maxValue
+     * @param nbOfSteps
+     * @return
+     */
+    public static double discretize(double value, double minValue,
+                                    double maxValue, int nbOfSteps,
+                                    float intervalPosition)
+    {
+        if (intervalPosition > 1.0f || intervalPosition < 0.0f)
+        { // Invalid intervalPosition
+            intervalPosition = 0.5f;
+        }
+
+        double intervalLength = Math.abs((maxValue - minValue) / nbOfSteps);
+
+        return Math.min(value - (value % intervalLength) + intervalLength
+                * intervalPosition, maxValue - intervalLength
+                * (1.0f - intervalPosition * intervalLength));
+    }
+
     public static Vector2D toCartesianCoordinates(double radius, double angle)
     {
         return new Vector2D(radius * Math.cos(Math.toRadians(angle)), radius

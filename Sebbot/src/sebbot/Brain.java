@@ -174,33 +174,15 @@ public class Brain implements Runnable
         {
             s1 = new QiterationGoTo();
         }
-
-
         else
         {
             s1 = new QiterationGoTo();
         }
+        
         int lastTimeStep = 0;
         int currentTimeStep = 0;
         while (true) // TODO: change according to the play mode.
         {
-            // TODO: debug agent skipping some steps.
-            //            if (fullstateInfo.getStepTime() - lastTimeStep != 1)
-            //            {
-            //                System.out.println("Agent info: " + playerNumber + " "
-            //                        + teamSide);
-            //                System.out.println("Brain Last time: " + lastTimeStep);
-            //                System.out.println("Brain Current time: "
-            //                        + fullstateInfo.getStepTime());
-            //            }
-            //            lastTimeStep = fullstateInfo.getStepTime();
-
-            //            System.out.println(fullstateInfo.getTimeStep() + ": " + player + " " + fullstateInfo.getBall());
-            //            System.out.println("Next position: " + player.nextPosition(100.0d));
-            //            System.out.println("Next velocity: " + player.nextVelocity(100.0d));
-            //            
-            //            robocupClient.dash(100.0d);
-
             lastTimeStep = currentTimeStep;
             currentTimeStep = fullstateInfo.getTimeStep();
             if (currentTimeStep == lastTimeStep + 1)
@@ -214,6 +196,11 @@ public class Brain implements Runnable
                 { // An action needs to be executed at this time step, so do it.
                     actionsQueue.removeFirst().execute();
                 }
+                
+//                System.out.println(fullstateInfo.getTimeStep() + ": " + player + " " + fullstateInfo.getBall());
+//                System.out.println("Next position: " + player.nextPosition(100.0d));
+//                System.out.println("Next velocity: " + player.nextVelocity(100.0d));
+
             }
             else if (currentTimeStep != lastTimeStep)
             {
