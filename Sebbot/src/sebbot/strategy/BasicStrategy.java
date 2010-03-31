@@ -198,10 +198,10 @@ public class BasicStrategy
             }
 
             //System.out.println("Current state: " + state);
-            if (action[2] == 0.0f)
+            if (action[0] == 0.0f)
             {
                 PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
-                    action[0], 0, c);
+                    action[1], 0, c);
                 c.getBrain().getActionsQueue().addLast(pAction);
             //    System.out.println("Next state: " + state.nextState(new Action(action[0], false)));
             }

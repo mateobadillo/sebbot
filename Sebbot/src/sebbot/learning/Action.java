@@ -9,8 +9,11 @@ import sebbot.SoccerParams;
  */
 public class Action
 {
-    private float   value; // Value of the action:-180<=turn<=180 or 0<=dash<=100.
-    private boolean isTurn; // True if action = turn, false if action = dash.
+    private static int dashSteps;
+    private static int turnSteps;
+
+    private float      value;    // Value of the action:-180<=turn<=180 or 0<=dash<=100.
+    private boolean    isTurn;   // True if action = turn, false if action = dash.
 
     /*
      * =========================================================================
@@ -36,6 +39,37 @@ public class Action
      * 
      * =========================================================================
      */
+    /**
+     * @return the dashSteps
+     */
+    public static int getDashSteps()
+    {
+        return dashSteps;
+    }
+
+    /**
+     * @param dashSteps the dashSteps to set
+     */
+    public static void setDashSteps(int dashSteps)
+    {
+        Action.dashSteps = dashSteps;
+    }
+
+    /**
+     * @return the turnSteps
+     */
+    public static int getTurnSteps()
+    {
+        return turnSteps;
+    }
+
+    /**
+     * @param turnSteps the turnSteps to set
+     */
+    public static void setTurnSteps(int turnSteps)
+    {
+        Action.turnSteps = turnSteps;
+    }
     /**
      * @return the value
      */
@@ -76,32 +110,38 @@ public class Action
      * =========================================================================
      */
     /**
-     * @param dashValueSteps
-     * @param turnValueSteps
+     * @param dashSteps
+     * @param turnSteps
      * @return
      */
-    public Action discretize(int dashValueSteps, int turnValueSteps)
-
+    public Action discretize(int dashSteps, int turnSteps)
     {
         if (isTurn)
         {
             value = (float) MathTools.discretize(value, -180.0f, 180.0f,
-                turnValueSteps,0.5f);
+                turnSteps, 0.5f);
         }
         else
         {
-            value = (float) MathTools.discretize(value, 0.0f, 100.0f, dashValueSteps,1.0f);
+            value = (float) MathTools.discretize(value, 0.0f, 100.0f,
+                dashSteps, 1.0f);
         }
 
         return this;
     }
-    
+
+    public Action discretize()
+    {
+        discretize(dashSteps, turnSteps);
+        
+        return this;
+    }
+
     public String toString()
     {
         String str = "{" + (isTurn ? "TURN" : "DASH") + ", " + value + "}";
-        
+
         return str;
     }
-
 
 }
