@@ -100,15 +100,15 @@ public class Sebbot
             new Thread(brain).start();
         }
 
-//        for (int i = 0; i < nbOfPlayers; i++)
-//        {
-//            client = new RobocupClient(InetAddress.getByName(hostname), port,
-//                    "team2");
-//            client.init("GoToBallAndShoot");
-//            brain = client.getBrain();
-//            new Thread(client).start();
-//            new Thread(brain).start();
-//        }
+        for (int i = 0; i < nbOfPlayers; i++)
+        {
+            client = new RobocupClient(InetAddress.getByName(hostname), port,
+                    "team2");
+            client.init("GoToBallAndShoot");
+            brain = client.getBrain();
+            new Thread(client).start();
+            new Thread(brain).start();
+        }
 
     }
 }
