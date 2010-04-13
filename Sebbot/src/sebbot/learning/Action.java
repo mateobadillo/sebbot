@@ -8,11 +8,12 @@ import sebbot.MathTools;
  */
 public class Action
 {
-    private static int dashSteps;
-    private static int turnSteps;
+    private static int dashSteps = 2;
+    private static int turnSteps = 10;
 
     private float      value;    // Value of the action:-180<=turn<=180 or 0<=dash<=100.
     private boolean    isTurn;   // True if action = turn, false if action = dash.
+    private int        actionNb; // 0 <= actionNb < dashSteps + turnSteps.
 
     /*
      * =========================================================================
@@ -29,6 +30,16 @@ public class Action
     {
         this.value = value;
         this.isTurn = isTurn;
+        updateActionNb();
+    }
+
+    /**
+     * @param actionNo
+     */
+    public Action(int actionNb)
+    {
+        this.actionNb = actionNb;
+        updateFromActionNb();
     }
 
     /*
@@ -69,6 +80,7 @@ public class Action
     {
         Action.turnSteps = turnSteps;
     }
+
     /**
      * @return the value
      */
@@ -99,6 +111,23 @@ public class Action
     public void setTurn(boolean isTurn)
     {
         this.isTurn = isTurn;
+    }
+
+    /**
+     * @return the actionNb
+     */
+    public int getActionNb()
+    {
+        return actionNb;
+    }
+
+    /**
+     * @param actionNo the actionNo to set
+     */
+    public void setActionNb(int actionNb)
+    {
+        this.actionNb = actionNb;
+        updateFromActionNb();
     }
 
     /*
@@ -132,15 +161,53 @@ public class Action
     public Action discretize()
     {
         discretize(dashSteps, turnSteps);
-        
+
         return this;
     }
 
     public String toString()
     {
-        String str = "{" + (isTurn ? "TURN" : "DASH") + ", " + value + "}";
+        String str = "{" + (isTurn ? "TURN" : "DASH") + ", " + value + ", " + actionNb + "}";
 
         return str;
+    }
+
+    /*
+     * =========================================================================
+     * 
+     *                          Misc methods
+     * 
+     * =========================================================================
+     */
+    private void updateFromActionNb()
+    {
+        if (this.actionNb < turnSteps)
+        {
+            this.isTurn = true;
+            this.value = (float) MathTools.indexToValue(actionNb, -180.0d,
+                180.0d, turnSteps, 0.5f);
+        }
+        else
+        {
+            this.isTurn = false;
+            this.value = (float) MathTools.indexToValue(actionNb - turnSteps,
+                0.0d, 100.0d, dashSteps, 1.0f);
+        }
+    }
+
+    private void updateActionNb()
+    {
+        if (this.isTurn)
+        {
+            this.actionNb = MathTools.valueToIndex(this.value, -180.0d, 180.0d,
+                turnSteps);
+        }
+        else
+        {
+            this.actionNb = MathTools.valueToIndex(this.value, 0.0d, 100.0d,
+                dashSteps)
+                    + turnSteps;
+        }
     }
 
 }

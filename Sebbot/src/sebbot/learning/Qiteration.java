@@ -60,8 +60,8 @@ public class Qiteration implements Policy
         Action.setDashSteps(nbOfStepsForDash);
         Action.setTurnSteps(nbOfStepsForTurn);
 
-        computeQl();
-        //qTable = loadQl("backupQl.zip");
+        //computeQl();
+        qTable = loadQl("backupQl.zip");
 
         State s;
         float reward;
@@ -75,7 +75,7 @@ public class Qiteration implements Policy
                 (float) (Math.random() * 125D),
                 (float) (Math.random() * 360D - 180D));
             
-            reward = MarkovDecisionProcess.infiniteReward(s, this);
+            reward = MarkovDecisionProcess.trajectoryReward(s, this, 200);
             
             System.out.println("init state: " + s);
             System.out.println("infinite reward: " + reward);

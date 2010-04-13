@@ -3,6 +3,9 @@ package sebbot;
 import java.lang.Math;
 import java.util.ArrayDeque;
 
+import sebbot.learning.DirectPolicySearch;
+import sebbot.learning.Policy;
+import sebbot.strategy.DPSGoTo;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.GoToBallAndShoot2;
 import sebbot.strategy.QiterationGoTo;
@@ -174,9 +177,13 @@ public class Brain implements Runnable
         {
             s1 = new QiterationGoTo();
         }
-        else
+        else if (strategy.equalsIgnoreCase("DPSGoto"))
         {
             s1 = new QiterationGoTo();
+        }
+        else
+        {
+            s1 = new DPSGoTo();
         }
         
         int lastTimeStep = 0;

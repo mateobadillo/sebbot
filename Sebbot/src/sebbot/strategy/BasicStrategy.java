@@ -9,6 +9,7 @@ import sebbot.RobocupClient;
 import sebbot.SoccerParams;
 import sebbot.Vector2D;
 import sebbot.learning.Action;
+import sebbot.learning.DirectPolicySearch;
 import sebbot.learning.Qiteration;
 import sebbot.learning.State;
 
@@ -213,6 +214,71 @@ public class BasicStrategy
                                                            Qiteration q)
     {
         if (qIterationGoToBall(c, fsi, p, q))
+        { // The ball is in the kickable margin => kick it towards the goal!
+            double goalPosX = p.isLeftSide() ? 52.5d : -52.5d;
+
+            PlayerAction action = new PlayerAction(PlayerActionType.KICK,
+                100.0d, p.angleFromBody(goalPosX, 0.0d), c);
+            c.getBrain().getActionsQueue().addLast(action);
+
+            return true; // Order is accomplished.
+        }
+        else
+        {
+            return false; // Order is not yet accomplished.
+        }
+    }
+    
+    /**************************************************************************/
+
+    public static boolean dpsGoToBall(RobocupClient c,
+                                             FullstateInfo fsi, Player p,
+                                             DirectPolicySearch dps)
+    {
+        if (p.distanceTo(fsi.getBall()) < SoccerParams.KICKABLE_MARGIN)
+        {
+            return true;
+        }
+
+        else
+        {
+            State state = new State();
+
+            state.setBallVelocityNorm((float) fsi.getBall().getVelocity()
+                .polarRadius());
+            state.setBallVelocityDirection((float) fsi.getBall().getVelocity()
+                .polarAngle());
+            state.setPlayerVelocityNorm((float) p.getVelocity().polarRadius());
+            state.setPlayerVelocityDirection((float) p.getVelocity()
+                .polarAngle());
+            state.setPlayerBodyDirection((float) p.getBodyDirection());
+            state.setRelativeDistance((float) p.distanceTo(fsi.getBall()));
+            state.setRelativeDirection((float) p.angleFromBody(fsi.getBall()));
+
+            Action action = dps.chooseAction(state);
+            if (action.isTurn())
+            {
+                PlayerAction pAction = new PlayerAction(PlayerActionType.TURN,
+                    0, action.getValue(), c);
+                c.getBrain().getActionsQueue().addLast(pAction);
+            }
+            else
+            {
+                PlayerAction pAction = new PlayerAction(PlayerActionType.DASH,
+                    action.getValue(), 0, c);
+                c.getBrain().getActionsQueue().addLast(pAction);
+            }
+
+            return false;
+        }
+    }
+
+    public static boolean dpsGoToBallandShootToGoal(RobocupClient c,
+                                                           FullstateInfo fsi,
+                                                           Player p,
+                                                           DirectPolicySearch dps)
+    {
+        if (dpsGoToBall(c, fsi, p, dps))
         { // The ball is in the kickable margin => kick it towards the goal!
             double goalPosX = p.isLeftSide() ? 52.5d : -52.5d;
 

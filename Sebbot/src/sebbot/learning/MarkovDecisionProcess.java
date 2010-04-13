@@ -77,7 +77,7 @@ public class MarkovDecisionProcess
                         - nextState.getPlayerBodyDirection()));
         }
 
-        return nextState.discretize(); //TODO change for non discrete!
+        return nextState; //TODO change for non discrete!
     }
 
     public static float reward(State s, Action a)
@@ -106,35 +106,39 @@ public class MarkovDecisionProcess
         return reward;
     }
 
-    public static float infiniteReward(State initialState, Policy p)
+    public static float trajectoryReward(State initialState, Policy p, int nbOfSteps)
     {
-        float reward = 0;
-        int nbOfIterations = 0;
-        LinkedList<State> ls = new LinkedList<State>();
-        LinkedList<Action> la = new LinkedList<Action>();
+        float discountFactor = 0.95f;
+//        LinkedList<State> ls = new LinkedList<State>();
+//        LinkedList<Action> la = new LinkedList<Action>();
 
         State s = initialState;
-        Action a = null;
-        while (!s.isTerminal() && nbOfIterations < 5000)
+        Action a = p.chooseAction(s);        
+        float reward = reward(s, a);
+        int nbOfIterations = 1;
+        while (!s.isTerminal() && nbOfIterations < nbOfSteps)
         {
+            s = nextState(s, a);
             a = p.chooseAction(s);
 
-            ls.addLast(s);
-            la.addLast(a);
+//            ls.addLast(s);
+//            la.addLast(a);
 
-            reward += reward(s, a);
+            reward += discountFactor * reward(s, a);
+            discountFactor *= discountFactor;
             s = nextState(s, a);
             nbOfIterations++;
         }
 
-        if (reward < 0 && reward != -5000f)
-        {
-            while (!ls.isEmpty())
-            {
-                System.out.println(ls.removeFirst() + " : " + la.removeFirst());
-            }
-        }
+//        if (reward < 0 && reward != -5000f)
+//        {
+//            while (!ls.isEmpty())
+//            {
+//                System.out.println(ls.removeFirst() + " : " + la.removeFirst());
+//            }
+//        }
 
+//        System.out.println("nb of it: " + nbOfIterations + " | score: " + reward);
         return reward;
     }
 
