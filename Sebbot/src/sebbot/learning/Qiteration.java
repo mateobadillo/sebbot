@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -15,9 +16,11 @@ import sebbot.SoccerParams;
  * @author Sebastien Lentz
  *
  */
-public class Qiteration implements Policy
+public class Qiteration implements Policy, Serializable, Runnable
 {
-    private static Qiteration     instance;
+    private static final long     serialVersionUID = -1245314286263462019L;
+
+    int                           totalNbOfIterations;
 
     private float[][][][][][][][] qTable;
 
@@ -36,12 +39,12 @@ public class Qiteration implements Policy
      * @param nbOfStepsForDash
      * @param nbOfStepsForTurn
      */
-    protected Qiteration(int nbOfStepsForVelocityModulus,
-                         int nbOfStepsForVelocityAngle,
-                         int nbOfStepsForDistance,
-                         int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
-                         int nbOfStepsForTurn)
+    public Qiteration(int nbOfStepsForVelocityModulus,
+                      int nbOfStepsForVelocityAngle, int nbOfStepsForDistance,
+                      int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
+                      int nbOfStepsForTurn)
     {
+        this.totalNbOfIterations = 0;
         this.nbOfStepsForVelocityNorm = nbOfStepsForVelocityModulus;
         this.nbOfStepsForVelocityDirection = nbOfStepsForVelocityAngle;
         this.nbOfStepsForDistance = nbOfStepsForDistance;
@@ -60,53 +63,32 @@ public class Qiteration implements Policy
         Action.setDashSteps(nbOfStepsForDash);
         Action.setTurnSteps(nbOfStepsForTurn);
 
-        //computeQl();
-        qTable = loadQl("backupQl.zip");
-
-        State s;
-        float reward;
-        for (int i = 0; i < 10; i++)
-        {
-            s = new State((float) (Math.random() * 3.0D),
-                (float) (Math.random() * 360D - 180D),
-                (float) (Math.random() * 1.05D),
-                (float) (Math.random() * 360D - 180D),
-                (float) (Math.random() * 360D - 180D),
-                (float) (Math.random() * 125D),
-                (float) (Math.random() * 360D - 180D));
-            
-            reward = MarkovDecisionProcess.trajectoryReward(s, this, 200);
-            
-            System.out.println("init state: " + s);
-            System.out.println("infinite reward: " + reward);
-            
-        }
-        
-        printQl();
-        printQl();
-        printQl();
-        printQl();
-        printQl();
-        
-        testQ();
-    }
-
-    public static synchronized Qiteration instance(
-                                                   int nbOfStepsForVelocityModulus,
-                                                   int nbOfStepsForVelocityAngle,
-                                                   int nbOfStepsForDistance,
-                                                   int nbOfStepsForRelativeAngle,
-                                                   int nbOfStepsForDash,
-                                                   int nbOfStepsForTurn)
-    {
-        if (instance == null)
-        {
-            instance = new Qiteration(nbOfStepsForVelocityModulus,
-                nbOfStepsForVelocityAngle, nbOfStepsForDistance,
-                nbOfStepsForRelativeAngle, nbOfStepsForDash, nbOfStepsForTurn);
-        }
-
-        return instance;
+        //        State s;
+        //        float reward;
+        //        for (int i = 0; i < 10; i++)
+        //        {
+        //            s = new State((float) (Math.random() * 3.0D),
+        //                (float) (Math.random() * 360D - 180D),
+        //                (float) (Math.random() * 1.05D),
+        //                (float) (Math.random() * 360D - 180D),
+        //                (float) (Math.random() * 360D - 180D),
+        //                (float) (Math.random() * 125D),
+        //                (float) (Math.random() * 360D - 180D));
+        //            
+        //            reward = MarkovDecisionProcess.trajectoryReward(s, this, 200);
+        //            
+        //            System.out.println("init state: " + s);
+        //            System.out.println("infinite reward: " + reward);
+        //            
+        //        }
+        //        
+        //        printQl();
+        //        printQl();
+        //        printQl();
+        //        printQl();
+        //        printQl();
+        //        
+        //        testQ();
     }
 
     public void computeQl()
@@ -120,6 +102,9 @@ public class Qiteration implements Policy
 
         System.out.println("X x U² = "
                 + (stateSpaceSize * actionSpaceSize * actionSpaceSize));
+
+        System.out.println("Total number of iterations done so far: "
+                + totalNbOfIterations);
 
         float[][][][][][][][] oldQtable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
                 + nbOfStepsForTurn];
@@ -266,14 +251,15 @@ public class Qiteration implements Policy
                                             tmp = qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act];
 
                                             qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = MarkovDecisionProcess
-                                                .reward(s, a)
+                                                .reward(s, a, true)
                                                     + 0.85f
                                                     * maxUq(
                                                         MarkovDecisionProcess
-                                                            .nextState(s, a).discretize(),
+                                                            .nextState(s, a, true)
+                                                            .discretize(),
                                                         oldQtable);
 
-                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 10000f)
+                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 2f*1000000f)
                                             {
                                                 System.out
                                                     .println("prob: "
@@ -300,6 +286,7 @@ public class Qiteration implements Policy
             }
 
             //printQl();
+            totalNbOfIterations++;
             System.out.println(nbOfIterations + " iterations done.");
         }
         while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 300);
@@ -307,7 +294,7 @@ public class Qiteration implements Policy
         System.out.println("nb of iterations: " + nbOfIterations);
         System.out.println("q iteration table computed.");
 
-        saveQl("backupQl.zip", qTable);
+        save("backupQl.zip");
     }
 
     public float qFunction(State s, Action a)
@@ -461,10 +448,10 @@ public class Qiteration implements Policy
         return true;
 
     }
-    
+
     private void testQ()
     {
-        
+
         for (int i = 0; i < qTable.length; i++)
         {
             for (int j = 0; j < qTable[i].length; j++)
@@ -481,13 +468,13 @@ public class Qiteration implements Policy
                                 {
                                     for (int p = 0; p < qTable[i][j][k][l][m][n][o].length; p++)
                                     {
-                                        if (qTable[i][j][k][l][m][n][o][p] > 10000f)
+                                        if (qTable[i][j][k][l][m][n][o][p] > 2f*1000000f)
                                         {
                                             System.out
                                                 .println("prob: "
                                                         + qTable[i][j][k][l][m][n][o][p]);
                                         }
-                                   }
+                                    }
 
                                 }
 
@@ -505,14 +492,14 @@ public class Qiteration implements Policy
 
     }
 
-    public void saveQl(String filename, float[][][][][][][][] q)
+    public void save(String filename)
     {
         try
         {
             FileOutputStream fos = new FileOutputStream(filename);
             GZIPOutputStream gzos = new GZIPOutputStream(fos);
             ObjectOutputStream out = new ObjectOutputStream(gzos);
-            out.writeObject(q);
+            out.writeObject(this);
             out.flush();
             out.close();
         }
@@ -523,16 +510,16 @@ public class Qiteration implements Policy
 
     }
 
-    public float[][][][][][][][] loadQl(String filename)
+    public static Qiteration loadQl(String filename)
     {
-        float[][][][][][][][] q = null;
+        Qiteration q = null;
 
         try
         {
             FileInputStream fis = new FileInputStream(filename);
             GZIPInputStream gzis = new GZIPInputStream(fis);
             ObjectInputStream in = new ObjectInputStream(gzis);
-            q = (float[][][][][][][][]) in.readObject();
+            q = (Qiteration) in.readObject();
             in.close();
         }
         catch (Exception e)
@@ -568,5 +555,10 @@ public class Qiteration implements Policy
                     + " " + i5 + " " + i6 + " " + i7 + " ");
             System.out.println(qTable[i0][i1][i2][i3][i4][i5][i6][i7]);
         }
+    }
+
+    public void run()
+    {
+        computeQl();
     }
 }

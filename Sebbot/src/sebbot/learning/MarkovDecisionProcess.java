@@ -11,8 +11,13 @@ import sebbot.Vector2D;
  *
  */
 public class MarkovDecisionProcess
-{    
+{
     public static State nextState(State s, Action a)
+    {
+        return nextState(s, a, false);
+    }
+    
+    public static State nextState(State s, Action a, boolean isDiscreteState)
     {
         State nextState;
 
@@ -77,10 +82,15 @@ public class MarkovDecisionProcess
                         - nextState.getPlayerBodyDirection()));
         }
 
-        return nextState; //TODO change for non discrete!
+        return (isDiscreteState ? nextState.discretize() : nextState); //TODO change for non discrete!
     }
 
     public static float reward(State s, Action a)
+    {
+        return reward(s, a, false);
+    }
+    
+    public static float reward(State s, Action a, boolean isDiscreteState)
     {
         float reward;
 
@@ -91,6 +101,10 @@ public class MarkovDecisionProcess
         else
         {
             State nextState = nextState(s, a);
+            if (isDiscreteState)
+            {
+                nextState.discretize();
+            }
             float nextStepDistance = nextState.getRelativeDistance();
 
             if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)

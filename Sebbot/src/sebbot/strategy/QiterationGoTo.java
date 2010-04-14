@@ -11,7 +11,14 @@ import sebbot.learning.Qiteration;
  */
 public class QiterationGoTo implements Strategy
 {
-    private static Qiteration q = Qiteration.instance(1, 1, 175, 9, 1, 9);
+    Qiteration q;
+
+    public QiterationGoTo()
+    {
+        q = new Qiteration(1, 1, 175, 10, 2, 10);
+        //q = Qiteration.loadQl("backupQl.zip");
+        new Thread(q).start();
+    }
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {
