@@ -1,5 +1,6 @@
 package sebbot;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 import sebbot.learning.State;
@@ -10,7 +11,7 @@ import sebbot.learning.State;
  */
 public class MathTools
 {
-    static Random random = new Random();
+    static SecureRandom random = new SecureRandom();
     
     
     /**
@@ -160,13 +161,16 @@ public class MathTools
 
     public static float stdDev(float[] f, float mean)
     {
-        float stfDev = 0.0f;
+        float stdDev = 0.0f;
         for (int i = 0; i < f.length; i++)
         {
-            stfDev += (f[i] - mean) * (f[i] - mean);
+            stdDev += (f[i] - mean) * (f[i] - mean);
         }
 
-        return (float) Math.sqrt(stfDev / f.length);
+        stdDev = (float) Math.sqrt(stdDev / f.length);
+        
+        System.out.println("Std Dev: " + stdDev);
+        return stdDev;
     }
 
     public static float nextGaussian(float mean, float stdDev)
