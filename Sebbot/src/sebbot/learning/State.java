@@ -1,10 +1,14 @@
 package sebbot.learning;
 
+import java.io.Serializable;
+
 import sebbot.MathTools;
 import sebbot.SoccerParams;
 
-public class State
+public class State implements Serializable
 {
+    private static final long serialVersionUID = 6078896792558961445L;
+    
     private static int ballVelocityNormSteps;
     private static int ballVelocityDirectionSteps;
     private static int playerVelocityNormSteps;

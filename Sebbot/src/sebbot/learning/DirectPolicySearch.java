@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,65 +14,78 @@ import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import sebbot.MathTools;
 import sebbot.SoccerParams;
 
 /**
+ * This class implements a direct policy search algorithm for the ball capture
+ * problem. Basic functions are optimized using cross-entropy.
+ * To understand how the algorithm works, please refer to the article from
+ * <a href=http://www.montefiore.ulg.ac.be/~ernst/>Damien Ernst</a>.
+ * 
+ * @see <a href=http://www.montefiore.ulg.ac.be/~ernst/adprl-ceps.pdf>
+ * "Policy search with cross-entropy optimization of basis functions"
+ * L. Busoniu, D. Ernst, R. Babuska and B. De Schutter</a>
+ * 
  * @author Sebastien Lentz
  *
  */
-public class DirectPolicySearch implements Policy
+public class DirectPolicySearch implements Policy, Serializable
 {
-    Random                             random;
-    int                                nbOfDiscreteActions;
-    int                                nbOfBasicFunctions;
-    int                                nbOfSamples;
-    int                                nbOfBits;
-    float                              percentageOfGoodSamples;
+    private static final long             serialVersionUID = 8074266714836534435L;
 
-    GaussianRBF[]                      basicFunctions;
+    int                                   nbOfIterations;
+    Random                                random;
 
-    float[][]                          centersMeans;
-    float[][]                          centersStdDevs;
-    float[][]                          radiiMeans;
-    float[][]                          radiiStdDevs;
-    float[][]                          bernoulliMeans;
+    int                                   nbOfDiscreteActions;
+    int                                   nbOfBasicFunctions;
+    int                                   nbOfSamples;
+    float                                 percentageOfGoodSamples;
 
-    ArrayList<LinkedList<GaussianRBF>> actionsBFassoc;
-    LinkedList<State>                  initialStates;
+    float[][]                             centersMeans;
+    float[][]                             centersStdDevs;
+    float[][]                             radiiMeans;
+    float[][]                             radiiStdDevs;
+    float[][]                             bernoulliMeans;
 
-    /**
-     * @param random
-     */
+    RadialGaussian[]                      basicFunctions;
+    ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
+    LinkedList<State>                     initialStates;
+
     public DirectPolicySearch()
     {
+        this.nbOfIterations = 0;
+
         this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
         this.nbOfDiscreteActions = (Action.getTurnSteps() + Action
             .getDashSteps());
         this.nbOfBasicFunctions = nbOfDiscreteActions;
 
-        this.nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
-                / Math.log(2.0d)));
+        int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
+            / Math.log(2.0d)));
+        
+        this.nbOfSamples = 1 /* Multiplier */
+        * (4 * 7 * nbOfBasicFunctions /* Nb of Epsilon params */
+        + nbOfBasicFunctions * nbOfBits); /* Nb of Theta params */
 
-        this.nbOfSamples = 1 * (4 * 7 * nbOfBasicFunctions + nbOfBasicFunctions
-                * nbOfBits); //TODO changer
 
-        this.basicFunctions = new GaussianRBF[nbOfBasicFunctions];
+        this.basicFunctions = new RadialGaussian[nbOfBasicFunctions];
         this.centersMeans = new float[nbOfBasicFunctions][7];
         this.centersStdDevs = new float[nbOfBasicFunctions][7];
         this.radiiMeans = new float[nbOfBasicFunctions][7];
         this.radiiStdDevs = new float[nbOfBasicFunctions][7];
         this.bernoulliMeans = new float[nbOfBasicFunctions][nbOfBits];
-        this.actionsBFassoc = new ArrayList<LinkedList<GaussianRBF>>();
+        this.actionToBasicFunctions = new ArrayList<LinkedList<RadialGaussian>>();
 
         for (int i = 0; i < nbOfDiscreteActions; i++)
         {
-            actionsBFassoc.add(new LinkedList<GaussianRBF>());
+            actionToBasicFunctions.add(new LinkedList<RadialGaussian>());
         }
 
         for (int i = 0; i < nbOfBasicFunctions; i++)
         {
-            basicFunctions[i] = new GaussianRBF(i);
+            basicFunctions[i] = new RadialGaussian(i % nbOfDiscreteActions);
 
             centersMeans[i] = basicFunctions[i].getCenters();
             radiiMeans[i] = basicFunctions[i].getRadii();
@@ -87,14 +101,14 @@ public class DirectPolicySearch implements Policy
                 bernoulliMeans[i][j] = 0.5f;
             }
 
-            actionsBFassoc.get(basicFunctions[i].getDiscreteActionNb()).add(
-                basicFunctions[i]);
+            actionToBasicFunctions.get(basicFunctions[i].getDiscreteActionNb())
+                .add(basicFunctions[i]);
         }
 
         initialStates = new LinkedList<State>();
         generateStates();
 
-        computeOptimalParameters();
+        //computeOptimalParameters();
         //loadBFs("savedBFs.zip");
 
     }
@@ -105,12 +119,12 @@ public class DirectPolicySearch implements Policy
         int actionNb = 0;
         float bestScore = 0.0f;
         float score;
-        Iterator<GaussianRBF> it;
+        Iterator<RadialGaussian> it;
 
-        for (int i = 0; i < actionsBFassoc.size(); i++)
+        for (int i = 0; i < actionToBasicFunctions.size(); i++)
         {
             score = 0.0f;
-            it = actionsBFassoc.get(i).iterator();
+            it = actionToBasicFunctions.get(i).iterator();
             while (it.hasNext())
             {
                 score += it.next().f(s);
@@ -126,8 +140,10 @@ public class DirectPolicySearch implements Policy
         return new Action(actionNb);
     }
 
-    private void computeOptimalParameters()
+    public void computeOptimalParameters()
     {
+        int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
+                / Math.log(2.0d)));
         float[][][][] epsilonSamples = new float[nbOfSamples][nbOfBasicFunctions][2][7];
         boolean[][][] thetaSamples = new boolean[nbOfSamples][nbOfBasicFunctions][nbOfBits];
 
@@ -151,68 +167,20 @@ public class DirectPolicySearch implements Policy
                         validSample = false;
                         while (!validSample)
                         {
-                            epsilonSamples[i][j][0][k] = nextGaussian(
-                                centersMeans[j][k], centersStdDevs[j][k]);
-                            switch (k)
-                            {
-                            case 0:
-                                if (epsilonSamples[i][j][0][k] >= 0.0f
-                                        && epsilonSamples[i][j][0][k] <= SoccerParams.BALL_SPEED_MAX)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 1:
-                                if (epsilonSamples[i][j][0][k] >= -180.0f
-                                        && epsilonSamples[i][j][0][k] <= 180.0f)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 2:
-                                if (epsilonSamples[i][j][0][k] >= 0.0f
-                                        && epsilonSamples[i][j][0][k] <= SoccerParams.PLAYER_SPEED_MAX)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 3:
-                                if (epsilonSamples[i][j][0][k] >= -180.0f
-                                        && epsilonSamples[i][j][0][k] <= 180.0f)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 4:
-                                if (epsilonSamples[i][j][0][k] >= -180.0f
-                                        && epsilonSamples[i][j][0][k] <= 180.0f)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 5:
-                                if (epsilonSamples[i][j][0][k] >= 0.0f
-                                        && epsilonSamples[i][j][0][k] <= 125.0f)
-                                {
-                                    validSample = true;
-                                }
-                                break;
-                            case 6:
-                                if (epsilonSamples[i][j][0][k] >= -180.0f
-                                        && epsilonSamples[i][j][0][k] <= 180.0f)
-                                {
-                                    validSample = true;
-                                }
-                                break;
+                            epsilonSamples[i][j][0][k] = MathTools
+                                .nextGaussian(centersMeans[j][k],
+                                    centersStdDevs[j][k]);
 
-                            }
+                            validSample = isValidMean(
+                                epsilonSamples[i][j][0][k], k);
                         }
 
                         validSample = false;
                         while (!validSample)
                         {
-                            epsilonSamples[i][j][1][k] = nextGaussian(
-                                radiiMeans[j][k], radiiStdDevs[j][k]);
+                            epsilonSamples[i][j][1][k] = MathTools
+                                .nextGaussian(radiiMeans[j][k],
+                                    radiiStdDevs[j][k]);
                             if (epsilonSamples[i][j][1][k] > 0.0f)
                             {
                                 validSample = true;
@@ -225,9 +193,10 @@ public class DirectPolicySearch implements Policy
                     {
                         for (int k = 0; k < nbOfBits; k++)
                         {
-                            thetaSamples[i][j][k] = nextBernoulli(bernoulliMeans[j][k]);
+                            thetaSamples[i][j][k] = MathTools
+                                .nextBernoulli(bernoulliMeans[j][k]);
                         }
-                        actionNb = binaryToDecimal(thetaSamples[i][j]);
+                        actionNb = MathTools.toDecimal(thetaSamples[i][j]);
                     }
                 }
             }
@@ -240,7 +209,7 @@ public class DirectPolicySearch implements Policy
             {
                 for (int j = 0; j < nbOfDiscreteActions; j++)
                 {
-                    actionsBFassoc.get(j).clear();
+                    actionToBasicFunctions.get(j).clear();
                 }
 
                 int chosenAction;
@@ -249,8 +218,9 @@ public class DirectPolicySearch implements Policy
                     basicFunctions[j].setCenters(epsilonSamples[i][j][0]);
                     basicFunctions[j].setRadii(epsilonSamples[i][j][1]);
 
-                    chosenAction = binaryToDecimal(thetaSamples[i][j]);
-                    actionsBFassoc.get(chosenAction).add(basicFunctions[j]);
+                    chosenAction = MathTools.toDecimal(thetaSamples[i][j]);
+                    actionToBasicFunctions.get(chosenAction).add(
+                        basicFunctions[j]);
                 }
 
                 score = 0.0f;
@@ -268,9 +238,16 @@ public class DirectPolicySearch implements Policy
                 }
                 l.add(i);
                 samplesScore.put(score, l);
+                
+                float percentageDone = 100.0f * (float) i / (float) nbOfSamples;
+                if (i % (nbOfSamples / 100 * 10) == 0)
+                {
+                    System.out.print(Math.round(percentageDone) + "% ");
+                }
             }
+            System.out.println();
 
-            // Compute the new min score and get best samples.
+            // Get best samples
             int nbOfGoodSamples = (int) (Math.ceil(percentageOfGoodSamples
                     * nbOfSamples));
 
@@ -286,7 +263,7 @@ public class DirectPolicySearch implements Policy
             }
 
             // Compute the new means and standard deviations for the parameters
-            System.out.println("Updating BFs started...");
+            System.out.println("Updating means and standard deviations...");
             float goodSamplesCenters[] = new float[goodSamplesIndexes.length];
             float goodSamplesRadii[] = new float[goodSamplesIndexes.length];
             boolean goodSamplesBernoulli[] = new boolean[goodSamplesIndexes.length];
@@ -299,11 +276,11 @@ public class DirectPolicySearch implements Policy
                         goodSamplesCenters[i] = epsilonSamples[goodSamplesIndexes[i]][j][0][k];
                         goodSamplesRadii[i] = epsilonSamples[goodSamplesIndexes[i]][j][1][k];
                     }
-                    centersMeans[j][k] = mean(goodSamplesCenters);
-                    radiiMeans[j][k] = mean(goodSamplesRadii);
-                    centersStdDevs[j][k] = stdDev(goodSamplesCenters,
+                    centersMeans[j][k] = MathTools.mean(goodSamplesCenters);
+                    radiiMeans[j][k] = MathTools.mean(goodSamplesRadii);
+                    centersStdDevs[j][k] = MathTools.stdDev(goodSamplesCenters,
                         centersMeans[j][k]);
-                    radiiStdDevs[j][k] = stdDev(goodSamplesRadii,
+                    radiiStdDevs[j][k] = MathTools.stdDev(goodSamplesRadii,
                         radiiMeans[j][k]);
                 }
 
@@ -313,13 +290,76 @@ public class DirectPolicySearch implements Policy
                     {
                         goodSamplesBernoulli[i] = thetaSamples[goodSamplesIndexes[i]][j][k];
                     }
-                    bernoulliMeans[j][k] = mean(goodSamplesBernoulli);
+                    bernoulliMeans[j][k] = MathTools.mean(goodSamplesBernoulli);
                 }
             }
 
-            saveBFs("savedBFs.zip");
-            System.out.println("Iteration: " + nbOfIt);
+            // Update basic functions parameters using the best samples
+            for (int i = 0; i < nbOfBasicFunctions; i++)
+            {
+                basicFunctions[i].setCenters(centersMeans[i]);
+                basicFunctions[i].setRadii(radiiMeans[i]);
+            }
+
+            nbOfIterations++;
+            save("savedBFs.zip");            
         }
+    }
+
+    private boolean isValidMean(float sample, int stateVariableNb)
+    {
+        boolean isValidSample = false;
+
+        switch (stateVariableNb)
+        {
+        case 0:
+            if (sample >= 0.0f && sample <= SoccerParams.BALL_SPEED_MAX)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 1:
+            if (sample >= -180.0f && sample <= 180.0f)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 2:
+            if (sample >= 0.0f && sample <= SoccerParams.PLAYER_SPEED_MAX)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 3:
+            if (sample >= -180.0f && sample <= 180.0f)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 4:
+            if (sample >= -180.0f && sample <= 180.0f)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 5:
+            if (sample >= 0.0f && sample <= 125.0f)
+            {
+                isValidSample = true;
+            }
+            break;
+        case 6:
+            if (sample >= -180.0f && sample <= 180.0f)
+            {
+                isValidSample = true;
+            }
+            break;
+        default:
+            break;
+
+        }
+
+        return isValidSample;
     }
 
     private void generateStates()
@@ -357,77 +397,23 @@ public class DirectPolicySearch implements Policy
 
     }
 
-    private float mean(float[] f)
-    {
-        float mean = 0.0f;
-        for (int i = 0; i < f.length; i++)
-        {
-            mean += f[i];
-        }
-
-        return mean / f.length;
-    }
-
-    private float mean(boolean[] b)
-    {
-        float nbOfTrue = 0.0f;
-        for (int i = 0; i < b.length; i++)
-        {
-            if (b[i])
-            {
-                nbOfTrue += 1.0f;
-            }
-        }
-
-        return nbOfTrue / ((float) b.length);
-    }
-
-    private float stdDev(float[] f, float mean)
-    {
-        float stfDev = 0.0f;
-        for (int i = 0; i < f.length; i++)
-        {
-            stfDev += (f[i] - mean) * (f[i] - mean);
-        }
-
-        return (float) Math.sqrt(stfDev / f.length);
-    }
-
-    private float nextGaussian(float mean, float stdDev)
-    {
-        return (float) (mean + random.nextGaussian() * stdDev);
-    }
-
-    private boolean nextBernoulli(float mean)
-    {
-        return random.nextDouble() < mean ? true : false;
-    }
-
-    private int binaryToDecimal(boolean[] b)
-    {
-        int d = 0;
-        int pow = 1;
-
-        for (int i = 0; i < b.length; i++)
-        {
-            if (b[i])
-            {
-                d += pow;
-            }
-            pow *= 2;
-        }
-
-        return d;
-    }
-
-    public void saveBFs(String filename)
+    public void save(String filename)
     {
         try
         {
             FileOutputStream fos = new FileOutputStream(filename);
             GZIPOutputStream gzos = new GZIPOutputStream(fos);
             ObjectOutputStream out = new ObjectOutputStream(gzos);
-            out.writeObject(basicFunctions);
+            out.writeObject(this);
+
+            //            out.writeObject(centersMeans);
+            //            out.writeObject(centersStdDevs);
+            //            out.writeObject(radiiMeans);
+            //            out.writeObject(radiiStdDevs);
+            //            out.writeObject(bernoulliMeans);
+            //            out.writeObject(basicFunctions);
+            //            out.writeObject(actionToBasicFunctions);
+            //            out.writeObject(initialStates);
             out.flush();
             out.close();
         }
@@ -438,20 +424,31 @@ public class DirectPolicySearch implements Policy
 
     }
 
-    public void loadBFs(String filename)
+    public static DirectPolicySearch load(String filename)
     {
+        DirectPolicySearch dps = null;
         try
         {
             FileInputStream fis = new FileInputStream(filename);
             GZIPInputStream gzis = new GZIPInputStream(fis);
             ObjectInputStream in = new ObjectInputStream(gzis);
-            basicFunctions = (GaussianRBF[]) in.readObject();
+            dps = (DirectPolicySearch) in.readObject();
+            //            centersMeans = (float[][]) in.readObject();
+            //            centersStdDevs = (float[][]) in.readObject();
+            //            radiiMeans = (float[][]) in.readObject();
+            //            radiiStdDevs = (float[][]) in.readObject();
+            //            bernoulliMeans = (float[][]) in.readObject();
+            //            basicFunctions = (RadialGaussian[]) in.readObject();
+            //            actionToBasicFunctions = (ArrayList<LinkedList<RadialGaussian>>) in.readObject();
+            //            initialStates = (LinkedList<State>) in.readObject();
             in.close();
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+
+        return dps;
     }
 
 }

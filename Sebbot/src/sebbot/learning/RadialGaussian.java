@@ -8,7 +8,7 @@ import sebbot.SoccerParams;
  * @author Sebastien Lentz
  *
  */
-public class GaussianRBF implements Serializable
+public class RadialGaussian implements Serializable
 {
     private static final long serialVersionUID = -4676316425662558431L;
     
@@ -16,13 +16,13 @@ public class GaussianRBF implements Serializable
     float[] radii;
     int     discreteActionNb; // The discrete action this function is linked to.
 
-    public GaussianRBF(int discreteActionNb)
+    public RadialGaussian(int discreteActionNb)
     {
         this();
         this.discreteActionNb = discreteActionNb;
     }
     
-    public GaussianRBF()
+    public RadialGaussian()
     {
         this.discreteActionNb = (int) Math.floor(Math.random()
                 * (Action.getDashSteps() + Action.getTurnSteps()));
