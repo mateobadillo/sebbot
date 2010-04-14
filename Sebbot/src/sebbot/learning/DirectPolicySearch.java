@@ -30,7 +30,7 @@ import sebbot.SoccerParams;
  * @author Sebastien Lentz
  *
  */
-public class DirectPolicySearch implements Policy, Serializable
+public class DirectPolicySearch implements Policy, Serializable, Runnable
 {
     private static final long             serialVersionUID = 8074266714836534435L;
 
@@ -60,15 +60,14 @@ public class DirectPolicySearch implements Policy, Serializable
         this.random = new Random();
         this.nbOfDiscreteActions = (Action.getTurnSteps() + Action
             .getDashSteps());
-        this.nbOfBasicFunctions = nbOfDiscreteActions;
+        this.nbOfBasicFunctions = nbOfDiscreteActions + nbOfDiscreteActions / 2;
 
         int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
-            / Math.log(2.0d)));
-        
+                / Math.log(2.0d)));
+
         this.nbOfSamples = 1 /* Multiplier */
         * (4 * 7 * nbOfBasicFunctions /* Nb of Epsilon params */
         + nbOfBasicFunctions * nbOfBits); /* Nb of Theta params */
-
 
         this.basicFunctions = new RadialGaussian[nbOfBasicFunctions];
         this.centersMeans = new float[nbOfBasicFunctions][7];
@@ -85,16 +84,26 @@ public class DirectPolicySearch implements Policy, Serializable
 
         for (int i = 0; i < nbOfBasicFunctions; i++)
         {
-            basicFunctions[i] = new RadialGaussian(i % nbOfDiscreteActions);
+            basicFunctions[i] = new RadialGaussian(nbOfDiscreteActions - 1
+                    - (i % nbOfDiscreteActions));
 
             centersMeans[i] = basicFunctions[i].getCenters();
             radiiMeans[i] = basicFunctions[i].getRadii();
 
-            for (int j = 0; j < 7; j++)
-            {
-                centersStdDevs[i][j] = (float) (20.0d * Math.random());
-                radiiStdDevs[i][j] = (float) (30.0d * Math.random());
-            }
+            centersStdDevs[i][0] = SoccerParams.BALL_SPEED_MAX / 2.0f;
+            centersStdDevs[i][1] = 180f / 2.0f;
+            centersStdDevs[i][2] = SoccerParams.PLAYER_SPEED_MAX / 2.0f;
+            centersStdDevs[i][3] = 180f / 2.0f;
+            centersStdDevs[i][4] = 180f / 2.0f;
+            centersStdDevs[i][5] = 125f / 2.0f;
+            centersStdDevs[i][6] = 180f / 2.0f;
+            radiiStdDevs[i][0] = SoccerParams.BALL_SPEED_MAX / 2.0f;
+            radiiStdDevs[i][1] = 180f / 2.0f;
+            radiiStdDevs[i][2] = SoccerParams.PLAYER_SPEED_MAX / 2.0f;
+            radiiStdDevs[i][3] = 180f / 2.0f;
+            radiiStdDevs[i][4] = 180f / 2.0f;
+            radiiStdDevs[i][5] = 180f / 2.0f;
+            radiiStdDevs[i][6] = 180f / 2.0f;
 
             for (int j = 0; j < nbOfBits; j++)
             {
@@ -151,39 +160,43 @@ public class DirectPolicySearch implements Policy, Serializable
         System.out.println("Nb of basic functions: " + nbOfBasicFunctions);
         System.out.println("Nb of discrete actions: " + nbOfDiscreteActions);
         System.out.println("Nb of initial states: " + initialStates.size());
+        System.out.println("Total number of iterations completed so far: "
+                + nbOfIterations);
         for (int nbOfIt = 0; nbOfIt < 100; nbOfIt++)
         {
             System.out.println((nbOfIt + 1) + "th iteration starting...");
 
             // Generate samples
             System.out.println("Generating samples...");
-            boolean validSample = false;
+            boolean isValidSample = false;
             for (int i = 0; i < nbOfSamples; i++)
             {
                 for (int j = 0; j < nbOfBasicFunctions; j++)
                 {
                     for (int k = 0; k < 7; k++)
                     {
-                        validSample = false;
-                        while (!validSample)
+                        isValidSample = false;
+                        while (!isValidSample)
                         {
                             epsilonSamples[i][j][0][k] = MathTools
                                 .nextGaussian(centersMeans[j][k],
                                     centersStdDevs[j][k]);
 
-                            validSample = isValidMean(
+                            isValidSample = isValidMean(
                                 epsilonSamples[i][j][0][k], k);
+
                         }
 
-                        validSample = false;
-                        while (!validSample)
+                        isValidSample = false;
+                        while (!isValidSample)
                         {
                             epsilonSamples[i][j][1][k] = MathTools
                                 .nextGaussian(radiiMeans[j][k],
                                     radiiStdDevs[j][k]);
-                            if (epsilonSamples[i][j][1][k] > 0.0f)
+
+                            if (epsilonSamples[i][j][1][k] > 0.0001f)
                             {
-                                validSample = true;
+                                isValidSample = true;
                             }
                         }
 
@@ -212,14 +225,14 @@ public class DirectPolicySearch implements Policy, Serializable
                     actionToBasicFunctions.get(j).clear();
                 }
 
-                int chosenAction;
+                int associatedAction;
                 for (int j = 0; j < nbOfBasicFunctions; j++)
                 {
                     basicFunctions[j].setCenters(epsilonSamples[i][j][0]);
                     basicFunctions[j].setRadii(epsilonSamples[i][j][1]);
 
-                    chosenAction = MathTools.toDecimal(thetaSamples[i][j]);
-                    actionToBasicFunctions.get(chosenAction).add(
+                    associatedAction = MathTools.toDecimal(thetaSamples[i][j]);
+                    actionToBasicFunctions.get(associatedAction).add(
                         basicFunctions[j]);
                 }
 
@@ -238,7 +251,7 @@ public class DirectPolicySearch implements Policy, Serializable
                 }
                 l.add(i);
                 samplesScore.put(score, l);
-                
+
                 float percentageDone = 100.0f * (float) i / (float) nbOfSamples;
                 if (i % (nbOfSamples / 100 * 10) == 0)
                 {
@@ -302,7 +315,7 @@ public class DirectPolicySearch implements Policy, Serializable
             }
 
             nbOfIterations++;
-            save("savedBFs.zip");            
+            save("savedBFs.zip");
         }
     }
 
@@ -449,6 +462,11 @@ public class DirectPolicySearch implements Policy, Serializable
         }
 
         return dps;
+    }
+
+    public void run()
+    {
+        computeOptimalParameters();
     }
 
 }

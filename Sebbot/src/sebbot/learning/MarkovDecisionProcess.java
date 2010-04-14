@@ -95,11 +95,11 @@ public class MarkovDecisionProcess
 
             if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
             {
-                reward = 10000.0f;
+                reward = 1000000.0f;
             }
             else
             {
-                reward = -1.0f; //0.0f - nextStepDistance;
+                reward = 1000.0f - nextStepDistance; //0.0f - nextStepDistance;
             }
         }
 

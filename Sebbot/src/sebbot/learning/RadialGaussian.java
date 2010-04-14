@@ -129,5 +129,19 @@ public class RadialGaussian implements Serializable
         return Math.exp(-argExp);
 
     }
+    
+    public String toString()
+    {
+        String str = "{RG: ";
+        
+        for (int i = 0; i < 6 ; i++)
+        {
+            str += "(" + i + ", " + centers[i] + ", " + radii[i] + ") ";
+        }
+        
+        str += "(" + 6 + ", " + centers[6] + ", " + radii[6] + ")}";
+        
+        return str;
+    }
 
 }
