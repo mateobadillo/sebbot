@@ -1,11 +1,18 @@
 package sebbot;
 
+import java.util.Random;
+
+import sebbot.learning.State;
+
 /**
  * @author Sebastien Lentz
  *
  */
 public class MathTools
 {
+    static Random random = new Random();
+    
+    
     /**
      * Normalize the input angle so that it belongs to the interval [-180, 180].
      * 
@@ -111,23 +118,103 @@ public class MathTools
     {
         return indexToValue(valueToIndex(value, minValue, maxValue, nbOfSteps),
             minValue, maxValue, nbOfSteps, intervalPosition);
-
-        //        if (intervalPosition > 1.0f || intervalPosition < 0.0f)
-        //        { // Invalid intervalPosition
-        //            intervalPosition = 0.5f;
-        //        }
-        //
-        //        double intervalLength = Math.abs((maxValue - minValue) / nbOfSteps);
-        //
-        //        return Math.min(value - (value % intervalLength) + intervalLength
-        //                * intervalPosition, maxValue - intervalLength
-        //                * (1.0f - intervalPosition * intervalLength));
     }
 
+    /**
+     * Converts polar coordinates to Cartesian ones.
+     * 
+     * @param radius
+     * @param angle
+     * @return
+     */
     public static Vector2D toCartesianCoordinates(double radius, double angle)
     {
         return new Vector2D(radius * Math.cos(Math.toRadians(angle)), radius
                 * Math.sin(Math.toRadians(angle)));
+    }
+    
+    public static float mean(float[] f)
+    {
+        float total = 0.0f;
+        for (int i = 0; i < f.length; i++)
+        {
+            total += f[i];
+        }
+
+        return total / f.length;
+    }
+
+    public static float mean(boolean[] b)
+    {
+        float nbOfTrue = 0.0f;
+        for (int i = 0; i < b.length; i++)
+        {
+            if (b[i])
+            {
+                nbOfTrue += 1.0f;
+            }
+        }
+
+        return nbOfTrue / ((float) b.length);
+    }
+
+    public static float stdDev(float[] f, float mean)
+    {
+        float stfDev = 0.0f;
+        for (int i = 0; i < f.length; i++)
+        {
+            stfDev += (f[i] - mean) * (f[i] - mean);
+        }
+
+        return (float) Math.sqrt(stfDev / f.length);
+    }
+
+    public static float nextGaussian(float mean, float stdDev)
+    {
+        return (float) (mean + random.nextGaussian() * stdDev);
+    }
+
+    public static boolean nextBernoulli(float mean)
+    {
+        return random.nextFloat() < mean ? true : false;
+    }
+
+    public static int toDecimal(boolean[] b)
+    {
+        int d = 0;
+        int pow = 1;
+
+        for (int i = 0; i < b.length; i++)
+        {
+            if (b[i])
+            {
+                d += pow;
+            }
+            pow *= 2;
+        }
+
+        return d;
+    }
+    
+    public static double radialGaussian(State s, float[] centers, float[] radii)
+    {
+        double[] x = new double[7];
+        x[0] = s.getBallVelocityNorm();
+        x[1] = s.getBallVelocityDirection();
+        x[2] = s.getPlayerVelocityNorm();
+        x[3] = s.getPlayerVelocityDirection();
+        x[4] = s.getPlayerBodyDirection();
+        x[5] = s.getRelativeDistance();
+        x[6] = s.getRelativeDirection();
+
+        double argExp = 0;
+        for (int i = 0; i < 7; i++)
+        {
+            argExp += Math.pow((x[i] - centers[i]) / radii[i], 2.0d);
+        }
+
+        return Math.exp(-argExp);
+
     }
 
 }

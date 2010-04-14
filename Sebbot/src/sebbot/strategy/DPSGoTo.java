@@ -11,7 +11,15 @@ import sebbot.learning.DirectPolicySearch;
  */
 public class DPSGoTo implements Strategy
 {
-    private DirectPolicySearch dps = new DirectPolicySearch();
+    private DirectPolicySearch dps;
+
+    public DPSGoTo()
+    {
+        this.dps = new DirectPolicySearch();
+        //this.dps = DirectPolicySearch.load("savedBFs.zip");
+        dps.computeOptimalParameters();
+    }
+
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {
