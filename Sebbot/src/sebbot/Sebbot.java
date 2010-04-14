@@ -104,7 +104,7 @@ public class Sebbot
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                     "team2");
-            client.init("GoToBallAndShoot");
+            client.init("QiterationGoTo");
             brain = client.getBrain();
             new Thread(client).start();
             new Thread(brain).start();
