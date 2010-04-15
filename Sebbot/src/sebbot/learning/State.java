@@ -13,9 +13,9 @@ public class State implements Serializable
     private static int        ballVelocityDirectionSteps   = 10;
     private static int        playerVelocityNormSteps      = 1;
     private static int        playerVelocityDirectionSteps = 10;
-    private static int        playerBodyDirectionSteps     = 10;
-    private static int        relativeDistanceSteps        = 175;
-    private static int        relativeDirectionSteps       = 10;
+    private static int        playerBodyDirectionSteps     = 20;
+    private static int        relativeDistanceSteps        = 200;
+    private static int        relativeDirectionSteps       = 20;
 
     private float             ballVelocityNorm;
     private float             ballVelocityDirection;

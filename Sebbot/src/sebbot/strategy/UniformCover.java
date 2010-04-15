@@ -17,15 +17,21 @@ public class UniformCover implements Strategy
 {
     protected int        numberOfPlayers;
     protected Vector2D[] optimalPositions;
-    Strategy             goToBallAndShoot;
+    int                  ballCaptureAlgorithm;
 
     public UniformCover(int numberOfplayers)
     {
+        this(numberOfplayers, 0);
+    }
+    
+    public UniformCover(int numberOfplayers, int ballCaptureAlgorithm)
+    {
+        this.ballCaptureAlgorithm = ballCaptureAlgorithm;
         this.numberOfPlayers = numberOfplayers;
-        optimalPositions = new Vector2D[numberOfplayers - 1];
+        this.optimalPositions = new Vector2D[numberOfplayers - 1];
     }
 
-    public void doAction(RobocupClient s, FullstateInfo fsi, Player p)
+    public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {
         Ball ball = fsi.getBall();
         Player[] team = p.isLeftSide() ? fsi.getLeftTeam() : fsi.getRightTeam();
@@ -46,7 +52,21 @@ public class UniformCover implements Strategy
         if (closestToTheBall == p)
         {
             //BasicStrategy.goTo(ball, s, fsi, p);
-            BasicStrategy.goToBallAndShootToGoal(s, fsi, p);
+            switch (ballCaptureAlgorithm)
+            {
+            case 0:
+                BasicStrategy.goToBallAndShootToGoal(c, fsi, p);
+                break;
+            case 1:
+                BasicStrategy.qIterationGoToBallandShootToGoal(c, fsi, p);
+                break;
+            case 2:
+                BasicStrategy.dpsGoToBallandShootToGoal(c, fsi, p);
+                break;
+            default:
+                BasicStrategy.goToBallAndShootToGoal(c, fsi, p);
+                break;
+            }
         }
 
         else if (numberOfPlayers == 5)
@@ -127,7 +147,7 @@ public class UniformCover implements Strategy
                 for (Player p2 : playersSet)
                 {
                     if (p2.distanceTo(targetPoint) < closestToTargetPoint
-                            .distanceTo(targetPoint))
+                        .distanceTo(targetPoint))
                     {
                         closestToTargetPoint = p2;
                     }
@@ -142,7 +162,7 @@ public class UniformCover implements Strategy
             }
 
             /* The player knows where he has to go and begins moving */
-            BasicStrategy.simpleGoTo(targetPoint, s, fsi, p);
+            BasicStrategy.simpleGoTo(targetPoint, c, fsi, p);
         }
 
     }

@@ -169,7 +169,6 @@ public class MathTools
 
         stdDev = (float) Math.sqrt(stdDev / f.length);
         
-        System.out.println("Std Dev: " + stdDev);
         return stdDev;
     }
 
@@ -218,7 +217,6 @@ public class MathTools
         }
 
         return Math.exp(-argExp);
-
     }
 
 }

@@ -259,7 +259,7 @@ public class Qiteration implements Policy, Serializable, Runnable
             totalNbOfIterations++;
             System.out.println(nbOfIterations + " iterations done.");
         }
-        while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 300);
+        while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 5000);
 
         System.out.println("nb of iterations: " + nbOfIterations);
         System.out.println("q iteration table computed.");
