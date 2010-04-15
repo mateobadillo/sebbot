@@ -17,7 +17,7 @@ public class DPSGoTo implements Strategy
     {
         //this.dps = new DirectPolicySearch();
         this.dps = DirectPolicySearch.load("savedBFs.zip");
-        //new Thread(dps).start();
+        new Thread(dps).start();
     }
 
 

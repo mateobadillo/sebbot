@@ -165,6 +165,14 @@ public class Brain implements Runnable
         {
             s1 = new UniformCover(5);
         }
+        else if (strategy.equalsIgnoreCase("UniformCoverDPS"))
+        {
+            s1 = new UniformCover(5,2);
+        }
+        else if (strategy.equalsIgnoreCase("UniformCoverQit"))
+        {
+            s1 = new UniformCover(5,1);
+        }
         else if (strategy.equalsIgnoreCase("GoToBallAndShoot"))
         {
             s1 = new GoToBallAndShoot();
@@ -179,7 +187,7 @@ public class Brain implements Runnable
         }
         else if (strategy.equalsIgnoreCase("DPSGoto"))
         {
-            s1 = new QiterationGoTo();
+            s1 = new DPSGoTo();
         }
         else
         {

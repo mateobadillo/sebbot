@@ -94,7 +94,7 @@ public class Sebbot
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                     team);
-            client.init(strategy);
+            client.init("dpsgoto");
             brain = client.getBrain();
             new Thread(client).start();
             new Thread(brain).start();
@@ -104,7 +104,7 @@ public class Sebbot
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                     "team2");
-            client.init("QiterationGoTo");
+            client.init("UniformCoverQit");
             brain = client.getBrain();
             new Thread(client).start();
             new Thread(brain).start();

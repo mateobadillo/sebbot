@@ -19,6 +19,9 @@ import sebbot.learning.State;
  */
 public class BasicStrategy
 {
+    private static Qiteration q = Qiteration.loadQl("backupQl.zip");
+    private static DirectPolicySearch dps = DirectPolicySearch.load("savedBFs.zip");
+    
     public static boolean simpleGoTo(Vector2D position, RobocupClient c,
                                      FullstateInfo fsi, Player p)
     {
@@ -167,6 +170,12 @@ public class BasicStrategy
     /**************************************************************************/
 
     public static boolean qIterationGoToBall(RobocupClient c,
+                                             FullstateInfo fsi, Player p)
+    {
+        return qIterationGoToBall(c,fsi,p,q);
+    }
+
+    public static boolean qIterationGoToBall(RobocupClient c,
                                              FullstateInfo fsi, Player p,
                                              Qiteration q)
     {
@@ -210,6 +219,13 @@ public class BasicStrategy
 
     public static boolean qIterationGoToBallandShootToGoal(RobocupClient c,
                                                            FullstateInfo fsi,
+                                                           Player p)
+    {
+        return qIterationGoToBallandShootToGoal(c,fsi,p,q);
+    }
+    
+    public static boolean qIterationGoToBallandShootToGoal(RobocupClient c,
+                                                           FullstateInfo fsi,
                                                            Player p,
                                                            Qiteration q)
     {
@@ -231,6 +247,13 @@ public class BasicStrategy
     
     /**************************************************************************/
 
+    public static boolean dpsGoToBall(RobocupClient c,
+                                      FullstateInfo fsi, Player p)
+    {
+        return dpsGoToBall(c,fsi,p,dps);
+    }
+
+    
     public static boolean dpsGoToBall(RobocupClient c,
                                              FullstateInfo fsi, Player p,
                                              DirectPolicySearch dps)
@@ -273,6 +296,13 @@ public class BasicStrategy
         }
     }
 
+    public static boolean dpsGoToBallandShootToGoal(RobocupClient c,
+                                                    FullstateInfo fsi,
+                                                    Player p)
+    {
+        return dpsGoToBallandShootToGoal(c,fsi,p,dps);
+    }
+    
     public static boolean dpsGoToBallandShootToGoal(RobocupClient c,
                                                            FullstateInfo fsi,
                                                            Player p,
