@@ -1,7 +1,5 @@
 package sebbot.learning;
 
-import java.util.LinkedList;
-
 import sebbot.MathTools;
 import sebbot.SoccerParams;
 import sebbot.Vector2D;
@@ -80,9 +78,14 @@ public class MarkovDecisionProcess
             nextState.setRelativeDirection((float) MathTools
                 .normalizeAngle(newRelPosition.polarAngle()
                         - nextState.getPlayerBodyDirection()));
+            
+            if (isDiscreteState)
+            {
+                nextState.discretize();
+            }
         }
 
-        return (isDiscreteState ? nextState.discretize() : nextState); //TODO change for non discrete!
+        return nextState; //TODO change for non discrete!
     }
 
     public static float reward(State s, Action a)
@@ -100,11 +103,8 @@ public class MarkovDecisionProcess
         }
         else
         {
-            State nextState = nextState(s, a);
-            if (isDiscreteState)
-            {
-                nextState.discretize();
-            }
+            State nextState = nextState(s, a, isDiscreteState);
+            
             float nextStepDistance = nextState.getRelativeDistance();
 
             if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
