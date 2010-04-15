@@ -23,6 +23,7 @@ public class Qiteration implements Policy, Serializable, Runnable
     int                           totalNbOfIterations;
 
     private float[][][][][][][][] qTable;
+    private float[][][][][][][][] oldQtable;
 
     private int                   nbOfStepsForVelocityNorm;
     private int                   nbOfStepsForVelocityDirection;
@@ -62,6 +63,14 @@ public class Qiteration implements Policy, Serializable, Runnable
 
         Action.setDashSteps(nbOfStepsForDash);
         Action.setTurnSteps(nbOfStepsForTurn);
+
+        this.oldQtable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
+                + nbOfStepsForTurn];
+
+        this.qTable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
+                + nbOfStepsForTurn];
+        
+        initQtables();
 
         //        State s;
         //        float reward;
@@ -106,51 +115,12 @@ public class Qiteration implements Policy, Serializable, Runnable
         System.out.println("Total number of iterations done so far: "
                 + totalNbOfIterations);
 
-        float[][][][][][][][] oldQtable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
-                + nbOfStepsForTurn];
-
-        qTable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
-                + nbOfStepsForTurn];
-
         float tmp;
-
-        for (int i = 0; i < oldQtable.length; i++)
-        {
-            for (int j = 0; j < oldQtable[i].length; j++)
-            {
-                for (int k = 0; k < oldQtable[i][j].length; k++)
-                {
-                    for (int l = 0; l < oldQtable[i][j][k].length; l++)
-                    {
-                        for (int m = 0; m < oldQtable[i][j][k][l].length; m++)
-                        {
-                            for (int n = 0; n < oldQtable[i][j][k][l][m].length; n++)
-                            {
-                                for (int o = 0; o < oldQtable[i][j][k][l][m][n].length; o++)
-                                {
-                                    for (int p = 0; p < oldQtable[i][j][k][l][m][n][o].length; p++)
-                                    {
-                                        oldQtable[i][j][k][l][m][n][o][p] = 0.0f;
-                                        qTable[i][j][k][l][m][n][o][p] = 0.0f;
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
 
         int nbOfIterations = 0;
         State s = new State();
         Action a = new Action(0, false);
+        
         do
         {
             nbOfIterations++;
@@ -255,11 +225,11 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                     + 0.85f
                                                     * maxUq(
                                                         MarkovDecisionProcess
-                                                            .nextState(s, a, true)
-                                                            .discretize(),
+                                                            .nextState(s, a,
+                                                                true),
                                                         oldQtable);
 
-                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 2f*1000000f)
+                                            if (qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] > 2f * 1000000f)
                                             {
                                                 System.out
                                                     .println("prob: "
@@ -347,7 +317,7 @@ public class Qiteration implements Policy, Serializable, Runnable
             nbOfStepsForDistance);
         s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
             nbOfStepsForRelativeAngle);
-
+        
         float max = -1000000.0f;
         for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
         {
@@ -403,6 +373,36 @@ public class Qiteration implements Policy, Serializable, Runnable
         }
 
         return a;
+    }
+
+    private void initQtables()
+    {
+        for (int i = 0; i < oldQtable.length; i++)
+        {
+            for (int j = 0; j < oldQtable[i].length; j++)
+            {
+                for (int k = 0; k < oldQtable[i][j].length; k++)
+                {
+                    for (int l = 0; l < oldQtable[i][j][k].length; l++)
+                    {
+                        for (int m = 0; m < oldQtable[i][j][k][l].length; m++)
+                        {
+                            for (int n = 0; n < oldQtable[i][j][k][l][m].length; n++)
+                            {
+                                for (int o = 0; o < oldQtable[i][j][k][l][m][n].length; o++)
+                                {
+                                    for (int p = 0; p < oldQtable[i][j][k][l][m][n][o].length; p++)
+                                    {
+                                        oldQtable[i][j][k][l][m][n][o][p] = 0.0f;
+                                        qTable[i][j][k][l][m][n][o][p] = 0.0f;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private boolean q0EqualsQ1(float[][][][][][][][] q0,
@@ -468,7 +468,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                 {
                                     for (int p = 0; p < qTable[i][j][k][l][m][n][o].length; p++)
                                     {
-                                        if (qTable[i][j][k][l][m][n][o][p] > 2f*1000000f)
+                                        if (qTable[i][j][k][l][m][n][o][p] > 2f * 1000000f)
                                         {
                                             System.out
                                                 .println("prob: "

@@ -7,23 +7,23 @@ import sebbot.SoccerParams;
 
 public class State implements Serializable
 {
-    private static final long serialVersionUID = 6078896792558961445L;
-    
-    private static int ballVelocityNormSteps;
-    private static int ballVelocityDirectionSteps;
-    private static int playerVelocityNormSteps;
-    private static int playerVelocityDirectionSteps;
-    private static int playerBodyDirectionSteps;
-    private static int relativeDistanceSteps;
-    private static int relativeDirectionSteps;
+    private static final long serialVersionUID             = 6078896792558961445L;
 
-    private float      ballVelocityNorm;
-    private float      ballVelocityDirection;
-    private float      playerVelocityNorm;
-    private float      playerVelocityDirection;
-    private float      playerBodyDirection;
-    private float      relativeDistance;
-    private float      relativeDirection;
+    private static int        ballVelocityNormSteps        = 1;
+    private static int        ballVelocityDirectionSteps   = 10;
+    private static int        playerVelocityNormSteps      = 1;
+    private static int        playerVelocityDirectionSteps = 10;
+    private static int        playerBodyDirectionSteps     = 10;
+    private static int        relativeDistanceSteps        = 175;
+    private static int        relativeDirectionSteps       = 10;
+
+    private float             ballVelocityNorm;
+    private float             ballVelocityDirection;
+    private float             playerVelocityNorm;
+    private float             playerVelocityDirection;
+    private float             playerBodyDirection;
+    private float             relativeDistance;
+    private float             relativeDirection;
 
     /*
      * =========================================================================
@@ -363,7 +363,7 @@ public class State implements Serializable
             playerVelocityNormSteps, playerVelocityDirectionSteps,
             playerBodyDirectionSteps, relativeDistanceSteps,
             relativeDirectionSteps);
-        
+
         return this;
     }
 
