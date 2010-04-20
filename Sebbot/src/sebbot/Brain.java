@@ -219,8 +219,9 @@ public class Brain implements Runnable
             }
             else if (currentTimeStep != lastTimeStep)
             {
-                System.out.println(lastTimeStep);
-                System.out.println(currentTimeStep);
+                System.out.println("A time step has been skipped:");
+                System.out.println("Last time step: " + lastTimeStep);
+                System.out.println("Current time step: " + currentTimeStep);
             }
             
             // Wait for next cycle before sending another command.
