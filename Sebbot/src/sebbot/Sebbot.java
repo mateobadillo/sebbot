@@ -88,13 +88,13 @@ public class Sebbot
 
         RobocupClient client;
         Brain brain;
-        int nbOfPlayers = 1;
+        int nbOfPlayers = 5;
 
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                     team);
-            client.init("dpsgoto");
+            client.init("UniformCoverDPS");
             brain = client.getBrain();
             new Thread(client).start();
             new Thread(brain).start();
