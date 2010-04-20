@@ -514,6 +514,7 @@ public class Qiteration implements Policy, Serializable, Runnable
     {
         Qiteration q = null;
 
+        System.out.println("Loading QTable...");
         try
         {
             FileInputStream fis = new FileInputStream(filename);
@@ -521,6 +522,7 @@ public class Qiteration implements Policy, Serializable, Runnable
             ObjectInputStream in = new ObjectInputStream(gzis);
             q = (Qiteration) in.readObject();
             in.close();
+            System.out.println("QTable loaded.");
         }
         catch (Exception e)
         {
