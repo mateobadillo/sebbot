@@ -15,7 +15,7 @@ public class QiterationGoTo implements Strategy
 
     public QiterationGoTo()
     {
-        //q = new Qiteration(1, 1, 200, 20, 2, 10);
+        //q = Qiteration.instance(1, 1, 200, 20, 2, 10);
         q = Qiteration.loadQl("backupQl.zip");
         //new Thread(q).start();
     }

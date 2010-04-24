@@ -52,7 +52,19 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
     LinkedList<State>                     initialStates;
 
-    public DirectPolicySearch()
+    private static DirectPolicySearch     instance         = null;
+
+    public static DirectPolicySearch instance()
+    {
+        if (instance == null)
+        {
+            instance = new DirectPolicySearch();
+        }
+
+        return instance;
+    }
+
+    private DirectPolicySearch()
     {
         this.nbOfIterations = 0;
 
@@ -437,31 +449,30 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 
     }
 
-    public static DirectPolicySearch load(String filename)
+    public static synchronized DirectPolicySearch load(String filename)
     {
-        DirectPolicySearch dps = null;
-        try
+        if (instance == null)
         {
-            FileInputStream fis = new FileInputStream(filename);
-            GZIPInputStream gzis = new GZIPInputStream(fis);
-            ObjectInputStream in = new ObjectInputStream(gzis);
-            dps = (DirectPolicySearch) in.readObject();
-            //            centersMeans = (float[][]) in.readObject();
-            //            centersStdDevs = (float[][]) in.readObject();
-            //            radiiMeans = (float[][]) in.readObject();
-            //            radiiStdDevs = (float[][]) in.readObject();
-            //            bernoulliMeans = (float[][]) in.readObject();
-            //            basicFunctions = (RadialGaussian[]) in.readObject();
-            //            actionToBasicFunctions = (ArrayList<LinkedList<RadialGaussian>>) in.readObject();
-            //            initialStates = (LinkedList<State>) in.readObject();
-            in.close();
+            try
+            {
+                FileInputStream fis = new FileInputStream(filename);
+                GZIPInputStream gzis = new GZIPInputStream(fis);
+                ObjectInputStream in = new ObjectInputStream(gzis);
+                instance = (DirectPolicySearch) in.readObject();
+                in.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
-        catch (Exception e)
+        else
         {
-            e.printStackTrace();
+            System.out
+                .println("Direct policy search functions already exist, skipping loading...");
         }
 
-        return dps;
+        return instance;
     }
 
     public void run()
