@@ -32,6 +32,24 @@ public class Qiteration implements Policy, Serializable, Runnable
     private int                   nbOfStepsForDash;
     private int                   nbOfStepsForTurn;
 
+    private static Qiteration     instance         = null;
+
+    public static Qiteration instance(int nbOfStepsForVelocityModulus,
+                                      int nbOfStepsForVelocityAngle,
+                                      int nbOfStepsForDistance,
+                                      int nbOfStepsForRelativeAngle,
+                                      int nbOfStepsForDash, int nbOfStepsForTurn)
+    {
+        if (instance == null)
+        {
+            instance = new Qiteration(nbOfStepsForVelocityModulus,
+                nbOfStepsForVelocityAngle, nbOfStepsForDistance,
+                nbOfStepsForRelativeAngle, nbOfStepsForDash, nbOfStepsForTurn);
+        }
+
+        return instance;
+    }
+
     /**
      * @param nbOfStepsForVelocityModulus
      * @param nbOfStepsForVelocityAngle
@@ -40,10 +58,10 @@ public class Qiteration implements Policy, Serializable, Runnable
      * @param nbOfStepsForDash
      * @param nbOfStepsForTurn
      */
-    public Qiteration(int nbOfStepsForVelocityModulus,
-                      int nbOfStepsForVelocityAngle, int nbOfStepsForDistance,
-                      int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
-                      int nbOfStepsForTurn)
+    private Qiteration(int nbOfStepsForVelocityModulus,
+                       int nbOfStepsForVelocityAngle, int nbOfStepsForDistance,
+                       int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
+                       int nbOfStepsForTurn)
     {
         this.totalNbOfIterations = 0;
         this.nbOfStepsForVelocityNorm = nbOfStepsForVelocityModulus;
@@ -69,7 +87,7 @@ public class Qiteration implements Policy, Serializable, Runnable
 
         this.qTable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
                 + nbOfStepsForTurn];
-        
+
         initQtables();
 
         //        State s;
@@ -120,7 +138,7 @@ public class Qiteration implements Policy, Serializable, Runnable
         int nbOfIterations = 0;
         State s = new State();
         Action a = new Action(0, false);
-        
+
         do
         {
             nbOfIterations++;
@@ -317,7 +335,7 @@ public class Qiteration implements Policy, Serializable, Runnable
             nbOfStepsForDistance);
         s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
             nbOfStepsForRelativeAngle);
-        
+
         float max = -1000000.0f;
         for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
         {
@@ -510,26 +528,31 @@ public class Qiteration implements Policy, Serializable, Runnable
 
     }
 
-    public static Qiteration loadQl(String filename)
+    public static synchronized Qiteration loadQl(String filename)
     {
-        Qiteration q = null;
-
-        System.out.println("Loading QTable...");
-        try
+        if (instance == null)
         {
-            FileInputStream fis = new FileInputStream(filename);
-            GZIPInputStream gzis = new GZIPInputStream(fis);
-            ObjectInputStream in = new ObjectInputStream(gzis);
-            q = (Qiteration) in.readObject();
-            in.close();
-            System.out.println("QTable loaded.");
+            System.out.println("Loading QTable...");
+            try
+            {
+                FileInputStream fis = new FileInputStream(filename);
+                GZIPInputStream gzis = new GZIPInputStream(fis);
+                ObjectInputStream in = new ObjectInputStream(gzis);
+                instance = (Qiteration) in.readObject();
+                in.close();
+                System.out.println("QTable loaded.");
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
-        catch (Exception e)
+        else
         {
-            e.printStackTrace();
+            System.out.println("QTable already exists, skipping loading...");
         }
 
-        return q;
+        return instance;
     }
 
     public void printQl()
