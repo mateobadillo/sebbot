@@ -10,6 +10,8 @@ import sebbot.Vector2D;
  */
 public class MarkovDecisionProcess
 {
+    public static final float BIG_REWARD = 1000000f;
+    
     public static State nextState(State s, Action a)
     {
         return nextState(s, a, false);
@@ -109,11 +111,11 @@ public class MarkovDecisionProcess
 
             if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
             {
-                reward = 1000000.0f;
+                reward = BIG_REWARD;
             }
             else
             {
-                reward = 1000.0f - nextStepDistance; //0.0f - nextStepDistance;
+                reward =  0f-nextStepDistance; //0.0f - nextStepDistance;
             }
         }
 
