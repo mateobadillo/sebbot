@@ -1,4 +1,3 @@
-
 package sebbot;
 
 import java.io.IOException;
@@ -10,6 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
+import sebbot.strategy.DPSGoTo;
+import sebbot.strategy.GoToBallAndShoot;
+import sebbot.strategy.GoToBallAndShoot2;
+import sebbot.strategy.QiterationGoTo;
+import sebbot.strategy.Strategy;
+import sebbot.strategy.UniformCover;
+
 /**
  * This class implements the commands of the Robocup Soccer Simulation 2D
  * interface. It contains the client-server communication functions.
@@ -20,14 +26,14 @@ import java.nio.charset.Charset;
 public class RobocupClient implements Runnable
 {
 
-    private final int MSG_SIZE = 4096; // Size of the socket buffer
+    private final int      MSG_SIZE = 4096; // Size of the socket buffer
 
-    private DatagramSocket   socket;   // Socket to communicate with the server
-    private InetAddress      host;     // Server address
-    private int              port;     // Server port
-    private String           teamName; // Team name
-    private Brain            brain;    // Actions deciding module
-    
+    private DatagramSocket socket;         // Socket to communicate with the server
+    private InetAddress    host;           // Server address
+    private int            port;           // Server port
+    private String         teamName;       // Team name
+    private Brain          brain;          // Actions deciding module
+
     /*
      * =========================================================================
      * 
@@ -42,7 +48,7 @@ public class RobocupClient implements Runnable
      * @throws SocketException
      */
     public RobocupClient(InetAddress host, int port, String teamName)
-            throws SocketException
+                                                                     throws SocketException
     {
         this.socket = new DatagramSocket();
         this.host = host;
@@ -58,7 +64,7 @@ public class RobocupClient implements Runnable
         send("(bye)");
         socket.close();
     }
-    
+
     /*
      * =========================================================================
      * 
@@ -101,7 +107,7 @@ public class RobocupClient implements Runnable
         byte[] buffer = message.getBytes(Charset.defaultCharset());
 
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, host,
-                port);
+            port);
 
         try
         {
@@ -196,8 +202,7 @@ public class RobocupClient implements Runnable
             System.out.println(message);
 
     }
-    
-    
+
     /**
      * This function sends the init message to the server and parse its answer.
      * Once the response of the server has been parsed, the brain is initialized
@@ -222,7 +227,7 @@ public class RobocupClient implements Runnable
         send("(init " + teamName + " (version 14))");
         socket.receive(packet);
         port = packet.getPort();
-        
+
         String initMsg = new String(buffer, Charset.defaultCharset());
         final String initPattern = "\\(init ([lr]) ([1-9]{1,2}) ([a-zA-Z_]+)\\)";
 
@@ -233,8 +238,9 @@ public class RobocupClient implements Runnable
         {
             boolean leftTeam = matcher.group(1).charAt(0) == 'l' ? true : false;
             int playerNumber = Integer.valueOf(matcher.group(2));
-            
-            brain = new Brain(this, leftTeam, playerNumber, strategy);
+
+            brain = new Brain(this, leftTeam, playerNumber,
+                stringToStrategy(strategy));
             brain.getFullstateInfo().setPlayMode(matcher.group(3));
         }
         else
@@ -242,6 +248,55 @@ public class RobocupClient implements Runnable
             throw new IOException(initMsg);
         }
 
+    }
+
+    /**
+     * Creates a strategy object based on its name.
+     * 
+     * @param s the name of the strategy.
+     * @return the created strategy.
+     */
+    protected Strategy stringToStrategy(String s)
+    {
+        Strategy s1;
+
+        if (s.equalsIgnoreCase("UniformCover"))
+        {
+            s1 = new UniformCover(5);
+        }
+        else if (s.equalsIgnoreCase("UniformCoverDPS"))
+        {
+            s1 = new UniformCover(5);
+            UniformCover.setBallCaptureAlgorithm(new DPSGoTo("savedBFs.zip"));
+        }
+        else if (s.equalsIgnoreCase("UniformCoverQit"))
+        { // TODO fix so that it loads qtable only once.
+            s1 = new UniformCover(5);
+            UniformCover.setBallCaptureAlgorithm(new QiterationGoTo(
+                "backupQl.zip"));
+        }
+        else if (s.equalsIgnoreCase("GoToBallAndShoot"))
+        {
+            s1 = new GoToBallAndShoot();
+        }
+        else if (s.equalsIgnoreCase("GoToBallAndShoot2"))
+        {
+            s1 = new GoToBallAndShoot2();
+        }
+        else if (s.equalsIgnoreCase("QiterationGoTo"))
+        {
+            s1 = new QiterationGoTo();
+        }
+        else if (s.equalsIgnoreCase("DPSGoto"))
+        {
+            s1 = new DPSGoTo();
+        }
+        else
+        {
+            s1 = new GoToBallAndShoot();
+        }
+
+        return s1;
     }
 
     /** 
@@ -253,7 +308,7 @@ public class RobocupClient implements Runnable
         while (true)
         {
             parseServerMsg(receive());
-        }       
+        }
     }
 
 }

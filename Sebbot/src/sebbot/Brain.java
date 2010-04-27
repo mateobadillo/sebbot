@@ -27,7 +27,7 @@ public class Brain implements Runnable
     private FullstateInfo            fullstateInfo; // Contains all info about the
                                                     //   current state of the game
     private Player                   player;       // The player this brain controls
-    private String                   strategy;     // Strategy used by this brain
+    private Strategy                 strategy;     // Strategy used by this brain
     private ArrayDeque<PlayerAction> actionsQueue; // Contains the actions to be executed.
 
     /*
@@ -46,7 +46,7 @@ public class Brain implements Runnable
      * @param strategy
      */
     public Brain(RobocupClient robocupClient, boolean leftSide,
-            int playerNumber, String strategy)
+            int playerNumber, Strategy strategy)
     {
         this.robocupClient = robocupClient;
         this.fullstateInfo = new FullstateInfo("");
@@ -98,7 +98,7 @@ public class Brain implements Runnable
     /**
      * @return the strategy
      */
-    public String getStrategy()
+    public Strategy getStrategy()
     {
         return strategy;
     }
@@ -106,7 +106,7 @@ public class Brain implements Runnable
     /**
      * @param strategy the strategy to set
      */
-    public void setStrategy(String strategy)
+    public void setStrategy(Strategy strategy)
     {
         this.strategy = strategy;
     }
@@ -158,41 +158,6 @@ public class Brain implements Runnable
     {
         // Before kick off, position the player somewhere in his side.
         robocupClient.move(-Math.random() * 52.5, Math.random() * 34.0);
-
-        Strategy s1;
-        System.out.println(strategy);
-        if (strategy.equalsIgnoreCase("UniformCover"))
-        {
-            s1 = new UniformCover(5);
-        }
-        else if (strategy.equalsIgnoreCase("UniformCoverDPS"))
-        {
-            s1 = new UniformCover(5,2);
-        }
-        else if (strategy.equalsIgnoreCase("UniformCoverQit"))
-        {
-            s1 = new UniformCover(5,1);
-        }
-        else if (strategy.equalsIgnoreCase("GoToBallAndShoot"))
-        {
-            s1 = new GoToBallAndShoot();
-        }
-        else if (strategy.equalsIgnoreCase("GoToBallAndShoot2"))
-        {
-            s1 = new GoToBallAndShoot2();
-        }
-        else if (strategy.equalsIgnoreCase("QiterationGoTo"))
-        {
-            s1 = new QiterationGoTo();
-        }
-        else if (strategy.equalsIgnoreCase("DPSGoto"))
-        {
-            s1 = new DPSGoTo();
-        }
-        else
-        {
-            s1 = new DPSGoTo();
-        }
         
         int lastTimeStep = 0;
         int currentTimeStep = 0;
@@ -204,7 +169,7 @@ public class Brain implements Runnable
             {
                 if (actionsQueue.isEmpty())
                 { // The queue is empty, check if we need to add an action.
-                    s1.doAction(robocupClient, fullstateInfo, player);
+                    strategy.doAction(robocupClient, fullstateInfo, player);
                 }
                 
                 if (!actionsQueue.isEmpty())
