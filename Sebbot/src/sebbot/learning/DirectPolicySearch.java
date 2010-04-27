@@ -294,9 +294,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      */
     public Action chooseAction(State s)
     {
-
         int actionNb = 0;
-        float bestScore = 0.0f;
+        float bestScore = -1000000.0f;
         float score;
         Iterator<RadialGaussian> it;
 
@@ -598,6 +597,34 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 
     }
 
+    public String computePerformance(LinkedList<State> states, String filename)
+    {
+        int nbOfBadStates = 0;
+        float totalScore = 0f;
+        String result = "";
+
+        float score;
+        for (State s : states)
+        {
+            score = MarkovDecisionProcess.trajectoryReward(s, this, 100);
+            if (score < 0f)
+            {
+                nbOfBadStates++;
+            }
+            else
+            {
+                totalScore += score;
+            }
+        }
+
+        float averageScore = totalScore
+                / (float) (states.size() - nbOfBadStates);
+        
+        result = averageScore + ";" + nbOfBadStates;
+
+        return result;
+    }
+
     /**
      * @param filename
      */
@@ -656,6 +683,9 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         return dps;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     public String toString()
     {
         String str = "";
