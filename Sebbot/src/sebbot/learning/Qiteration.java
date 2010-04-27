@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -21,6 +23,7 @@ public class Qiteration implements Policy, Serializable, Runnable
     private static final long     serialVersionUID = -1245314286263462019L;
 
     int                           totalNbOfIterations;
+    long                          totalComputationTime;
 
     private float[][][][][][][][] qTable;
     private float[][][][][][][][] oldQtable;
@@ -46,6 +49,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                       int nbOfStepsForTurn)
     {
         this.totalNbOfIterations = 0;
+        this.totalComputationTime = 0;
         this.nbOfStepsForVelocityNorm = nbOfStepsForVelocityModulus;
         this.nbOfStepsForVelocityDirection = nbOfStepsForVelocityAngle;
         this.nbOfStepsForDistance = nbOfStepsForDistance;
@@ -102,18 +106,11 @@ public class Qiteration implements Policy, Serializable, Runnable
 
     public void computeQl()
     {
+        long startTime;
+        long finishTime;
+
         System.out.println("q iteration starting...");
-        int stateSpaceSize = nbOfStepsForDistance
-                * nbOfStepsForVelocityDirection * nbOfStepsForVelocityDirection
-                * nbOfStepsForVelocityNorm * nbOfStepsForVelocityNorm
-                * nbOfStepsForRelativeAngle * nbOfStepsForRelativeAngle;
-        int actionSpaceSize = (nbOfStepsForTurn + nbOfStepsForDash);
-
-        System.out.println("X x U² = "
-                + (stateSpaceSize * actionSpaceSize * actionSpaceSize));
-
-        System.out.println("Total number of iterations done so far: "
-                + totalNbOfIterations);
+        System.out.println(this);
 
         float tmp;
 
@@ -123,6 +120,7 @@ public class Qiteration implements Policy, Serializable, Runnable
 
         do
         {
+            startTime = new Date().getTime();
             nbOfIterations++;
             for (int bvn = 0; bvn < oldQtable.length; bvn++)
             {
@@ -257,6 +255,9 @@ public class Qiteration implements Policy, Serializable, Runnable
 
             //printQl();
             totalNbOfIterations++;
+            finishTime = new Date().getTime();
+            totalComputationTime += (finishTime - startTime);
+
             System.out.println(nbOfIterations + " iterations done.");
         }
         while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 5000);
@@ -561,5 +562,24 @@ public class Qiteration implements Policy, Serializable, Runnable
     public void run()
     {
         computeQl();
+    }
+
+    public String toString()
+    {
+        String str = "";
+        int stateSpaceSize = nbOfStepsForDistance
+                * nbOfStepsForVelocityDirection * nbOfStepsForVelocityDirection
+                * nbOfStepsForVelocityNorm * nbOfStepsForVelocityNorm
+                * nbOfStepsForRelativeAngle * nbOfStepsForRelativeAngle;
+        int actionSpaceSize = (nbOfStepsForTurn + nbOfStepsForDash);
+
+        str += "X x U² = "
+                + (stateSpaceSize * actionSpaceSize * actionSpaceSize) + "\n";
+
+        str += "Total number of iterations done so far: " + totalNbOfIterations;
+        str += "Total computation time so far (min): "
+                + ((float) (totalComputationTime) / 1000f / 60f) + "\n";
+
+        return str;
     }
 }
