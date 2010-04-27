@@ -1,12 +1,5 @@
 package sebbot;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -240,32 +233,8 @@ public class FullstateInfo
                     .group(8)));
         }
     }
-
-    // Debugging
-    public void printAll()
-    {
-        System.out.println("------ Fullstate at step: " + timeStep
-                + " ---------");
-        System.out.println("ball: " + ball);
-        Player pi;
-        for (int i = 0; i < 11; i++)
-        {
-            pi = leftTeam[i];
-            System.out.println("Player " + (i + 1) + " " + pi);
-        }
-
-        System.out.println();
-
-        for (int i = 0; i < 11; i++)
-        {
-            pi = rightTeam[i];
-            System.out.println("Player " + (i + 1) + " " + pi);
-        }
-
-    }
-
-    // Debugging
-    public void logFullstate(String path) throws IOException
+    
+    public String toString()
     {
         String fs = "";
         fs += "------ " + System.currentTimeMillis() + " ---------\n";
@@ -281,29 +250,8 @@ public class FullstateInfo
             pi = rightTeam[i];
             fs += "Player " + i + " " + pi + "\n";
         }
-
-        Path logfile = Paths.get(path);
-        byte data[] = fs.getBytes();
-
-        OutputStream out = null;
-        out = new BufferedOutputStream(logfile.newOutputStream(CREATE, APPEND));
-        try
-        {
-            out.write(data, 0, data.length);
-        }
-        catch (IOException x)
-        {
-            System.err.println(x);
-        }
-        finally
-        {
-            if (out != null)
-            {
-                out.flush();
-                out.close();
-            }
-        }
-
+        
+        return fs;
     }
 
 }
