@@ -599,17 +599,11 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                                     s = new State(i, j, k, l, m, n, o);
                                     initialStates.add(s);
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
         
         for (float i = 1.5f; i < 3.0f; i += 3.0f)
@@ -629,20 +623,12 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                                     s = new State(i, j, k, l, m, n, o);
                                     performanceTestStates.add(s);
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-        
-
     }
 
     public void computePerformance(LinkedList<State> states, boolean isInitStatesList)
@@ -653,7 +639,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         float score;
         for (State s : states)
         {
-            score = MarkovDecisionProcess.trajectoryReward(s, this, 100);
+            score = MarkovDecisionProcess.trajectoryReward(s, this, 1000);
             if (score < 0f)
             {
                 nbOfBadStates++;
