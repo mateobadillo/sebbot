@@ -267,13 +267,20 @@ public class RobocupClient implements Runnable
         else if (s.equalsIgnoreCase("UniformCoverDPS"))
         {
             s1 = new UniformCover(5);
-            UniformCover.setBallCaptureAlgorithm(new DPSGoTo("savedBFs.zip"));
+            if (UniformCover.getBallCaptureAlgorithm().getClass() != DPSGoTo.class)
+            {
+                UniformCover
+                    .setBallCaptureAlgorithm(new DPSGoTo("savedBFs.zip"));
+            }
         }
         else if (s.equalsIgnoreCase("UniformCoverQit"))
-        { // TODO fix so that it loads qtable only once.
+        {
             s1 = new UniformCover(5);
-            UniformCover.setBallCaptureAlgorithm(new QiterationGoTo(
-                "backupQl.zip"));
+            if (UniformCover.getBallCaptureAlgorithm().getClass() != QiterationGoTo.class)
+            {
+                UniformCover.setBallCaptureAlgorithm(new QiterationGoTo(
+                    "backupQl.zip"));
+            }
         }
         else if (s.equalsIgnoreCase("GoToBallAndShoot"))
         {
