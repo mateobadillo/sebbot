@@ -1,6 +1,5 @@
 package sebbot.learning;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,7 +56,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
     LinkedList<State>                     initialStates;
 
-    
     /*
      * =========================================================================
      * 
@@ -132,14 +131,13 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         //loadBFs("savedBFs.zip");
     }
 
-    
     /*
      * =========================================================================
      * 
      *                      Getters and Setters
      * 
      * =========================================================================
-     */    
+     */
     /**
      * @return the nbOfSamples
      */
@@ -276,7 +274,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         return initialStates;
     }
 
-    
     /*
      * =========================================================================
      * 
@@ -290,7 +287,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     public void run()
     {
         computeOptimalParameters();
-    }    
+    }
 
     /**
      *
@@ -329,24 +326,17 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     {
         long startTime;
         long finishTime;
-        Date date = new Date();
 
         int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
                 / Math.log(2.0d)));
         float[][][][] epsilonSamples = new float[nbOfSamples][nbOfBasicFunctions][2][7];
         boolean[][][] thetaSamples = new boolean[nbOfSamples][nbOfBasicFunctions][nbOfBits];
 
-        System.out.println("Nb of samples: " + nbOfSamples);
-        System.out.println("Nb of basic functions: " + nbOfBasicFunctions);
-        System.out.println("Nb of discrete actions: " + nbOfDiscreteActions);
-        System.out.println("Nb of initial states: " + initialStates.size());
-        System.out.println("Total number of iterations completed so far: "
-                + totalNbOfIterations);
-        System.out.println("Total computation time so far: "
-            + totalComputationTime);
+        System.out.println(this);
+
         for (int nbOfIt = 0; nbOfIt < 50; nbOfIt++)
         {
-            startTime = date.getTime();
+            startTime = new Date().getTime();
 
             System.out.println((nbOfIt + 1) + "th iteration starting...");
 
@@ -499,7 +489,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
             }
 
             totalNbOfIterations++;
-            finishTime = date.getTime();
+            finishTime = new Date().getTime();
             totalComputationTime += (finishTime - startTime);
 
             save();
@@ -660,17 +650,27 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         {
             e.printStackTrace();
         }
-        
-        System.out.println("Nb of samples: " + dps.getNbOfSamples());
-        System.out.println("Nb of basic functions: " + dps.getNbOfBasicFunctions());
-        System.out.println("Nb of discrete actions: " + dps.getNbOfDiscreteActions());
-        System.out.println("Nb of initial states: " + dps.getInitialStates().size());
-        System.out.println("Total number of iterations completed so far: "
-                + dps.getTotalNbOfIterations());
-        System.out.println("Total computation time so far: "
-            + dps.getTotalComputationTime());
+
+        System.out.println(dps);
 
         return dps;
+    }
+
+    public String toString()
+    {
+        String str = "";
+
+        str += "Nb of samples: " + nbOfSamples + "\n";
+
+        str += "Nb of basic functions: " + nbOfBasicFunctions + "\n";
+        str += "Nb of discrete actions: " + nbOfDiscreteActions + "\n";
+        str += "Nb of initial states: " + initialStates.size() + "\n";
+        str += "Total number of iterations completed so far: "
+                + totalNbOfIterations + "\n";
+        str += "Total computation time so far (min): "
+                + ((float) (totalComputationTime) / 1000f / 60f) + "\n";
+
+        return str;
     }
 
 }
