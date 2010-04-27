@@ -13,12 +13,24 @@ public class DPSGoTo implements Strategy
 {
     private DirectPolicySearch dps;
 
-    public DPSGoTo()
+    public DPSGoTo(DirectPolicySearch dps)
     {
-        //this.dps = DirectPolicySearch.instance();
-        this.dps = DirectPolicySearch.load("savedBFs.zip");
+        this.dps = dps;
         //new Thread(dps).start();
     }
+    
+    public DPSGoTo(String filename)
+    {
+        this.dps = DirectPolicySearch.load(filename);
+        //new Thread(dps).start();
+    }
+    
+    public DPSGoTo()
+    {
+        this.dps = new DirectPolicySearch(12,384);
+        new Thread(dps).start();
+    }
+
 
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)

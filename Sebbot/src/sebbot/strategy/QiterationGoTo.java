@@ -13,12 +13,24 @@ public class QiterationGoTo implements Strategy
 {
     Qiteration q;
 
-    public QiterationGoTo()
+    public QiterationGoTo(Qiteration q)
     {
-        //q = Qiteration.instance(1, 1, 200, 20, 2, 10);
-        q = Qiteration.loadQl("backupQl.zip");
+        this.q = q;
         //new Thread(q).start();
     }
+    
+    public QiterationGoTo(String filename)
+    {
+        this.q = Qiteration.loadQl(filename);
+        //new Thread(q).start();
+    }
+
+    public QiterationGoTo()
+    {
+        q = new Qiteration(1, 1, 200, 20, 2, 10);
+        new Thread(q).start();
+    }
+
 
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {

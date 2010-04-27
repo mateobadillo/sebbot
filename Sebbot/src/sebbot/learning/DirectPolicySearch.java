@@ -1,5 +1,6 @@
 package sebbot.learning;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
@@ -34,8 +36,10 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 {
     private static final long             serialVersionUID = 8074266714836534435L;
 
-    int                                   nbOfIterations;
     Random                                random;
+
+    int                                   totalNbOfIterations;
+    long                                  totalComputationTime;
 
     int                                   nbOfDiscreteActions;
     int                                   nbOfBasicFunctions;
@@ -52,34 +56,29 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
     LinkedList<State>                     initialStates;
 
-    private static DirectPolicySearch     instance         = null;
-
-    public static DirectPolicySearch instance()
+    
+    /*
+     * =========================================================================
+     * 
+     *                     Constructors and destructors
+     * 
+     * =========================================================================
+     */
+    public DirectPolicySearch(int nbOfBasicFunctions, int nbOfSamples)
     {
-        if (instance == null)
-        {
-            instance = new DirectPolicySearch();
-        }
-
-        return instance;
-    }
-
-    private DirectPolicySearch()
-    {
-        this.nbOfIterations = 0;
+        this.totalNbOfIterations = 0;
+        this.totalComputationTime = 0;
 
         this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
         this.nbOfDiscreteActions = (Action.getTurnSteps() + Action
             .getDashSteps());
-        this.nbOfBasicFunctions = nbOfDiscreteActions + nbOfDiscreteActions / 2;
+        this.nbOfBasicFunctions = nbOfBasicFunctions;
 
         int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
                 / Math.log(2.0d)));
 
-        this.nbOfSamples = 1 /* Multiplier */
-        * (4 * 7 * nbOfBasicFunctions /* Nb of Epsilon params */
-        + nbOfBasicFunctions * nbOfBits); /* Nb of Theta params */
+        this.nbOfSamples = nbOfSamples;
 
         this.basicFunctions = new RadialGaussian[nbOfBasicFunctions];
         this.centersMeans = new float[nbOfBasicFunctions][7];
@@ -131,9 +130,171 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 
         //computeOptimalParameters();
         //loadBFs("savedBFs.zip");
-
     }
 
+    
+    /*
+     * =========================================================================
+     * 
+     *                      Getters and Setters
+     * 
+     * =========================================================================
+     */    
+    /**
+     * @return the nbOfSamples
+     */
+    public int getNbOfSamples()
+    {
+        return nbOfSamples;
+    }
+
+    /**
+     * @param nbOfSamples the nbOfSamples to set
+     */
+    public void setNbOfSamples(int nbOfSamples)
+    {
+        this.nbOfSamples = nbOfSamples;
+    }
+
+    /**
+     * @return the serialversionuid
+     */
+    public static long getSerialversionuid()
+    {
+        return serialVersionUID;
+    }
+
+    /**
+     * @return the random
+     */
+    public Random getRandom()
+    {
+        return random;
+    }
+
+    /**
+     * @return the totalNbOfIterations
+     */
+    public int getTotalNbOfIterations()
+    {
+        return totalNbOfIterations;
+    }
+
+    /**
+     * @return the totalComputationTime
+     */
+    public long getTotalComputationTime()
+    {
+        return totalComputationTime;
+    }
+
+    /**
+     * @return the nbOfDiscreteActions
+     */
+    public int getNbOfDiscreteActions()
+    {
+        return nbOfDiscreteActions;
+    }
+
+    /**
+     * @return the nbOfBasicFunctions
+     */
+    public int getNbOfBasicFunctions()
+    {
+        return nbOfBasicFunctions;
+    }
+
+    /**
+     * @return the percentageOfGoodSamples
+     */
+    public float getPercentageOfGoodSamples()
+    {
+        return percentageOfGoodSamples;
+    }
+
+    /**
+     * @return the centersMeans
+     */
+    public float[][] getCentersMeans()
+    {
+        return centersMeans;
+    }
+
+    /**
+     * @return the centersStdDevs
+     */
+    public float[][] getCentersStdDevs()
+    {
+        return centersStdDevs;
+    }
+
+    /**
+     * @return the radiiMeans
+     */
+    public float[][] getRadiiMeans()
+    {
+        return radiiMeans;
+    }
+
+    /**
+     * @return the radiiStdDevs
+     */
+    public float[][] getRadiiStdDevs()
+    {
+        return radiiStdDevs;
+    }
+
+    /**
+     * @return the bernoulliMeans
+     */
+    public float[][] getBernoulliMeans()
+    {
+        return bernoulliMeans;
+    }
+
+    /**
+     * @return the basicFunctions
+     */
+    public RadialGaussian[] getBasicFunctions()
+    {
+        return basicFunctions;
+    }
+
+    /**
+     * @return the actionToBasicFunctions
+     */
+    public ArrayList<LinkedList<RadialGaussian>> getActionToBasicFunctions()
+    {
+        return actionToBasicFunctions;
+    }
+
+    /**
+     * @return the initialStates
+     */
+    public LinkedList<State> getInitialStates()
+    {
+        return initialStates;
+    }
+
+    
+    /*
+     * =========================================================================
+     * 
+     *                            Main methods
+     * 
+     * =========================================================================
+     */
+    /**
+     *
+     */
+    public void run()
+    {
+        computeOptimalParameters();
+    }    
+
+    /**
+     *
+     */
     public Action chooseAction(State s)
     {
 
@@ -161,8 +322,15 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         return new Action(actionNb);
     }
 
+    /**
+     * 
+     */
     public void computeOptimalParameters()
     {
+        long startTime;
+        long finishTime;
+        Date date = new Date();
+
         int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
                 / Math.log(2.0d)));
         float[][][][] epsilonSamples = new float[nbOfSamples][nbOfBasicFunctions][2][7];
@@ -173,9 +341,13 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         System.out.println("Nb of discrete actions: " + nbOfDiscreteActions);
         System.out.println("Nb of initial states: " + initialStates.size());
         System.out.println("Total number of iterations completed so far: "
-                + nbOfIterations);
-        for (int nbOfIt = 0; nbOfIt < 100; nbOfIt++)
+                + totalNbOfIterations);
+        System.out.println("Total computation time so far: "
+            + totalComputationTime);
+        for (int nbOfIt = 0; nbOfIt < 50; nbOfIt++)
         {
+            startTime = date.getTime();
+
             System.out.println((nbOfIt + 1) + "th iteration starting...");
 
             // Generate samples
@@ -265,7 +437,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 samplesScore.put(score, l);
 
                 float percentageDone = 100.0f * (float) i / (float) nbOfSamples;
-                if (i % (nbOfSamples / 100 * 10) == 0)
+                if (i % Math.round((float) nbOfSamples / 100f * 10f) == 0)
                 {
                     System.out.print(Math.round(percentageDone) + "% ");
                 }
@@ -326,11 +498,22 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 basicFunctions[i].setRadii(radiiMeans[i]);
             }
 
-            nbOfIterations++;
-            save("savedBFs.zip");
+            totalNbOfIterations++;
+            finishTime = date.getTime();
+            totalComputationTime += (finishTime - startTime);
+
+            save();
         }
     }
 
+    /**
+     * Checks whether the mean sample belongs to the right interval 
+     * according to the state variable number (1,...,7).
+     * 
+     * @param sample
+     * @param stateVariableNb
+     * @return
+     */
     private boolean isValidMean(float sample, int stateVariableNb)
     {
         boolean isValidSample = false;
@@ -387,6 +570,9 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         return isValidSample;
     }
 
+    /**
+     * 
+     */
     private void generateStates()
     {
         State s;
@@ -422,6 +608,9 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 
     }
 
+    /**
+     * @param filename
+     */
     public void save(String filename)
     {
         try
@@ -430,15 +619,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
             GZIPOutputStream gzos = new GZIPOutputStream(fos);
             ObjectOutputStream out = new ObjectOutputStream(gzos);
             out.writeObject(this);
-
-            //            out.writeObject(centersMeans);
-            //            out.writeObject(centersStdDevs);
-            //            out.writeObject(radiiMeans);
-            //            out.writeObject(radiiStdDevs);
-            //            out.writeObject(bernoulliMeans);
-            //            out.writeObject(basicFunctions);
-            //            out.writeObject(actionToBasicFunctions);
-            //            out.writeObject(initialStates);
             out.flush();
             out.close();
         }
@@ -449,35 +629,48 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
 
     }
 
-    public static synchronized DirectPolicySearch load(String filename)
+    /**
+     * 
+     */
+    public void save()
     {
-        if (instance == null)
-        {
-            try
-            {
-                FileInputStream fis = new FileInputStream(filename);
-                GZIPInputStream gzis = new GZIPInputStream(fis);
-                ObjectInputStream in = new ObjectInputStream(gzis);
-                instance = (DirectPolicySearch) in.readObject();
-                in.close();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else
-        {
-            System.out
-                .println("Direct policy search functions already exist, skipping loading...");
-        }
+        String filename = String.valueOf(nbOfBasicFunctions) + "_"
+                + String.valueOf(nbOfSamples) + "_"
+                + String.valueOf(totalNbOfIterations) + ".zip";
 
-        return instance;
+        save(filename);
     }
 
-    public void run()
+    /**
+     * @param filename
+     * @return
+     */
+    public static synchronized DirectPolicySearch load(String filename)
     {
-        computeOptimalParameters();
+        DirectPolicySearch dps = null;
+        try
+        {
+            FileInputStream fis = new FileInputStream(filename);
+            GZIPInputStream gzis = new GZIPInputStream(fis);
+            ObjectInputStream in = new ObjectInputStream(gzis);
+            dps = (DirectPolicySearch) in.readObject();
+            in.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+        System.out.println("Nb of samples: " + dps.getNbOfSamples());
+        System.out.println("Nb of basic functions: " + dps.getNbOfBasicFunctions());
+        System.out.println("Nb of discrete actions: " + dps.getNbOfDiscreteActions());
+        System.out.println("Nb of initial states: " + dps.getInitialStates().size());
+        System.out.println("Total number of iterations completed so far: "
+                + dps.getTotalNbOfIterations());
+        System.out.println("Total computation time so far: "
+            + dps.getTotalComputationTime());
+
+        return dps;
     }
 
 }

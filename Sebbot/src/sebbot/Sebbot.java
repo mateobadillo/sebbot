@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import sebbot.learning.DirectPolicySearch;
+import sebbot.strategy.DPSGoTo;
+
 /**
  * @author Sebastien Lentz
  *
@@ -38,6 +41,11 @@ public class Sebbot
      * @throws IOException
      */
     public static void main(String args[]) throws SocketException, IOException
+    {
+        startAgents(args);
+    }
+    
+    public static void startAgents(String args[]) throws IOException
     {
         String hostname = "127.0.0.1";
         int port = 6000;
@@ -93,22 +101,54 @@ public class Sebbot
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
-                    team);
-            client.init("DPSGoto");
-            brain = client.getBrain();
+                team);
+            client.init("UniformCoverDPS");   
+            brain = client.getBrain();            
             new Thread(client).start();
             new Thread(brain).start();
         }
 
+//        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
+//        DPSGoTo dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
-                    "team2");
-            client.init("QiterationGoto");
+                "team2");
+            client.init("UniformCoverQit");
+            
             brain = client.getBrain();
+//            brain.setStrategy(dpsGoto);
+            
             new Thread(client).start();
             new Thread(brain).start();
         }
-
     }
+    
+    public static void dpsComputation()
+    {
+        DirectPolicySearch dps;
+        int nbOfBFs = 12;
+        for (int i = 0; i < 20; i=i+2)
+        {
+            nbOfBFs += i;
+            dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs
+                    * (4 * 7 + 4));
+            dps.run();
+        }
+    }
+    
+    public static void computeDpsScores()
+    {
+        DirectPolicySearch dps;
+        int nbOfBFs = 12;
+        for (int i = 0; i < 20; i=i+2)
+        {
+            nbOfBFs += i;
+            dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs
+                    * (4 * 7 + 4));
+            dps.run();
+        }
+    }
+    
+    
 }

@@ -15,22 +15,57 @@ import sebbot.SoccerParams;
  */
 public class UniformCover implements Strategy
 {
+    static Strategy      ballCaptureAlgorithm = new GoToBallAndShoot();
+    
     protected int        numberOfPlayers;
     protected Vector2D[] optimalPositions;
-    int                  ballCaptureAlgorithm;
 
+    /*
+     * =========================================================================
+     * 
+     *                     Constructors and destructors
+     * 
+     * =========================================================================
+     */
+    /**
+     * @param numberOfplayers
+     */
     public UniformCover(int numberOfplayers)
     {
-        this(numberOfplayers, 0);
-    }
-    
-    public UniformCover(int numberOfplayers, int ballCaptureAlgorithm)
-    {
-        this.ballCaptureAlgorithm = ballCaptureAlgorithm;
         this.numberOfPlayers = numberOfplayers;
-        this.optimalPositions = new Vector2D[numberOfplayers - 1];
+        this.optimalPositions = new Vector2D[numberOfplayers-1];
     }
 
+    /*
+     * =========================================================================
+     * 
+     *                      Getters and Setters
+     * 
+     * =========================================================================
+     */
+    /**
+     * @return the ballCaptureAlgorithm
+     */
+    public static Strategy getBallCaptureAlgorithm()
+    {
+        return ballCaptureAlgorithm;
+    }
+
+    /**
+     * @param ballCaptureAlgorithm the ballCaptureAlgorithm to set
+     */
+    public static void setBallCaptureAlgorithm(Strategy ballCaptureAlgorithm)
+    {
+        UniformCover.ballCaptureAlgorithm = ballCaptureAlgorithm;
+    }
+
+    /*
+     * =========================================================================
+     * 
+     *                      Main methods
+     * 
+     * =========================================================================
+     */
     public void doAction(RobocupClient c, FullstateInfo fsi, Player p)
     {
         Ball ball = fsi.getBall();
@@ -51,22 +86,7 @@ public class UniformCover implements Strategy
         /* The closest player goes to the ball go to the ball and kicks it. */
         if (closestToTheBall == p)
         {
-            //BasicStrategy.goTo(ball, s, fsi, p);
-            switch (ballCaptureAlgorithm)
-            {
-            case 0:
-                BasicStrategy.goToBallAndShootToGoal(c, fsi, p);
-                break;
-            case 1:
-                BasicStrategy.qIterationGoToBallandShootToGoal(c, fsi, p);
-                break;
-            case 2:
-                BasicStrategy.dpsGoToBallandShootToGoal(c, fsi, p);
-                break;
-            default:
-                BasicStrategy.goToBallAndShootToGoal(c, fsi, p);
-                break;
-            }
+            ballCaptureAlgorithm.doAction(c, fsi, p);
         }
 
         else if (numberOfPlayers == 5)
