@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -41,6 +40,9 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     int                                   totalNbOfIterations;
     long                                  totalComputationTime;
 
+    float[]                               averageScores;
+    int[]                                 nbOfBadStates;
+
     int                                   nbOfDiscreteActions;
     int                                   nbOfBasicFunctions;
     int                                   nbOfSamples;
@@ -55,6 +57,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     RadialGaussian[]                      basicFunctions;
     ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
     LinkedList<State>                     initialStates;
+    LinkedList<State>                     performanceTestStates;
 
     /*
      * =========================================================================
@@ -67,6 +70,12 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     {
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
+        this.averageScores = new float[2];
+        this.nbOfBadStates = new int[2];
+        this.averageScores[0] = 0f;
+        this.averageScores[1] = 0f;
+        this.nbOfBadStates[0] = 0;
+        this.nbOfBadStates[1] = 0;
 
         this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
@@ -125,6 +134,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         }
 
         initialStates = new LinkedList<State>();
+        performanceTestStates = new LinkedList<State>();
         generateStates();
 
         //computeOptimalParameters();
@@ -338,6 +348,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
             startTime = new Date().getTime();
 
             System.out.println((nbOfIt + 1) + "th iteration starting...");
+            System.out.println(this);
 
             // Generate samples
             System.out.println("Generating samples...");
@@ -486,7 +497,13 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 basicFunctions[i].setCenters(centersMeans[i]);
                 basicFunctions[i].setRadii(radiiMeans[i]);
             }
+            
+            // Compute performance
+            System.out.println("Computing performance scores...");
+            computePerformance(initialStates,true);
+            computePerformance(performanceTestStates,false);
 
+            // Update number of iterations etc
             totalNbOfIterations++;
             finishTime = new Date().getTime();
             totalComputationTime += (finishTime - startTime);
@@ -594,14 +611,44 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
             }
 
         }
+        
+        for (float i = 1.5f; i < 3.0f; i += 3.0f)
+        {
+            for (float j = -155.0f; j < 180.0f; j += 105.0f)
+            {
+                for (float k = 0.9f; k < 1.05f; k += 1.05f)
+                {
+                    for (float l = -164.0f; l < 180.0f; l += 130.0f)
+                    {
+                        for (float m = -145.0f; m < 180.0f; m += 96.0f)
+                        {
+                            for (float n = 0.9f; n < 125.0f; n += 12.0f)
+                            {
+                                for (float o = -170.0f; o < 180.0f; o += 60.0f)
+                                {
+                                    s = new State(i, j, k, l, m, n, o);
+                                    performanceTestStates.add(s);
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+        
 
     }
 
-    public String computePerformance(LinkedList<State> states, String filename)
+    public void computePerformance(LinkedList<State> states, boolean isInitStatesList)
     {
         int nbOfBadStates = 0;
         float totalScore = 0f;
-        String result = "";
 
         float score;
         for (State s : states)
@@ -620,9 +667,16 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         float averageScore = totalScore
                 / (float) (states.size() - nbOfBadStates);
         
-        result = averageScore + ";" + nbOfBadStates;
-
-        return result;
+        if (isInitStatesList)
+        {
+            this.averageScores[0] = averageScore;
+            this.nbOfBadStates[0] = nbOfBadStates;            
+        }
+        else
+        {
+            this.averageScores[1] = averageScore;
+            this.nbOfBadStates[1] = nbOfBadStates;                        
+        }
     }
 
     /**
@@ -695,6 +749,9 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         str += "Nb of basic functions: " + nbOfBasicFunctions + "\n";
         str += "Nb of discrete actions: " + nbOfDiscreteActions + "\n";
         str += "Nb of initial states: " + initialStates.size() + "\n";
+        str += "Nb of performance test states: " + performanceTestStates.size() + "\n";
+        str += "Performance scores: " + averageScores[0] + " ; " + averageScores[1] + "\n";
+        str += "Nb of bad states: " + nbOfBadStates[0] + " ; " + nbOfBadStates[1] + "\n";
         str += "Total number of iterations completed so far: "
                 + totalNbOfIterations + "\n";
         str += "Total computation time so far (min): "
