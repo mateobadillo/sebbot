@@ -128,25 +128,12 @@ public class Sebbot
     public static void dpsComputation()
     {
         DirectPolicySearch dps;
-        int nbOfBFs = 4;
-        for (int i = 0; i < 20; i = i + 2)
-        {
-            nbOfBFs += i;
-            dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs * (4 * 7 + 4));
-            dps.run();
-        }
-    }
-
-    public static void computeDpsScores()
-    {
-        DirectPolicySearch dps;
         int nbOfBFs = 12;
-        for (int i = 0; i < 20; i = i + 2)
+        for (int i = 0; i < 26; i = i + 2)
         {
             nbOfBFs += i;
             dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs * (4 * 7 + 4));
             dps.run();
         }
     }
-
 }
