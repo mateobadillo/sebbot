@@ -7,4 +7,5 @@ package sebbot.learning;
 public interface Policy
 {
     public Action chooseAction(State s);
+    public String getName();
 }

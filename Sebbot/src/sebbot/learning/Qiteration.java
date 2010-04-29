@@ -582,4 +582,10 @@ public class Qiteration implements Policy, Serializable, Runnable
 
         return str;
     }
+
+    @Override
+    public String getName()
+    {
+        return "Qit_" + totalNbOfIterations;
+    }
 }

@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import sebbot.learning.DirectPolicySearch;
+import sebbot.learning.PerformanceTest;
+import sebbot.learning.RadialGaussian;
 import sebbot.strategy.DPSGoTo;
 
 /**
@@ -44,6 +46,16 @@ public class Sebbot
     {
         //startAgents(args);
         dpsComputation();
+        //performanceTest();
+        
+//        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
+//        RadialGaussian[] rgs = dps.getBasicFunctions();
+//        
+//        for (int i =0; i< rgs.length; i++)
+//        {
+//            System.out.println(rgs[i].getDiscreteActionNb());
+//        }
+        
     }
 
     public static void startAgents(String args[]) throws IOException
@@ -99,26 +111,31 @@ public class Sebbot
         Brain brain;
         int nbOfPlayers = 5;
 
+        DirectPolicySearch dps = DirectPolicySearch.load("12_768_50.zip");
+        DPSGoTo dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                 team);
-            client.init("UniformCoverDPS");
+            client.init("");
+            
             brain = client.getBrain();
+            brain.setStrategy(dpsGoto);
+            
             new Thread(client).start();
             new Thread(brain).start();
         }
 
-        //        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
-        //        DPSGoTo dpsGoto = new DPSGoTo(dps);
+        dps = DirectPolicySearch.load("32_2048_50.zip");
+        dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                 "team2");
-            client.init("UniformCoverQit");
+            client.init("");
 
             brain = client.getBrain();
-            //            brain.setStrategy(dpsGoto);
+            brain.setStrategy(dpsGoto);
 
             new Thread(client).start();
             new Thread(brain).start();
@@ -129,11 +146,18 @@ public class Sebbot
     {
         DirectPolicySearch dps;
         int nbOfBFs = 12;
-        for (int i = 0; i < 26; i = i + 2)
+        for (int i = 0; i < 18; i++)
         {
-            nbOfBFs += i;
             dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs * (4 * 7 + 4));
             dps.run();
+            nbOfBFs += 2;
         }
+    }
+    
+    public static void performanceTest()
+    {
+        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
+        PerformanceTest pt = new PerformanceTest(dps, dps.getPerformanceTestStates());
+        new Thread(pt).start();
     }
 }
