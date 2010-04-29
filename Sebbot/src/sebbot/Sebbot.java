@@ -45,16 +45,16 @@ public class Sebbot
     public static void main(String args[]) throws SocketException, IOException
     {
         //startAgents(args);
-        dpsComputation();
+        //dpsComputation();
         //performanceTest();
         
-//        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
-//        RadialGaussian[] rgs = dps.getBasicFunctions();
-//        
-//        for (int i =0; i< rgs.length; i++)
-//        {
-//            System.out.println(rgs[i].getDiscreteActionNb());
-//        }
+        DirectPolicySearch dps = DirectPolicySearch.load("12_768_1.zip");
+        RadialGaussian[] rgs = dps.getBasicFunctions();
+        
+        for (int i =0; i< rgs.length; i++)
+        {
+            System.out.println(rgs[i].getDiscreteActionNb());
+        }
         
     }
 
@@ -126,7 +126,7 @@ public class Sebbot
             new Thread(brain).start();
         }
 
-        dps = DirectPolicySearch.load("32_2048_50.zip");
+        dps = DirectPolicySearch.load("14_896_50.zip");
         dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
