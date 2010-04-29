@@ -503,20 +503,23 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 actionToBasicFunctions.get(i).clear();
             }
 
-            int associatedAction;
+            int associatedAction = nbOfDiscreteActions;
             boolean[] bestAction = new boolean[nbOfBits];
             for (int i = 0; i < nbOfBasicFunctions; i++)
             {
                 basicFunctions[i].setCenters(centersMeans[i]);
                 basicFunctions[i].setRadii(radiiMeans[i]);
 
-                for (int j = 0; j < nbOfBits; j++)
+                while (associatedAction >= nbOfDiscreteActions)
                 {
-                    bestAction[j] = MathTools
-                        .nextBernoulli(bernoulliMeans[i][j]);
+                    for (int j = 0; j < nbOfBits; j++)
+                    {
+                        bestAction[j] = MathTools
+                            .nextBernoulli(bernoulliMeans[i][j]);
+                    }
+                    associatedAction = MathTools.toDecimal(bestAction);
                 }
-                associatedAction = MathTools.toDecimal(bestAction);
-                
+
                 basicFunctions[i].setDiscreteActionNb(associatedAction);
                 actionToBasicFunctions.get(associatedAction).add(
                     basicFunctions[i]);
