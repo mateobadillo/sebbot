@@ -15,6 +15,8 @@ import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.swing.plaf.basic.BasicGraphicsUtils;
+
 import sebbot.MathTools;
 import sebbot.SoccerParams;
 
@@ -41,7 +43,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     long                                  totalComputationTime;
 
     float[]                               averageScores;
-    int[]                                 nbOfBadStates;
 
     int                                   nbOfDiscreteActions;
     int                                   nbOfBasicFunctions;
@@ -71,11 +72,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
         this.averageScores = new float[2];
-        this.nbOfBadStates = new int[2];
         this.averageScores[0] = 0f;
         this.averageScores[1] = 0f;
-        this.nbOfBadStates[0] = 0;
-        this.nbOfBadStates[1] = 0;
 
         this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
@@ -282,6 +280,14 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     public LinkedList<State> getInitialStates()
     {
         return initialStates;
+    }
+
+    /**
+     * @return the performanceTestStates
+     */
+    public LinkedList<State> getPerformanceTestStates()
+    {
+        return performanceTestStates;
     }
 
     /*
@@ -492,16 +498,34 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
             }
 
             // Update basic functions parameters using the best samples
+            for (int i = 0; i < nbOfDiscreteActions; i++)
+            {
+                actionToBasicFunctions.get(i).clear();
+            }
+
+            int associatedAction;
+            boolean[] bestAction = new boolean[nbOfBits];
             for (int i = 0; i < nbOfBasicFunctions; i++)
             {
                 basicFunctions[i].setCenters(centersMeans[i]);
                 basicFunctions[i].setRadii(radiiMeans[i]);
+
+                for (int j = 0; j < nbOfBits; j++)
+                {
+                    bestAction[j] = MathTools
+                        .nextBernoulli(bernoulliMeans[i][j]);
+                }
+                associatedAction = MathTools.toDecimal(bestAction);
+                
+                basicFunctions[i].setDiscreteActionNb(associatedAction);
+                actionToBasicFunctions.get(associatedAction).add(
+                    basicFunctions[i]);
             }
-            
+
             // Compute performance
             System.out.println("Computing performance scores...");
-            computePerformance(initialStates,true);
-            computePerformance(performanceTestStates,false);
+            computePerformance(initialStates, true);
+            computePerformance(performanceTestStates, false);
 
             // Update number of iterations etc
             totalNbOfIterations++;
@@ -605,7 +629,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 }
             }
         }
-        
+
         for (float i = 1.5f; i < 3.0f; i += 3.0f)
         {
             for (float j = -155.0f; j < 180.0f; j += 105.0f)
@@ -631,37 +655,24 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         }
     }
 
-    public void computePerformance(LinkedList<State> states, boolean isInitStatesList)
+    public void computePerformance(LinkedList<State> states,
+                                   boolean isInitStatesList)
     {
-        int nbOfBadStates = 0;
         float totalScore = 0f;
-
-        float score;
         for (State s : states)
         {
-            score = MarkovDecisionProcess.trajectoryReward(s, this, 1000);
-            if (score < 0f)
-            {
-                nbOfBadStates++;
-            }
-            else
-            {
-                totalScore += score;
-            }
+            totalScore += MarkovDecisionProcess.trajectoryReward(s, this, 100);
         }
 
-        float averageScore = totalScore
-                / (float) (states.size() - nbOfBadStates);
-        
+        float averageScore = totalScore / (float) (states.size());
+
         if (isInitStatesList)
         {
             this.averageScores[0] = averageScore;
-            this.nbOfBadStates[0] = nbOfBadStates;            
         }
         else
         {
             this.averageScores[1] = averageScore;
-            this.nbOfBadStates[1] = nbOfBadStates;                        
         }
     }
 
@@ -735,15 +746,23 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         str += "Nb of basic functions: " + nbOfBasicFunctions + "\n";
         str += "Nb of discrete actions: " + nbOfDiscreteActions + "\n";
         str += "Nb of initial states: " + initialStates.size() + "\n";
-        str += "Nb of performance test states: " + performanceTestStates.size() + "\n";
-        str += "Performance scores: " + averageScores[0] + " ; " + averageScores[1] + "\n";
-        str += "Nb of bad states: " + nbOfBadStates[0] + " ; " + nbOfBadStates[1] + "\n";
+        str += "Nb of performance test states: " + performanceTestStates.size()
+                + "\n";
+        str += "Performance scores: " + averageScores[0] + " ; "
+                + averageScores[1] + "\n";
         str += "Total number of iterations completed so far: "
                 + totalNbOfIterations + "\n";
         str += "Total computation time so far (min): "
                 + ((float) (totalComputationTime) / 1000f / 60f) + "\n";
 
         return str;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "DPS_" + totalNbOfIterations + "_" + nbOfBasicFunctions + "_"
+                + nbOfSamples;
     }
 
 }

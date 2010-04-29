@@ -1,5 +1,8 @@
 package sebbot.learning;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import sebbot.MathTools;
 import sebbot.SoccerParams;
 import sebbot.Vector2D;
@@ -11,12 +14,12 @@ import sebbot.Vector2D;
 public class MarkovDecisionProcess
 {
     public static final float BIG_REWARD = 1000000f;
-    
+
     public static State nextState(State s, Action a)
     {
         return nextState(s, a, false);
     }
-    
+
     public static State nextState(State s, Action a, boolean isDiscreteState)
     {
         State nextState;
@@ -80,7 +83,7 @@ public class MarkovDecisionProcess
             nextState.setRelativeDirection((float) MathTools
                 .normalizeAngle(newRelPosition.polarAngle()
                         - nextState.getPlayerBodyDirection()));
-            
+
             if (isDiscreteState)
             {
                 nextState.discretize();
@@ -94,7 +97,7 @@ public class MarkovDecisionProcess
     {
         return reward(s, a, false);
     }
-    
+
     public static float reward(State s, Action a, boolean isDiscreteState)
     {
         float reward;
@@ -106,7 +109,7 @@ public class MarkovDecisionProcess
         else
         {
             State nextState = nextState(s, a, isDiscreteState);
-            
+
             float nextStepDistance = nextState.getRelativeDistance();
 
             if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
@@ -115,21 +118,29 @@ public class MarkovDecisionProcess
             }
             else
             {
-                reward =  0f-nextStepDistance; //0.0f - nextStepDistance;
+                reward = -1f - nextStepDistance / 10000f; //0.0f - nextStepDistance;
             }
         }
 
         return reward;
     }
 
-    public static float trajectoryReward(State initialState, Policy p, int nbOfSteps)
+    public static float trajectoryReward(State initialState, Policy p,
+                                         int nbOfSteps,
+                                         LinkedList<State> statesTrajectory,
+                                         LinkedList<Action> actionsTrajectory)
     {
         float discountFactor = 0.95f;
-//        LinkedList<State> ls = new LinkedList<State>();
-//        LinkedList<Action> la = new LinkedList<Action>();
 
         State s = initialState;
-        Action a = p.chooseAction(s);        
+        Action a = p.chooseAction(s);
+        
+        if (statesTrajectory != null && actionsTrajectory != null)
+        {
+            statesTrajectory.add(s);
+            actionsTrajectory.add(a);
+        }
+
         float reward = reward(s, a);
         int nbOfIterations = 1;
         while (!s.isTerminal() && nbOfIterations < nbOfSteps)
@@ -137,8 +148,11 @@ public class MarkovDecisionProcess
             s = nextState(s, a);
             a = p.chooseAction(s);
 
-//            ls.addLast(s);
-//            la.addLast(a);
+            if (statesTrajectory != null && actionsTrajectory != null)
+            {
+                statesTrajectory.add(s);
+                actionsTrajectory.add(a);
+            }
 
             reward += discountFactor * reward(s, a);
             discountFactor *= discountFactor;
@@ -146,16 +160,22 @@ public class MarkovDecisionProcess
             nbOfIterations++;
         }
 
-//        if (reward < 0 && reward != -5000f)
-//        {
-//            while (!ls.isEmpty())
-//            {
-//                System.out.println(ls.removeFirst() + " : " + la.removeFirst());
-//            }
-//        }
+        //        if (reward < 0 && reward != -5000f)
+        //        {
+        //            while (!ls.isEmpty())
+        //            {
+        //                System.out.println(ls.removeFirst() + " : " + la.removeFirst());
+        //            }
+        //        }
 
-//        System.out.println("nb of it: " + nbOfIterations + " | score: " + reward);
+        //        System.out.println("nb of it: " + nbOfIterations + " | score: " + reward);
+
         return reward;
     }
 
+    public static float trajectoryReward(State initialState, Policy p,
+                                         int nbOfSteps)
+    {
+        return trajectoryReward(initialState, p, nbOfSteps, null, null);
+    }
 }
