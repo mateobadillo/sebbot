@@ -150,7 +150,7 @@ public class Sebbot
     {
         DirectPolicySearch dps;
         int nbOfBFs = 12;
-        for (int i = 0; i < 18; i++)
+        for (int i = 0; i < 14; i++)
         {
             dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs * (4 * 7 + 4));
             dps.run();
