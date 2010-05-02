@@ -118,7 +118,7 @@ public class MarkovDecisionProcess
             }
             else
             {
-                reward = -1f - nextStepDistance / 10000f; //0.0f - nextStepDistance;
+                reward = 0f - nextStepDistance;
             }
         }
 
