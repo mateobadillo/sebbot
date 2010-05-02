@@ -9,8 +9,10 @@ import java.net.SocketException;
 
 import sebbot.learning.DirectPolicySearch;
 import sebbot.learning.PerformanceTest;
+import sebbot.learning.Qiteration;
 import sebbot.learning.RadialGaussian;
 import sebbot.strategy.DPSGoTo;
+import sebbot.strategy.QiterationGoTo;
 
 /**
  * @author Sebastien Lentz
@@ -44,18 +46,18 @@ public class Sebbot
      */
     public static void main(String args[]) throws SocketException, IOException
     {
-        //startAgents(args);
+        startAgents(args);
         //dpsComputation();
         //performanceTest();
-        
-        DirectPolicySearch dps = DirectPolicySearch.load("12_768_1.zip");
-        RadialGaussian[] rgs = dps.getBasicFunctions();
-        
-        for (int i =0; i< rgs.length; i++)
-        {
-            System.out.println(rgs[i].getDiscreteActionNb());
-        }
-        
+
+        //        DirectPolicySearch dps = DirectPolicySearch.load("42_2688_50.zip");
+        //        RadialGaussian[] rgs = dps.getBasicFunctions();
+        //        
+        //        for (int i =0; i< rgs.length; i++)
+        //        {
+        //            System.out.println(rgs[i].getDiscreteActionNb());
+        //        }
+
     }
 
     public static void startAgents(String args[]) throws IOException
@@ -109,25 +111,27 @@ public class Sebbot
 
         RobocupClient client;
         Brain brain;
-        int nbOfPlayers = 5;
+        int nbOfPlayers = 1;
 
-        DirectPolicySearch dps = DirectPolicySearch.load("12_768_50.zip");
+        DirectPolicySearch dps = DirectPolicySearch.load("42_2688_50.zip");
         DPSGoTo dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
                 team);
             client.init("");
-            
+
             brain = client.getBrain();
             brain.setStrategy(dpsGoto);
-            
+
             new Thread(client).start();
             new Thread(brain).start();
         }
 
-        dps = DirectPolicySearch.load("14_896_50.zip");
-        dpsGoto = new DPSGoTo(dps);
+        //        dps = DirectPolicySearch.load("30_1920_30.zip");
+        //        dpsGoto = new DPSGoTo(dps);
+        Qiteration qit = Qiteration.loadQl("backupQl.zip");
+        QiterationGoTo qitGoto = new QiterationGoTo(qit);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
@@ -135,7 +139,7 @@ public class Sebbot
             client.init("");
 
             brain = client.getBrain();
-            brain.setStrategy(dpsGoto);
+            brain.setStrategy(qitGoto);
 
             new Thread(client).start();
             new Thread(brain).start();
@@ -153,11 +157,16 @@ public class Sebbot
             nbOfBFs += 2;
         }
     }
-    
+
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("32_2048_50.zip");
-        PerformanceTest pt = new PerformanceTest(dps, dps.getPerformanceTestStates());
+        DirectPolicySearch dps = DirectPolicySearch.load("42_2688_50.zip");
+//        PerformanceTest pt = new PerformanceTest(dps, dps
+//            .getPerformanceTestStates());
+        
+        Qiteration qit = Qiteration.loadQl("backupQl.zip");
+        PerformanceTest pt = new PerformanceTest(qit, dps
+          .getPerformanceTestStates());
         new Thread(pt).start();
     }
 }

@@ -90,7 +90,7 @@ public class PerformanceTest implements Runnable
             ts = new LinkedList<State>();
             ta = new LinkedList<Action>();
 
-            MarkovDecisionProcess.trajectoryReward(s, policy, 100, ts, ta);
+            MarkovDecisionProcess.trajectoryReward(s, policy, 200, ts, ta);
 
             while (!(ts.isEmpty() || ta.isEmpty()))
             {

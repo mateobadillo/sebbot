@@ -89,7 +89,7 @@ public class MarkovDecisionProcess
                 nextState.discretize();
             }
         }
-
+        
         return nextState; //TODO change for non discrete!
     }
 
@@ -156,7 +156,6 @@ public class MarkovDecisionProcess
 
             reward += discountFactor * reward(s, a);
             discountFactor *= discountFactor;
-            s = nextState(s, a);
             nbOfIterations++;
         }
 

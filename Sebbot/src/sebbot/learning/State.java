@@ -1,6 +1,7 @@
 package sebbot.learning;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 
 import sebbot.MathTools;
 import sebbot.SoccerParams;
@@ -8,6 +9,8 @@ import sebbot.SoccerParams;
 public class State implements Serializable
 {
     private static final long serialVersionUID             = 6078896792558961445L;
+    
+    private static DecimalFormat decimalFormatter = new DecimalFormat("000.000");
 
     private static int        ballVelocityNormSteps        = 1;
     private static int        ballVelocityDirectionSteps   = 10;
@@ -24,6 +27,10 @@ public class State implements Serializable
     private float             playerBodyDirection;
     private float             relativeDistance;
     private float             relativeDirection;
+    
+    static {
+        decimalFormatter.setPositivePrefix("+");
+    }
 
     /*
      * =========================================================================
@@ -371,13 +378,13 @@ public class State implements Serializable
     {
         String str = "{";
 
-        str += ballVelocityNorm + ", ";
-        str += ballVelocityDirection + ", ";
-        str += playerVelocityNorm + ", ";
-        str += playerVelocityDirection + ", ";
-        str += playerBodyDirection + ", ";
-        str += relativeDistance + ", ";
-        str += relativeDirection + "}";
+        str += decimalFormatter.format(ballVelocityNorm) + ", ";
+        str += decimalFormatter.format(ballVelocityDirection) + ", ";
+        str += decimalFormatter.format(playerVelocityNorm) + ", ";
+        str += decimalFormatter.format(playerVelocityDirection) + ", ";
+        str += decimalFormatter.format(playerBodyDirection) + ", ";
+        str += decimalFormatter.format(relativeDistance) + ", ";
+        str += decimalFormatter.format(relativeDirection) + "}";
 
         return str;
     }
