@@ -10,6 +10,7 @@ import sebbot.SoccerParams;
 import sebbot.Vector2D;
 import sebbot.learning.Action;
 import sebbot.learning.DirectPolicySearch;
+import sebbot.learning.MarkovDecisionProcess;
 import sebbot.learning.Qiteration;
 import sebbot.learning.State;
 
@@ -269,6 +270,9 @@ public class BasicStrategy
                     action.getValue(), 0, c);
                 c.getBrain().getActionsQueue().addLast(pAction);
             }
+            
+//            System.out.println("current:" + state + " | " + action);
+//            System.out.println("next   :" + MarkovDecisionProcess.nextState(state, action));
 
             return false;
         }

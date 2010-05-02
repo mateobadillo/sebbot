@@ -430,7 +430,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 for (State s : initialStates)
                 {
                     score += MarkovDecisionProcess
-                        .trajectoryReward(s, this, 30)
+                        .trajectoryReward(s, this, 200)
                             / initialStates.size();
                 }
 
@@ -620,7 +620,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                     {
                         for (float m = -180.0f; m < 180.0f; m += 120.0f)
                         {
-                            for (float n = 0; n < 125.0f; n += 25.0f)
+                            for (float n = 4f; n < 100.0f; n += 20.0f)
                             {
                                 for (float o = -180.0f; o < 180.0f; o += 120.0f)
                                 {
