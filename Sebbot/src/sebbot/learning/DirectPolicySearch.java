@@ -595,7 +595,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         {
             for (float j = -180.0f; j < 180.0f; j += 120.0f)
             {
-                for (float k = 0; k < 1.05f; k += 1.00f)
+                for (float k = 0; k < 1.05f; k += 1.05f)
                 {
                     for (float l = -180.0f; l < 180.0f; l += 120.0f)
                     {
