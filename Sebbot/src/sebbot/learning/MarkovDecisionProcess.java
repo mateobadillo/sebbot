@@ -13,7 +13,7 @@ import sebbot.Vector2D;
  */
 public class MarkovDecisionProcess
 {
-    public static final float BIG_REWARD = 1000000f;
+    public static final float BIG_REWARD = 1000000.0f;
 
     public static State nextState(State s, Action a)
     {
@@ -128,34 +128,37 @@ public class MarkovDecisionProcess
     public static float trajectoryReward(State initialState, Policy p,
                                          int nbOfSteps,
                                          LinkedList<State> statesTrajectory,
-                                         LinkedList<Action> actionsTrajectory)
+                                         LinkedList<Action> actionsTrajectory,
+                                         LinkedList<Float> rewardsTrajectory)
     {
-        float discountFactor = 0.95f;
+        float discountFactor = 0.99f;
 
         State s = initialState;
         Action a = p.chooseAction(s);
+        float trajectoryReward = reward(s, a);
         
-        if (statesTrajectory != null && actionsTrajectory != null)
+        if (statesTrajectory != null)
         {
             statesTrajectory.add(s);
             actionsTrajectory.add(a);
+            rewardsTrajectory.add(reward(s, a));
         }
-
-        float reward = reward(s, a);
+        
         int nbOfIterations = 1;
         while (!s.isTerminal() && nbOfIterations < nbOfSteps)
         {
             s = nextState(s, a);
             a = p.chooseAction(s);
+            trajectoryReward += discountFactor * reward(s, a);
 
-            if (statesTrajectory != null && actionsTrajectory != null)
+            if (statesTrajectory != null)
             {
                 statesTrajectory.add(s);
                 actionsTrajectory.add(a);
+                rewardsTrajectory.add(reward(s, a));
             }
-
-            reward += discountFactor * reward(s, a);
-            discountFactor *= discountFactor;
+            
+            discountFactor *= 0.99f;
             nbOfIterations++;
         }
 
@@ -169,12 +172,12 @@ public class MarkovDecisionProcess
 
         //        System.out.println("nb of it: " + nbOfIterations + " | score: " + reward);
 
-        return reward;
+        return trajectoryReward;
     }
 
     public static float trajectoryReward(State initialState, Policy p,
                                          int nbOfSteps)
     {
-        return trajectoryReward(initialState, p, nbOfSteps, null, null);
+        return trajectoryReward(initialState, p, nbOfSteps, null, null, null);
     }
 }

@@ -42,8 +42,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     int                                   totalNbOfIterations;
     long                                  totalComputationTime;
 
-    float[]                               averageScores;
-
     int                                   nbOfDiscreteActions;
     int                                   nbOfBasicFunctions;
     int                                   nbOfSamples;
@@ -58,7 +56,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     RadialGaussian[]                      basicFunctions;
     ArrayList<LinkedList<RadialGaussian>> actionToBasicFunctions;
     LinkedList<State>                     initialStates;
-    LinkedList<State>                     performanceTestStates;
 
     /*
      * =========================================================================
@@ -71,9 +68,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     {
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
-        this.averageScores = new float[2];
-        this.averageScores[0] = 0f;
-        this.averageScores[1] = 0f;
 
         this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
@@ -132,7 +126,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         }
 
         initialStates = new LinkedList<State>();
-        performanceTestStates = new LinkedList<State>();
         generateStates();
 
         //computeOptimalParameters();
@@ -145,7 +138,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      *                      Getters and Setters
      * 
      * =========================================================================
-     */
+     */    
+    
     /**
      * @return the nbOfSamples
      */
@@ -280,14 +274,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     public LinkedList<State> getInitialStates()
     {
         return initialStates;
-    }
-
-    /**
-     * @return the performanceTestStates
-     */
-    public LinkedList<State> getPerformanceTestStates()
-    {
-        return performanceTestStates;
     }
 
     /*
@@ -430,7 +416,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 for (State s : initialStates)
                 {
                     score += MarkovDecisionProcess
-                        .trajectoryReward(s, this, 200)
+                        .trajectoryReward(s, this, 100)
                             / initialStates.size();
                 }
 
@@ -526,11 +512,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                     basicFunctions[i]);
             }
 
-            // Compute performance
-            System.out.println("Computing performance scores...");
-            computePerformance(initialStates, true);
-            computePerformance(performanceTestStates, false);
-
             // Update number of iterations etc
             totalNbOfIterations++;
             finishTime = new Date().getTime();
@@ -610,11 +591,11 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     private void generateStates()
     {
         State s;
-        for (float i = 0; i < 3.0f; i += 3.0f)
+        for (float i = 0; i < 3.0f; i += 2.9f)
         {
             for (float j = -180.0f; j < 180.0f; j += 120.0f)
             {
-                for (float k = 0; k < 1.05f; k += 1.05f)
+                for (float k = 0; k < 1.05f; k += 1.00f)
                 {
                     for (float l = -180.0f; l < 180.0f; l += 120.0f)
                     {
@@ -632,51 +613,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                     }
                 }
             }
-        }
-
-        for (float i = 1.5f; i < 3.0f; i += 3.0f)
-        {
-            for (float j = -155.0f; j < 180.0f; j += 105.0f)
-            {
-                for (float k = 0.9f; k < 1.05f; k += 1.05f)
-                {
-                    for (float l = -164.0f; l < 180.0f; l += 130.0f)
-                    {
-                        for (float m = -145.0f; m < 180.0f; m += 96.0f)
-                        {
-                            for (float n = 0.9f; n < 125.0f; n += 12.0f)
-                            {
-                                for (float o = -170.0f; o < 180.0f; o += 60.0f)
-                                {
-                                    s = new State(i, j, k, l, m, n, o);
-                                    performanceTestStates.add(s);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public void computePerformance(LinkedList<State> states,
-                                   boolean isInitStatesList)
-    {
-        float totalScore = 0f;
-        for (State s : states)
-        {
-            totalScore += MarkovDecisionProcess.trajectoryReward(s, this, 100);
-        }
-
-        float averageScore = totalScore / (float) (states.size());
-
-        if (isInitStatesList)
-        {
-            this.averageScores[0] = averageScore;
-        }
-        else
-        {
-            this.averageScores[1] = averageScore;
         }
     }
 
@@ -750,10 +686,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         str += "Nb of basic functions: " + nbOfBasicFunctions + "\n";
         str += "Nb of discrete actions: " + nbOfDiscreteActions + "\n";
         str += "Nb of initial states: " + initialStates.size() + "\n";
-        str += "Nb of performance test states: " + performanceTestStates.size()
-                + "\n";
-        str += "Performance scores: " + averageScores[0] + " ; "
-                + averageScores[1] + "\n";
         str += "Total number of iterations completed so far: "
                 + totalNbOfIterations + "\n";
         str += "Total computation time so far (min): "
@@ -765,8 +697,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     @Override
     public String getName()
     {
-        return "DPS_" + totalNbOfIterations + "_" + nbOfBasicFunctions + "_"
-                + nbOfSamples;
+        return "DPS_" + nbOfBasicFunctions + "_"
+                + nbOfSamples + "_" + totalNbOfIterations;
     }
 
 }
