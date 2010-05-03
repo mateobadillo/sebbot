@@ -25,11 +25,11 @@ public class PerformanceTest implements Runnable
     {
         this.policy = policy;
         this.initialStates = initialStates;
-        
+
         statesTrajectories = new LinkedList<LinkedList<State>>();
         actionsTrajectories = new LinkedList<LinkedList<Action>>();
     }
-    
+
     /**
      * @return the policy
      */
@@ -65,10 +65,52 @@ public class PerformanceTest implements Runnable
     @Override
     public void run()
     {
-        log();
+        logTrajectories();
     }
 
-    private void log()
+    private void logPerformances()
+    {
+        PrintWriter log = null;
+        try
+        {
+            log = new PrintWriter(new FileWriter("performance.log", true));
+            log.println("");
+        }
+        catch (IOException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        DirectPolicySearch dps = null;
+        for (int i = 12; i < 12 + 28; i = i + 2)
+        {
+            for (int j = 1; j <= 50; j++)
+            {
+                int nbOfBFs = i;
+                int nbOfSamples = 2 * nbOfBFs * (4 * 7 + 4);
+                int nbOfIterations = j;
+
+                try
+                {
+                    dps = DirectPolicySearch.load(nbOfBFs + "_" + nbOfSamples
+                            + "_" + nbOfIterations + ".zip");
+
+                    log.println(dps.getNbOfBasicFunctions() + ";"
+                            + dps.getTotalNbOfIterations() + ";"
+                            + dps.getTotalComputationTime());
+                }
+                catch (RuntimeException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        log.println("");
+
+        log.close();
+    }
+
+    private void logTrajectories()
     {
         PrintWriter log = null;
         try
@@ -82,24 +124,35 @@ public class PerformanceTest implements Runnable
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-        
-        LinkedList<State> ts;
-        LinkedList<Action> ta;
+
+        LinkedList<State> ts = new LinkedList<State>();
+        LinkedList<Action> ta = new LinkedList<Action>();
+        LinkedList<Float> tr = new LinkedList<Float>();
+        float score;
         for (State s : initialStates)
         {
-            ts = new LinkedList<State>();
-            ta = new LinkedList<Action>();
+            ts.clear();
+            ta.clear();
+            tr.clear();
+            score = 0f;
 
-            MarkovDecisionProcess.trajectoryReward(s, policy, 200, ts, ta);
+            score = MarkovDecisionProcess.trajectoryReward(s, policy, 200, ts,
+                ta, tr);
 
-            while (!(ts.isEmpty() || ta.isEmpty()))
+            if (score < 0f)
             {
-                log.println(ts.removeFirst() + " : " + ta.removeFirst());
+                log.println("Total score: " + score + ":");
+                for (int i = 1; !(ts.isEmpty() || ta.isEmpty()); i++)
+                {
+                    log.println(i + ": " + ts.removeFirst() + " | "
+                            + ta.removeFirst() + " | "
+                            + tr.removeFirst());
+                }
+                
+                log.println("");
+                log.println("----------------------------------------------------");
+                log.println("");
             }
-
-            log.println("");
-            log.println("----------------------------------------------------");
-            log.println("");
         }
 
         log.close();
