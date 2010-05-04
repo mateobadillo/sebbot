@@ -646,11 +646,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      */
     public void save()
     {
-        String filename = String.valueOf(nbOfBasicFunctions) + "_"
-                + String.valueOf(nbOfSamples) + "_"
-                + String.valueOf(totalNbOfIterations) + ".zip";
-
-        save(filename);
+        save(getName());
     }
 
     /**
