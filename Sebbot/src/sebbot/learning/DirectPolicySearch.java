@@ -46,6 +46,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     int                                   nbOfBasicFunctions;
     int                                   nbOfSamples;
     float                                 percentageOfGoodSamples;
+    int                                   trajectoryLength;
 
     float[][]                             centersMeans;
     float[][]                             centersStdDevs;
@@ -64,21 +65,24 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      * 
      * =========================================================================
      */
-    public DirectPolicySearch(int nbOfBasicFunctions, int nbOfSamples)
+    public DirectPolicySearch(int nbOfBasicFunctions, int cce,
+                              int trajectoryLength)
     {
+        this.nbOfBasicFunctions = nbOfBasicFunctions;
+        this.trajectoryLength = trajectoryLength;
+
+        this.percentageOfGoodSamples = 0.01f;
+        this.nbOfSamples = cce * nbOfBasicFunctions * (4 * 7 + 4);
+
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
-
-        this.percentageOfGoodSamples = 0.05f;
         this.random = new Random();
+
         this.nbOfDiscreteActions = (Action.getTurnSteps() + Action
             .getDashSteps());
-        this.nbOfBasicFunctions = nbOfBasicFunctions;
 
         int nbOfBits = (int) (Math.ceil(Math.log(nbOfDiscreteActions)
                 / Math.log(2.0d)));
-
-        this.nbOfSamples = nbOfSamples;
 
         this.basicFunctions = new RadialGaussian[nbOfBasicFunctions];
         this.centersMeans = new float[nbOfBasicFunctions][7];
@@ -138,8 +142,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      *                      Getters and Setters
      * 
      * =========================================================================
-     */    
-    
+     */
+
     /**
      * @return the nbOfSamples
      */
@@ -415,10 +419,10 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
                 score = 0.0f;
                 for (State s : initialStates)
                 {
-                    score += MarkovDecisionProcess
-                        .trajectoryReward(s, this, 100)
-                            / initialStates.size();
+                    score += MarkovDecisionProcess.trajectoryReward(s, this,
+                        trajectoryLength);
                 }
+                score /= initialStates.size();
 
                 ArrayList<Integer> l = samplesScore.get(score);
                 if (l == null)
@@ -682,10 +686,11 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         String str = "";
 
         str += "Nb of samples: " + nbOfSamples + "\n";
-
         str += "Nb of basic functions: " + nbOfBasicFunctions + "\n";
         str += "Nb of discrete actions: " + nbOfDiscreteActions + "\n";
         str += "Nb of initial states: " + initialStates.size() + "\n";
+        str += "Nb of steps for Monte-Carlo simulations: " + trajectoryLength
+                + "\n";
         str += "Total number of iterations completed so far: "
                 + totalNbOfIterations + "\n";
         str += "Total computation time so far (min): "
@@ -697,8 +702,8 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
     @Override
     public String getName()
     {
-        return "DPS_" + nbOfBasicFunctions + "_"
-                + nbOfSamples + "_" + totalNbOfIterations;
+        return "DPS_" + nbOfBasicFunctions + "_" + nbOfSamples + "_"
+                + trajectoryLength + "_" + totalNbOfIterations;
     }
 
 }
