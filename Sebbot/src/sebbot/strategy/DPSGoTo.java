@@ -27,7 +27,7 @@ public class DPSGoTo implements Strategy
     
     public DPSGoTo()
     {
-        this.dps = new DirectPolicySearch(12,384);
+        this.dps = new DirectPolicySearch(12,2,20);
         new Thread(dps).start();
     }
 

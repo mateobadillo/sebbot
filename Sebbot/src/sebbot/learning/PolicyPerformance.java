@@ -12,11 +12,11 @@ import java.util.LinkedList;
 public class PolicyPerformance
 {
     private static LinkedList<State> initialStates;
-    
+
     static
     {
         initialStates = new LinkedList<State>();
-        
+
         State s;
         for (float i = 0; i < 3.0f; i += 2.5f)
         {
@@ -42,63 +42,58 @@ public class PolicyPerformance
             }
         }
     }
-    
-    public static void logPerformances()
-    {
-        PrintWriter log = null;
-        try
-        {
-            log = new PrintWriter(new FileWriter("performance.log", true));
-            log.println("");
-        }
-        catch (IOException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        DirectPolicySearch dps = null;
-        for (int i = 12; i < 12 + 28; i = i + 2)
-        {
-            for (int j = 1; j <= 50; j++)
-            {
-                int nbOfBFs = i;
-                int nbOfSamples = 2 * nbOfBFs * (4 * 7 + 4);
-                int nbOfIterations = j;
 
+    public static void testAllDps()
+    {
+        DirectPolicySearch dps = null;
+        boolean logBadTrajectories;
+        for (int nbOfBFs = 12; nbOfBFs < 12 + 14 * 2; nbOfBFs = nbOfBFs + 2)
+        {
+            for (int nbOfIterations = 30; nbOfIterations <= 50; nbOfIterations++)
+            {
                 try
                 {
-                    dps = DirectPolicySearch.load(nbOfBFs + "_" + nbOfSamples
-                            + "_" + nbOfIterations + ".zip");
-
-                    log.println(dps.getNbOfBasicFunctions() + ";"
-                            + dps.getTotalNbOfIterations() + ";"
-                            + dps.getTotalComputationTime());
+                    dps = DirectPolicySearch.load(nbOfBFs + "_"
+                            + (2 * nbOfBFs * (4 * 7 + 4)) + "_"
+                            + nbOfIterations + ".zip");
                 }
                 catch (RuntimeException e)
                 {
-                    e.printStackTrace();
+                    continue;
                 }
+
+                logBadTrajectories = nbOfIterations > 30;
+                logPerformances(dps, false);
             }
         }
-        log.println("");
-
-        log.close();
     }
 
-    public static void logBadTrajectories(Policy policy)
+    public static void logPerformances(Policy policy, boolean logBadTrajectories)
     {
-        System.out.println("Number of initial states: " + initialStates.size());
-        PrintWriter log = null;
+        PrintWriter badTrajectories = null;
+        PrintWriter performanceLog = null;
         try
         {
-            log = new PrintWriter(new FileWriter(policy.getName()
-                    + "_performance.log"));
-            log.println("");
+            performanceLog = new PrintWriter(new FileWriter("performance.log",
+                true));
         }
-        catch (IOException e1)
+        catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            e.printStackTrace();
+        }
+        if (logBadTrajectories)
+        {
+            try
+            {
+                badTrajectories = new PrintWriter(new FileWriter(policy
+                    .getName()
+                        + "_bad_trajectories.log"));
+                badTrajectories.println("");
+            }
+            catch (IOException e1)
+            {
+                e1.printStackTrace();
+            }
         }
 
         LinkedList<State> ts = new LinkedList<State>();
@@ -106,35 +101,56 @@ public class PolicyPerformance
         LinkedList<Float> tr = new LinkedList<Float>();
         float score;
         int nbOfBadTrajectories = 0;
+        float averageScore = 0f;
+        float totalScore = 0f;
         for (State s : initialStates)
         {
             ts.clear();
             ta.clear();
             tr.clear();
-            score = 0f;
 
             score = MarkovDecisionProcess.trajectoryReward(s, policy, 500, ts,
                 ta, tr);
 
             if (score < 0f)
             {
-                log.println("Total score: " + score + ":");
-                for (int i = 1; !(ts.isEmpty() || ta.isEmpty()); i++)
-                {
-                    log.println(i + ": " + ts.removeFirst() + " | "
-                            + ta.removeFirst() + " | "
-                            + tr.removeFirst());
-                }
-                
-                log.println("");
-                log.println("----------------------------------------------------");
-                log.println("");
-                
                 nbOfBadTrajectories++;
+
+                if (logBadTrajectories)
+                {
+                    badTrajectories.println("Total score: " + score + ":");
+                    for (int i = 1; !(ts.isEmpty() || ta.isEmpty()); i++)
+                    {
+                        badTrajectories.println(i + ": " + ts.removeFirst()
+                                + " | " + ta.removeFirst() + " | "
+                                + tr.removeFirst());
+                    }
+
+                    badTrajectories.println("");
+                    badTrajectories
+                        .println("----------------------------------------------------");
+                    badTrajectories.println("");
+                }
+            }
+            else
+            {
+                totalScore += score;
             }
         }
+        if (logBadTrajectories)
+        {
+            badTrajectories.println("Total number of bad trajectories: "
+                    + nbOfBadTrajectories);
+            badTrajectories.close();
+        }
 
-        log.println("Total number of bad trajectories: " + nbOfBadTrajectories);
-        log.close();
+        averageScore = totalScore
+                / (float) (initialStates.size() - nbOfBadTrajectories);
+
+        performanceLog.println(policy.getName() + ": \nAverage score: "
+                + averageScore + "\nNumber of bad trajectories: "
+                + nbOfBadTrajectories);
+        performanceLog.println("-----------------------------------");
+        performanceLog.close();
     }
 }
