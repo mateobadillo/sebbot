@@ -46,10 +46,10 @@ public class PolicyPerformance
     public static void testAllDps()
     {
         DirectPolicySearch dps = null;
-        boolean logBadTrajectories;
-        for (int nbOfBFs = 12; nbOfBFs < 12 + 14 * 2; nbOfBFs = nbOfBFs + 2)
+
+        for (int nbOfBFs = 16; nbOfBFs < 22; nbOfBFs = nbOfBFs + 2)
         {
-            for (int nbOfIterations = 30; nbOfIterations <= 50; nbOfIterations++)
+            for (int nbOfIterations = 1; nbOfIterations <= 100; nbOfIterations++)
             {
                 try
                 {
@@ -62,7 +62,6 @@ public class PolicyPerformance
                     continue;
                 }
 
-                logBadTrajectories = nbOfIterations > 30;
                 logPerformances(dps, false);
             }
         }
@@ -100,6 +99,7 @@ public class PolicyPerformance
         LinkedList<Action> ta = new LinkedList<Action>();
         LinkedList<Float> tr = new LinkedList<Float>();
         float score;
+        int iterationsDone = 0;
         int nbOfBadTrajectories = 0;
         float averageScore = 0f;
         float totalScore = 0f;
@@ -136,6 +136,15 @@ public class PolicyPerformance
             {
                 totalScore += score;
             }
+
+            iterationsDone++;
+
+            if (iterationsDone == 10 && nbOfBadTrajectories == 10)
+            {
+                totalScore = 0f;
+                nbOfBadTrajectories = initialStates.size();
+                break;
+            }
         }
         if (logBadTrajectories)
         {
@@ -144,13 +153,22 @@ public class PolicyPerformance
             badTrajectories.close();
         }
 
-        averageScore = totalScore
-                / (float) (initialStates.size() - nbOfBadTrajectories);
+        if (initialStates.size() != nbOfBadTrajectories)
+        {
+            averageScore = totalScore
+                    / (float) (initialStates.size() - nbOfBadTrajectories);
+        }
+        else
+        {
+            averageScore = 0f;
+        }
 
-        performanceLog.println(policy.getName() + ": \nAverage score: "
-                + averageScore + "\nNumber of bad trajectories: "
-                + nbOfBadTrajectories);
-        performanceLog.println("-----------------------------------");
+        DirectPolicySearch dps = (DirectPolicySearch) policy;
+        float totalComputationTime = (float) dps.getTotalComputationTime() / 1000f / 60f;
+
+        performanceLog.println(dps.getName() + ";"
+                + dps.getTotalNbOfIterations() + ";" + totalComputationTime
+                + ";" + averageScore + ";" + nbOfBadTrajectories);
         performanceLog.close();
     }
 }

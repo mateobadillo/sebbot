@@ -594,22 +594,52 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      */
     private void generateStates()
     {
+        LinkedList<Float> ballVelocityNorm = new LinkedList<Float>();
+        LinkedList<Float> ballVelocityDirection = new LinkedList<Float>();
+        LinkedList<Float> playerVelocityNorm = new LinkedList<Float>();
+        LinkedList<Float> playerVelocityDirection = new LinkedList<Float>();
+        LinkedList<Float> playerBodyDirection = new LinkedList<Float>();
+        LinkedList<Float> relativeDistance = new LinkedList<Float>();
+        LinkedList<Float> relativeDirection = new LinkedList<Float>();
+        
+        ballVelocityNorm.add(2.5f);
+        
+        ballVelocityDirection.add(0f);
+        ballVelocityDirection.add(120f);
+        ballVelocityDirection.add(-120f);
+        
+        playerVelocityNorm.add(0.15f);
+        
+        playerVelocityDirection.add(0f);
+        
+        playerBodyDirection.add(40f);
+        playerBodyDirection.add(160f);
+        playerBodyDirection.add(-80f);
+        
+        relativeDistance.add(15f);
+        relativeDistance.add(50f);
+        
+        relativeDirection.add(45f);
+        relativeDirection.add(135f);
+        relativeDirection.add(-45f);
+        relativeDirection.add(-135f);
+
         State s;
-        for (float i = 0; i < 3.0f; i += 2.9f)
+        for (float s0 : ballVelocityNorm)
         {
-            for (float j = -180.0f; j < 180.0f; j += 120.0f)
+            for (float s1 : ballVelocityDirection)
             {
-                for (float k = 0; k < 1.05f; k += 1.05f)
+                for (float s2 : playerVelocityNorm)
                 {
-                    for (float l = -180.0f; l < 180.0f; l += 120.0f)
+                    for (float s3 : playerVelocityDirection)
                     {
-                        for (float m = -180.0f; m < 180.0f; m += 120.0f)
+                        for (float s4 : playerBodyDirection)
                         {
-                            for (float n = 4f; n < 100.0f; n += 20.0f)
+                            for (float s5 : relativeDistance)
                             {
-                                for (float o = -180.0f; o < 180.0f; o += 120.0f)
+                                for (float s6 : relativeDirection)
                                 {
-                                    s = new State(i, j, k, l, m, n, o);
+                                    s = new State(s0, s1, s2, s3, s4, s5, s6);
                                     initialStates.add(s);
                                 }
                             }
