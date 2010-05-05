@@ -676,7 +676,7 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      */
     public void save()
     {
-        save(getName());
+        save(getName() + ".zip");
     }
 
     /**
