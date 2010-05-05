@@ -8,7 +8,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import sebbot.learning.DirectPolicySearch;
-import sebbot.learning.PerformanceTest;
+import sebbot.learning.PolicyPerformance;
 import sebbot.learning.Qiteration;
 import sebbot.learning.RadialGaussian;
 import sebbot.strategy.DPSGoTo;
@@ -150,9 +150,13 @@ public class Sebbot
     {
         DirectPolicySearch dps;
         int nbOfBFs = 12;
-        for (int i = 0; i < 14; i++)
+        for (int i = 0; i < 10; i++)
         {
-            dps = new DirectPolicySearch(nbOfBFs, 2 * nbOfBFs * (4 * 7 + 4));
+            dps = new DirectPolicySearch(nbOfBFs, 1, 100);
+            dps.run();
+            dps = new DirectPolicySearch(nbOfBFs, 2, 100);
+            dps.run();
+            dps = new DirectPolicySearch(nbOfBFs, 3, 100);
             dps.run();
             nbOfBFs += 2;
         }
@@ -160,11 +164,9 @@ public class Sebbot
 
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("16_1024_50.zip");        
-        Qiteration qit = Qiteration.loadQl("backupQl.zip");
-        PerformanceTest pt = new PerformanceTest(qit, dps
-          .getInitialStates());
-        
-        new Thread(pt).start();
+        //DirectPolicySearch dps = DirectPolicySearch.load("16_1024_72.zip");        
+        //Qiteration qit = Qiteration.loadQl("backupQl.zip");
+        PolicyPerformance.testAllDps();
+        //PolicyPerformance.logPerformances(dps, false);
     }
 }
