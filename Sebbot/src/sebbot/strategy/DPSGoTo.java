@@ -3,7 +3,7 @@ package sebbot.strategy;
 import sebbot.FullstateInfo;
 import sebbot.Player;
 import sebbot.RobocupClient;
-import sebbot.learning.DirectPolicySearch;
+import sebbot.ballcapture.DirectPolicySearch;
 
 /**
  * @author Sebastien Lentz

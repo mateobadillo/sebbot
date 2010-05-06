@@ -3,8 +3,8 @@ package sebbot;
 import java.lang.Math;
 import java.util.ArrayDeque;
 
-import sebbot.learning.DirectPolicySearch;
-import sebbot.learning.Policy;
+import sebbot.ballcapture.DirectPolicySearch;
+import sebbot.ballcapture.Policy;
 import sebbot.strategy.DPSGoTo;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.GoToBallAndShoot2;
