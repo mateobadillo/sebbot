@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import sebbot.learning.DirectPolicySearch;
-import sebbot.learning.PolicyPerformance;
-import sebbot.learning.Qiteration;
-import sebbot.learning.RadialGaussian;
+import sebbot.ballcapture.DirectPolicySearch;
+import sebbot.ballcapture.HandCodedPolicy;
+import sebbot.ballcapture.PolicyPerformance;
+import sebbot.ballcapture.Qiteration;
+import sebbot.ballcapture.RadialGaussian;
 import sebbot.strategy.DPSGoTo;
 import sebbot.strategy.QiterationGoTo;
 
@@ -47,10 +48,10 @@ public class Sebbot
     public static void main(String args[]) throws SocketException, IOException
     {
         //startAgents(args);
-        dpsComputation();
-        //performanceTest();
+        //dpsComputation();
+        performanceTest();
 
-//                DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");
+//                DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
 //                RadialGaussian[] rgs = dps.getBasicFunctions();
 //                
 //                for (int i =0; i< rgs.length; i++)
@@ -113,7 +114,7 @@ public class Sebbot
         Brain brain;
         int nbOfPlayers = 5;
 
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
         DPSGoTo dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
@@ -164,9 +165,9 @@ public class Sebbot
 
     public static void performanceTest()
     {
-        //DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");        
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");        
         //Qiteration qit = Qiteration.loadQl("backupQl.zip");
-        PolicyPerformance.testAllDps();
-        //PolicyPerformance.logPerformances(dps, false);
+        //PolicyPerformance.testAllDps();
+        PolicyPerformance.logPerformances(new HandCodedPolicy(), false);
     }
 }

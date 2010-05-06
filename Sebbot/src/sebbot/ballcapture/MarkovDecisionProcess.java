@@ -1,4 +1,4 @@
-package sebbot.learning;
+package sebbot.ballcapture;
 
 import java.util.LinkedList;
 
@@ -12,7 +12,7 @@ import sebbot.Vector2D;
  */
 public class MarkovDecisionProcess
 {
-    public static final float BIG_REWARD = 1000f;
+    public static final float BIG_REWARD = 1000000f;
 
     public static State nextState(State s, Action a)
     {

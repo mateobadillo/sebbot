@@ -1,4 +1,4 @@
-package sebbot.learning;
+package sebbot.ballcapture;
 
 /**
  * @author Sebastien Lentz

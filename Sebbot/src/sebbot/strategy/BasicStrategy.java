@@ -8,11 +8,11 @@ import sebbot.PlayerActionType;
 import sebbot.RobocupClient;
 import sebbot.SoccerParams;
 import sebbot.Vector2D;
-import sebbot.learning.Action;
-import sebbot.learning.DirectPolicySearch;
-import sebbot.learning.MarkovDecisionProcess;
-import sebbot.learning.Qiteration;
-import sebbot.learning.State;
+import sebbot.ballcapture.Action;
+import sebbot.ballcapture.DirectPolicySearch;
+import sebbot.ballcapture.MarkovDecisionProcess;
+import sebbot.ballcapture.Qiteration;
+import sebbot.ballcapture.State;
 
 /**
  * @author Sebastien Lentz
