@@ -26,8 +26,6 @@ public class PlayerAction
      * =========================================================================
      */
     /**
-     * Constructor
-     * 
      * @param actionType
      * @param power
      * @param direction
@@ -41,6 +39,19 @@ public class PlayerAction
         this.direction = direction;
         this.client = client;
     }
+    
+    /**
+     * @param action
+     * @param client
+     */
+    public PlayerAction(sebbot.learning.Action action, RobocupClient client)
+    {
+        this.actionType = action.isTurn() ? actionType.TURN : actionType.DASH;
+        this.power = action.isTurn() ? 0f : action.getValue();
+        this.direction = action.isTurn() ? action.getValue() : 0f;
+        this.client = client;
+    }    
+    
 
     /*
      * =========================================================================

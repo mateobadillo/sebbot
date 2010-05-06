@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import sebbot.ballcapture.DirectPolicySearch;
-import sebbot.ballcapture.HandCodedPolicy;
-import sebbot.ballcapture.PolicyPerformance;
-import sebbot.ballcapture.Qiteration;
-import sebbot.ballcapture.RadialGaussian;
-import sebbot.strategy.DPSGoTo;
-import sebbot.strategy.QiterationGoTo;
+import sebbot.learning.DirectPolicySearch;
+import sebbot.learning.HandCodedPolicy;
+import sebbot.learning.PolicyPerformance;
+import sebbot.learning.Qiteration;
+import sebbot.strategy.GoToBallAndShoot;
+import sebbot.strategy.Strategy;
+import sebbot.strategy.UniformCover;
 
 /**
  * @author Sebastien Lentz
@@ -47,9 +47,9 @@ public class Sebbot
      */
     public static void main(String args[]) throws SocketException, IOException
     {
-        //startAgents(args);
+        startAgents(args);
         //dpsComputation();
-        performanceTest();
+        //performanceTest();
 
 //                DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
 //                RadialGaussian[] rgs = dps.getBasicFunctions();
@@ -114,8 +114,8 @@ public class Sebbot
         Brain brain;
         int nbOfPlayers = 5;
 
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
-        DPSGoTo dpsGoto = new DPSGoTo(dps);
+        DirectPolicySearch dps = DirectPolicySearch.load("savedDPS.zip");
+        Strategy dpsGoToBall = new GoToBallAndShoot(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
@@ -123,7 +123,7 @@ public class Sebbot
             client.init("");
 
             brain = client.getBrain();
-            brain.setStrategy(dpsGoto);
+            brain.setStrategy(dpsGoToBall);
 
             new Thread(client).start();
             new Thread(brain).start();
@@ -132,7 +132,11 @@ public class Sebbot
         //        dps = DirectPolicySearch.load("30_1920_30.zip");
         //        dpsGoto = new DPSGoTo(dps);
         Qiteration qit = Qiteration.loadQl("backupQl.zip");
-        QiterationGoTo qitGoto = new QiterationGoTo(qit);
+        GoToBallAndShoot qitGotoBall = new GoToBallAndShoot(qit);
+        
+        UniformCover.setGoToBallStrategy(qitGotoBall);
+        Strategy uniformCover = new UniformCover(5);
+        
         for (int i = 0; i < nbOfPlayers; i++)
         {
             client = new RobocupClient(InetAddress.getByName(hostname), port,
@@ -140,7 +144,7 @@ public class Sebbot
             client.init("");
 
             brain = client.getBrain();
-            brain.setStrategy(qitGoto);
+            brain.setStrategy(uniformCover);
 
             new Thread(client).start();
             new Thread(brain).start();
@@ -165,7 +169,7 @@ public class Sebbot
 
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");        
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_20_1280_100_50.zip");        
         //Qiteration qit = Qiteration.loadQl("backupQl.zip");
         //PolicyPerformance.testAllDps();
         PolicyPerformance.logPerformances(new HandCodedPolicy(), false);

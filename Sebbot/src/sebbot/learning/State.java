@@ -1,34 +1,38 @@
-package sebbot.ballcapture;
+package sebbot.learning;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
+import sebbot.FullstateInfo;
 import sebbot.MathTools;
+import sebbot.Player;
 import sebbot.SoccerParams;
 
 public class State implements Serializable
 {
-    private static final long serialVersionUID             = 6078896792558961445L;
-    
-    private static DecimalFormat decimalFormatter = new DecimalFormat("000.000");
+    private static final long    serialVersionUID             = 6078896792558961445L;
 
-    private static int        ballVelocityNormSteps        = 1;
-    private static int        ballVelocityDirectionSteps   = 10;
-    private static int        playerVelocityNormSteps      = 1;
-    private static int        playerVelocityDirectionSteps = 10;
-    private static int        playerBodyDirectionSteps     = 20;
-    private static int        relativeDistanceSteps        = 200;
-    private static int        relativeDirectionSteps       = 20;
+    private static DecimalFormat decimalFormatter             = new DecimalFormat(
+                                                                  "000.000");
 
-    private float             ballVelocityNorm;
-    private float             ballVelocityDirection;
-    private float             playerVelocityNorm;
-    private float             playerVelocityDirection;
-    private float             playerBodyDirection;
-    private float             relativeDistance;
-    private float             relativeDirection;
-    
-    static {
+    private static int           ballVelocityNormSteps        = 1;
+    private static int           ballVelocityDirectionSteps   = 10;
+    private static int           playerVelocityNormSteps      = 1;
+    private static int           playerVelocityDirectionSteps = 10;
+    private static int           playerBodyDirectionSteps     = 20;
+    private static int           relativeDistanceSteps        = 200;
+    private static int           relativeDirectionSteps       = 20;
+
+    private float                ballVelocityNorm;
+    private float                ballVelocityDirection;
+    private float                playerVelocityNorm;
+    private float                playerVelocityDirection;
+    private float                playerBodyDirection;
+    private float                relativeDistance;
+    private float                relativeDirection;
+
+    static
+    {
         decimalFormatter.setPositivePrefix("+");
     }
 
@@ -63,9 +67,28 @@ public class State implements Serializable
         this.relativeDirection = relativeDirection;
     }
 
+    /**
+     * 
+     */
     public State()
     {
         this(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 99.0f, 0.0f);
+    }
+
+    /**
+     * @param fsi
+     */
+    public State(FullstateInfo fsi, Player player)
+    {
+        this.ballVelocityNorm = ((float) fsi.getBall().getVelocity()
+            .polarRadius());
+        this.ballVelocityDirection = ((float) fsi.getBall().getVelocity()
+            .polarAngle());
+        this.playerVelocityNorm = ((float) player.getVelocity().polarRadius());
+        this.playerVelocityDirection = ((float) player.getVelocity().polarAngle());
+        this.playerBodyDirection = ((float) player.getBodyDirection());
+        this.relativeDistance = ((float) player.distanceTo(fsi.getBall()));
+        this.relativeDirection = ((float) player.angleFromBody(fsi.getBall()));
     }
 
     /*

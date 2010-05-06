@@ -1,4 +1,4 @@
-package sebbot.ballcapture;
+package sebbot.learning;
 
 import java.io.FileWriter;
 import java.io.IOException;

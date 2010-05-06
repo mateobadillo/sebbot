@@ -9,10 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
-import sebbot.strategy.DPSGoTo;
+import sebbot.learning.Qiteration;
 import sebbot.strategy.GoToBallAndShoot;
-import sebbot.strategy.GoToBallAndShoot2;
-import sebbot.strategy.QiterationGoTo;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
 
@@ -264,39 +262,17 @@ public class RobocupClient implements Runnable
         {
             s1 = new UniformCover(5);
         }
-        else if (s.equalsIgnoreCase("UniformCoverDPS"))
-        {
-            s1 = new UniformCover(5);
-            if (UniformCover.getBallCaptureAlgorithm().getClass() != DPSGoTo.class)
-            {
-                UniformCover
-                    .setBallCaptureAlgorithm(new DPSGoTo("savedBFs.zip"));
-            }
-        }
-        else if (s.equalsIgnoreCase("UniformCoverQit"))
-        {
-            s1 = new UniformCover(5);
-            if (UniformCover.getBallCaptureAlgorithm().getClass() != QiterationGoTo.class)
-            {
-                UniformCover.setBallCaptureAlgorithm(new QiterationGoTo(
-                    "backupQl.zip"));
-            }
-        }
         else if (s.equalsIgnoreCase("GoToBallAndShoot"))
         {
             s1 = new GoToBallAndShoot();
         }
-        else if (s.equalsIgnoreCase("GoToBallAndShoot2"))
-        {
-            s1 = new GoToBallAndShoot2();
-        }
         else if (s.equalsIgnoreCase("QiterationGoTo"))
         {
-            s1 = new QiterationGoTo();
+            s1 = new GoToBallAndShoot(Qiteration.loadQl("backupQl.zip"));
         }
         else if (s.equalsIgnoreCase("DPSGoto"))
         {
-            s1 = new DPSGoTo();
+            s1 = new GoToBallAndShoot(Qiteration.loadQl("savedBFs.zip"));
         }
         else
         {
