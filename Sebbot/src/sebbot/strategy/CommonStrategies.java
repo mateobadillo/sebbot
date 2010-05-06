@@ -13,7 +13,7 @@ import sebbot.Vector2D;
  * @author Sebastien Lentz
  *
  */
-public class BasicStrategy
+public class CommonStrategies
 {
     /**
      * @param rcClient

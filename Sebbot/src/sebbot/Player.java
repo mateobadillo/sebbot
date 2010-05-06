@@ -46,7 +46,7 @@ public class Player extends MobileObject
     /*
      * =========================================================================
      * 
-     *                      Getters and Setters
+     *                            Getters and Setters
      * 
      * =========================================================================
      */
@@ -117,7 +117,7 @@ public class Player extends MobileObject
     /*
      * =========================================================================
      * 
-     *                          Movement methods
+     *                            Movement methods
      * 
      * =========================================================================
      */
@@ -167,6 +167,19 @@ public class Player extends MobileObject
         return angleFromBody(o.getPosition());
     }
 
+    /*
+     * =========================================================================
+     * 
+     *                     Movement extrapolation methods
+     * 
+     * =========================================================================
+     */
+    /**
+     * @param initialPosition
+     * @param initialVelocity
+     * @param power
+     * @return
+     */
     public Vector2D nextPosition(Vector2D initialPosition,
             Vector2D initialVelocity, double power)
     {
@@ -175,11 +188,18 @@ public class Player extends MobileObject
                 SoccerParams.DASH_POWER_RATE, power, bodyDirection);
     }
 
+    /**
+     * @param power
+     * @return
+     */
     public Vector2D nextPosition(double power)
     {
         return this.nextPosition(this.position, this.velocity, power);
     }
 
+    /* (non-Javadoc)
+     * @see sebbot.MobileObject#nextVelocity(sebbot.Vector2D, double)
+     */
     public Vector2D nextVelocity(Vector2D initialVelocity, double power)
     {
         return super.nextVelocity(initialVelocity, SoccerParams.PLAYER_DECAY,
@@ -187,11 +207,19 @@ public class Player extends MobileObject
                 SoccerParams.DASH_POWER_RATE, power, bodyDirection);
     }
 
+    /* (non-Javadoc)
+     * @see sebbot.MobileObject#nextVelocity(double)
+     */
     public Vector2D nextVelocity(double power)
     {
         return this.nextVelocity(this.velocity, power);
     }
 
+    /**
+     * @param initialPosition
+     * @param initialVelocity
+     * @return
+     */
     public ArrayList<Vector2D> trajectory(Vector2D initialPosition,
             Vector2D initialVelocity)
     {
@@ -199,6 +227,9 @@ public class Player extends MobileObject
                 SoccerParams.PLAYER_DECAY);
     }
 
+    /**
+     * @return
+     */
     public ArrayList<Vector2D> trajectory()
     {
         return this.trajectory(this.position, this.velocity);

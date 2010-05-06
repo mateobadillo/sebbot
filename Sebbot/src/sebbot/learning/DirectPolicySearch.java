@@ -65,6 +65,11 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      * 
      * =========================================================================
      */
+    /**
+     * @param nbOfBasicFunctions
+     * @param cce
+     * @param trajectoryLength
+     */
     public DirectPolicySearch(int nbOfBasicFunctions, int cce,
                               int trajectoryLength)
     {

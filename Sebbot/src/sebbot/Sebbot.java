@@ -134,8 +134,8 @@ public class Sebbot
         Qiteration qit = Qiteration.loadQl("backupQl.zip");
         GoToBallAndShoot qitGotoBall = new GoToBallAndShoot(qit);
         
-        UniformCover.setGoToBallStrategy(qitGotoBall);
-        Strategy uniformCover = new UniformCover(5);
+//        UniformCover.setGoToBallStrategy(qitGotoBall);
+//        Strategy uniformCover = new UniformCover(5);
         
         for (int i = 0; i < nbOfPlayers; i++)
         {
@@ -144,7 +144,7 @@ public class Sebbot
             client.init("");
 
             brain = client.getBrain();
-            brain.setStrategy(uniformCover);
+            brain.setStrategy(qitGotoBall);
 
             new Thread(client).start();
             new Thread(brain).start();

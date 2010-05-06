@@ -181,7 +181,7 @@ public class UniformCover implements Strategy
             }
 
             /* The player knows where he has to go and begins moving */
-            BasicStrategy.simpleGoTo(targetPoint, c, fsi, p);
+            CommonStrategies.simpleGoTo(targetPoint, c, fsi, p);
         }
 
     }
