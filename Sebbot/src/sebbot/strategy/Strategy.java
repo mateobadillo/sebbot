@@ -10,6 +10,5 @@ import sebbot.RobocupClient;
  */
 public interface Strategy
 {
-    public void doAction(RobocupClient c, FullstateInfo fsi, Player p);
-
+    public void doAction(RobocupClient rcClient, FullstateInfo fsi, Player player);
 }

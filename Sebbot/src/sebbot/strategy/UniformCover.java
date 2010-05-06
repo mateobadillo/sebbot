@@ -15,10 +15,10 @@ import sebbot.SoccerParams;
  */
 public class UniformCover implements Strategy
 {
-    static Strategy      ballCaptureAlgorithm = new GoToBallAndShoot();
-    
-    protected int        numberOfPlayers;
-    protected Vector2D[] optimalPositions;
+    static GoToBallAndShoot goToBallStrategy = new GoToBallAndShoot();
+
+    protected int           numberOfPlayers;
+    protected Vector2D[]    optimalPositions;
 
     /*
      * =========================================================================
@@ -33,7 +33,7 @@ public class UniformCover implements Strategy
     public UniformCover(int numberOfplayers)
     {
         this.numberOfPlayers = numberOfplayers;
-        this.optimalPositions = new Vector2D[numberOfplayers-1];
+        this.optimalPositions = new Vector2D[numberOfplayers - 1];
     }
 
     /*
@@ -44,19 +44,19 @@ public class UniformCover implements Strategy
      * =========================================================================
      */
     /**
-     * @return the ballCaptureAlgorithm
+     * @return the goToBallStrategy
      */
-    public static Strategy getBallCaptureAlgorithm()
+    public static GoToBallAndShoot getGoToBallStrategy()
     {
-        return ballCaptureAlgorithm;
+        return goToBallStrategy;
     }
 
     /**
-     * @param ballCaptureAlgorithm the ballCaptureAlgorithm to set
+     * @param goToBallStrategy the goToBallStrategy to set
      */
-    public static void setBallCaptureAlgorithm(Strategy ballCaptureAlgorithm)
+    public static void setGoToBallStrategy(GoToBallAndShoot goToBallStrategy)
     {
-        UniformCover.ballCaptureAlgorithm = ballCaptureAlgorithm;
+        UniformCover.goToBallStrategy = goToBallStrategy;
     }
 
     /*
@@ -78,7 +78,6 @@ public class UniformCover implements Strategy
             if ((team[i] != p)
                     && (team[i].distanceTo(ball) < p.distanceTo(ball)))
             {
-
                 closestToTheBall = team[i];
             }
         }
@@ -86,7 +85,7 @@ public class UniformCover implements Strategy
         /* The closest player goes to the ball go to the ball and kicks it. */
         if (closestToTheBall == p)
         {
-            ballCaptureAlgorithm.doAction(c, fsi, p);
+            goToBallStrategy.doAction(c, fsi, p);
         }
 
         else if (numberOfPlayers == 5)

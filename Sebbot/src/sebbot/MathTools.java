@@ -3,7 +3,7 @@ package sebbot;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import sebbot.ballcapture.State;
+import sebbot.learning.State;
 
 /**
  * @author Sebastien Lentz
