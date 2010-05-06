@@ -77,7 +77,7 @@ public class GoToBallAndShoot implements Strategy
     public void doAction(RobocupClient rcClient, FullstateInfo fsi,
                          Player player)
     {
-        if (!BasicStrategy.shootToGoal(rcClient, fsi, player))
+        if (!CommonStrategies.shootToGoal(rcClient, fsi, player))
         {
             State state = new State(fsi, player);
             Action action = ballCaptureAlgorithm.chooseAction(state);
