@@ -50,7 +50,7 @@ public class Sebbot
         dpsComputation();
         //performanceTest();
 
-//                DirectPolicySearch dps = DirectPolicySearch.load("16_1024_50.zip");
+//                DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");
 //                RadialGaussian[] rgs = dps.getBasicFunctions();
 //                
 //                for (int i =0; i< rgs.length; i++)
@@ -113,7 +113,7 @@ public class Sebbot
         Brain brain;
         int nbOfPlayers = 5;
 
-        DirectPolicySearch dps = DirectPolicySearch.load("16_1024_50.zip");
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");
         DPSGoTo dpsGoto = new DPSGoTo(dps);
         for (int i = 0; i < nbOfPlayers; i++)
         {
@@ -164,7 +164,7 @@ public class Sebbot
 
     public static void performanceTest()
     {
-        //DirectPolicySearch dps = DirectPolicySearch.load("16_1024_72.zip");        
+        //DirectPolicySearch dps = DirectPolicySearch.load("DPS_12_768_100_50");        
         //Qiteration qit = Qiteration.loadQl("backupQl.zip");
         PolicyPerformance.testAllDps();
         //PolicyPerformance.logPerformances(dps, false);

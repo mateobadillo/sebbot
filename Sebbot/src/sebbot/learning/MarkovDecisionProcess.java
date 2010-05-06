@@ -1,6 +1,5 @@
 package sebbot.learning;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import sebbot.MathTools;
@@ -13,7 +12,7 @@ import sebbot.Vector2D;
  */
 public class MarkovDecisionProcess
 {
-    public static final float BIG_REWARD = 1000000.0f;
+    public static final float BIG_REWARD = 1000f;
 
     public static State nextState(State s, Action a)
     {
@@ -104,7 +103,7 @@ public class MarkovDecisionProcess
 
         if (s.isTerminal())
         {
-            reward = 0.0f;
+            reward = 0f;
         }
         else
         {
@@ -118,7 +117,7 @@ public class MarkovDecisionProcess
             }
             else
             {
-                reward = 0f - nextStepDistance;
+                reward = -1f;
             }
         }
 
