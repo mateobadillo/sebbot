@@ -47,14 +47,14 @@ public class PolicyPerformance
     {
         DirectPolicySearch dps = null;
 
-        for (int nbOfBFs = 16; nbOfBFs < 22; nbOfBFs = nbOfBFs + 2)
+        for (int nbOfBFs = 12; nbOfBFs < 12+9*2; nbOfBFs = nbOfBFs + 2)
         {
-            for (int nbOfIterations = 1; nbOfIterations <= 100; nbOfIterations++)
+            for (int nbOfIterations = 1; nbOfIterations <= 50; nbOfIterations++)
             {
                 try
                 {
-                    dps = DirectPolicySearch.load(nbOfBFs + "_"
-                            + (2 * nbOfBFs * (4 * 7 + 4)) + "_"
+                    dps = DirectPolicySearch.load("DPS_" + nbOfBFs + "_"
+                            + (3 * nbOfBFs * (4 * 7 + 4)) + "_" + "100" + "_"
                             + nbOfIterations + ".zip");
                 }
                 catch (RuntimeException e)
@@ -163,12 +163,23 @@ public class PolicyPerformance
             averageScore = 0f;
         }
 
-        DirectPolicySearch dps = (DirectPolicySearch) policy;
-        float totalComputationTime = (float) dps.getTotalComputationTime() / 1000f / 60f;
+        String line;
+        if (policy.getClass() == DirectPolicySearch.class)
+        {
+            DirectPolicySearch dps = (DirectPolicySearch) policy;
+            float totalComputationTime = (float) dps.getTotalComputationTime() / 1000f / 60f;
 
-        performanceLog.println(dps.getName() + ";"
-                + dps.getTotalNbOfIterations() + ";" + totalComputationTime
-                + ";" + averageScore + ";" + nbOfBadTrajectories);
+            line = dps.getName() + ";" + dps.getTotalNbOfIterations() + ";"
+                    + totalComputationTime + ";" + averageScore + ";"
+                    + nbOfBadTrajectories;
+        }
+        else
+        {
+            line = policy.getName() + ";" + averageScore + ";"
+                    + nbOfBadTrajectories;
+        }
+        performanceLog.println(line);
+
         performanceLog.close();
     }
 }
