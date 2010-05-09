@@ -148,7 +148,6 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
      * 
      * =========================================================================
      */
-
     /**
      * @return the nbOfSamples
      */
