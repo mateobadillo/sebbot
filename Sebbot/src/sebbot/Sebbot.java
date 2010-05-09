@@ -6,11 +6,13 @@ package sebbot;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.LinkedList;
 
 import sebbot.learning.DirectPolicySearch;
 import sebbot.learning.HandCodedPolicy;
 import sebbot.learning.PolicyPerformance;
 import sebbot.learning.Qiteration;
+import sebbot.learning.State;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
@@ -47,8 +49,9 @@ public class Sebbot
      */
     public static void main(String args[]) throws SocketException, IOException
     {
-        startAgents(args);
+        //startAgents(args);
         //dpsComputation();
+        qitComputation();
         //performanceTest();
 
 //                DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
@@ -166,12 +169,38 @@ public class Sebbot
             nbOfBFs += 2;
         }
     }
+    
+    private static void qitComputation()
+    {
+        Qiteration qit;
+        
+        qit = new Qiteration(1, 1, 1, 1, 20, 200, 20, 10, 2);
+        qit.run();
+        qit = null;
+        
+        qit = new Qiteration(1, 1, 1, 1, 60, 400, 60, 10, 2);
+        qit.run();
+        qit = null;
+        
+        qit = new Qiteration(3, 7, 1, 1, 20, 200, 20, 10, 2);
+        qit.run();
+        qit = null;
+        
+        qit = new Qiteration(5, 10, 1, 1, 20, 200, 20, 10, 2);
+        qit.run();
+        qit = null;
+        
+
+        qit = new Qiteration(3, 4, 2, 4, 20, 200, 20, 10, 2);
+        qit.run();
+        qit = null;
+    }
 
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_20_1280_100_50.zip");        
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_28_2688_100_50.zip");        
         //Qiteration qit = Qiteration.loadQl("backupQl.zip");
         //PolicyPerformance.testAllDps();
-        PolicyPerformance.logPerformances(new HandCodedPolicy(), false);
+        PolicyPerformance.logPerformances(dps, false);
     }
 }
