@@ -12,8 +12,7 @@ import sebbot.learning.State;
 public class MathTools
 {
     static SecureRandom random = new SecureRandom();
-    
-    
+
     /**
      * Normalize the input angle so that it belongs to the interval [-180, 180].
      * 
@@ -133,7 +132,37 @@ public class MathTools
         return new Vector2D(radius * Math.cos(Math.toRadians(angle)), radius
                 * Math.sin(Math.toRadians(angle)));
     }
+
+    public static float min(float[] f)
+    {
+        float min = f[0];
+
+        for (int i = 1; i < f.length; i++)
+        {
+            if (f[i] < min)
+            {
+                min = f[i];
+            }
+        }
+
+        return min;
+    }
     
+    public static float max(float[] f)
+    {
+        float max = f[0];
+
+        for (int i = 1; i < f.length; i++)
+        {
+            if (f[i] > max)
+            {
+                max = f[i];
+            }
+        }
+
+        return max;
+    }
+
     public static float mean(float[] f)
     {
         float total = 0.0f;
@@ -168,7 +197,7 @@ public class MathTools
         }
 
         stdDev = (float) Math.sqrt(stdDev / f.length);
-        
+
         return stdDev;
     }
 
@@ -198,7 +227,7 @@ public class MathTools
 
         return d;
     }
-    
+
     public static double radialGaussian(State s, float[] centers, float[] radii)
     {
         double[] x = new double[7];

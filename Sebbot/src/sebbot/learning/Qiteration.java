@@ -28,51 +28,62 @@ public class Qiteration implements Policy, Serializable, Runnable
     private float[][][][][][][][] qTable;
     private float[][][][][][][][] oldQtable;
 
-    private int                   nbOfStepsForVelocityNorm;
-    private int                   nbOfStepsForVelocityDirection;
-    private int                   nbOfStepsForDistance;
-    private int                   nbOfStepsForRelativeAngle;
-    private int                   nbOfStepsForDash;
-    private int                   nbOfStepsForTurn;
+    private int                   ballVelocityNormSteps;
+    private int                   ballVelocityDirectionSteps;
+    private int                   playerVelocityNormSteps;
+    private int                   playerVelocityDirectionSteps;
+    private int                   playerBodyDirectionSteps;
+    private int                   relativeDistanceSteps;
+    private int                   relativeDirectionSteps;
+    private int                   dashSteps;
+    private int                   turnSteps;
 
     /**
-     * @param nbOfStepsForVelocityModulus
-     * @param nbOfStepsForVelocityAngle
-     * @param nbOfStepsForDistance
-     * @param nbOfStepsForRelativeAngle
-     * @param nbOfStepsForDash
-     * @param nbOfStepsForTurn
+     * @param ballVelocityNormSteps
+     * @param ballVelocityDirectionSteps
+     * @param playerVelocityNormSteps
+     * @param playerVelocityDirectionSteps
+     * @param playerBodyDirectionSteps
+     * @param relativeDistanceSteps
+     * @param relativeDirectionSteps
+     * @param turnSteps
+     * @param dashSteps
      */
-    public Qiteration(int nbOfStepsForVelocityModulus,
-                      int nbOfStepsForVelocityAngle, int nbOfStepsForDistance,
-                      int nbOfStepsForRelativeAngle, int nbOfStepsForDash,
-                      int nbOfStepsForTurn)
+    public Qiteration(int ballVelocityNormSteps,
+                      int ballVelocityDirectionSteps,
+                      int playerVelocityNormSteps,
+                      int playerVelocityDirectionSteps,
+                      int playerBodyDirectionSteps, int relativeDistanceSteps,
+                      int relativeDirectionSteps, int turnSteps, int dashSteps)
     {
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
-        this.nbOfStepsForVelocityNorm = nbOfStepsForVelocityModulus;
-        this.nbOfStepsForVelocityDirection = nbOfStepsForVelocityAngle;
-        this.nbOfStepsForDistance = nbOfStepsForDistance;
-        this.nbOfStepsForRelativeAngle = nbOfStepsForRelativeAngle;
-        this.nbOfStepsForDash = nbOfStepsForDash;
-        this.nbOfStepsForTurn = nbOfStepsForTurn;
+        this.ballVelocityNormSteps = ballVelocityNormSteps;
+        this.ballVelocityDirectionSteps = ballVelocityDirectionSteps;
+        this.playerVelocityNormSteps = playerVelocityNormSteps;
+        this.playerVelocityDirectionSteps = playerVelocityDirectionSteps;
+        this.playerBodyDirectionSteps = playerBodyDirectionSteps;
+        this.relativeDistanceSteps = relativeDistanceSteps;
+        this.relativeDirectionSteps = relativeDirectionSteps;
+        this.turnSteps = turnSteps;
+        this.dashSteps = dashSteps;
 
-        State.setBallVelocityNormSteps(nbOfStepsForVelocityModulus);
-        State.setBallVelocityDirectionSteps(nbOfStepsForVelocityAngle);
-        State.setPlayerVelocityNormSteps(nbOfStepsForVelocityModulus);
-        State.setPlayerVelocityDirectionSteps(nbOfStepsForVelocityAngle);
-        State.setPlayerBodyDirectionSteps(nbOfStepsForRelativeAngle);
-        State.setRelativeDistanceSteps(nbOfStepsForDistance);
-        State.setRelativeDirectionSteps(nbOfStepsForRelativeAngle);
+        State.setBallVelocityNormSteps(ballVelocityNormSteps);
+        State.setBallVelocityDirectionSteps(ballVelocityDirectionSteps);
+        State.setPlayerVelocityNormSteps(playerVelocityNormSteps);
+        State.setPlayerVelocityDirectionSteps(playerVelocityDirectionSteps);
+        State.setPlayerBodyDirectionSteps(playerBodyDirectionSteps);
+        State.setRelativeDistanceSteps(relativeDistanceSteps);
+        State.setRelativeDirectionSteps(relativeDirectionSteps);
 
-        Action.setDashSteps(nbOfStepsForDash);
-        Action.setTurnSteps(nbOfStepsForTurn);
+        Action.setTurnSteps(turnSteps);
+        Action.setDashSteps(dashSteps);
 
-        this.oldQtable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
-                + nbOfStepsForTurn];
+        this.oldQtable = new float[ballVelocityNormSteps][ballVelocityDirectionSteps][playerVelocityNormSteps][playerVelocityDirectionSteps][playerBodyDirectionSteps][relativeDistanceSteps][relativeDirectionSteps][dashSteps
+                + turnSteps];
 
-        this.qTable = new float[nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForVelocityNorm][nbOfStepsForVelocityDirection][nbOfStepsForRelativeAngle][nbOfStepsForDistance][nbOfStepsForRelativeAngle][nbOfStepsForDash
-                + nbOfStepsForTurn];
+        this.qTable = new float[ballVelocityNormSteps][ballVelocityDirectionSteps][playerVelocityNormSteps][playerVelocityDirectionSteps][playerBodyDirectionSteps][relativeDistanceSteps][relativeDirectionSteps][dashSteps
+                + turnSteps];
 
         initQtables();
 
@@ -144,7 +155,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                         bvn,
                                                         0.0f,
                                                         SoccerParams.BALL_SPEED_MAX,
-                                                        nbOfStepsForVelocityNorm,
+                                                        ballVelocityNormSteps,
                                                         0.0f));
                                             s
                                                 .setBallVelocityDirection((float) MathTools
@@ -152,7 +163,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                         bvd,
                                                         -180.0f,
                                                         180.0f,
-                                                        nbOfStepsForVelocityDirection,
+                                                        ballVelocityDirectionSteps,
                                                         0.0f));
                                             s
                                                 .setPlayerVelocityNorm((float) MathTools
@@ -160,7 +171,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                         pvn,
                                                         0,
                                                         SoccerParams.PLAYER_SPEED_MAX,
-                                                        nbOfStepsForVelocityNorm,
+                                                        playerVelocityNormSteps,
                                                         0.0f));
                                             s
                                                 .setPlayerVelocityDirection((float) MathTools
@@ -168,7 +179,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                         pvd,
                                                         -180.0f,
                                                         180.0f,
-                                                        nbOfStepsForVelocityDirection,
+                                                        playerVelocityDirectionSteps,
                                                         0.0f));
                                             s
                                                 .setPlayerBodyDirection((float) MathTools
@@ -176,34 +187,30 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                         pbd,
                                                         -180.0f,
                                                         180.0f,
-                                                        nbOfStepsForRelativeAngle,
+                                                        playerBodyDirectionSteps,
                                                         0.0f));
                                             s
                                                 .setRelativeDistance((float) MathTools
                                                     .indexToValue(rdist, 0.0f,
                                                         125.0f,
-                                                        nbOfStepsForDistance,
+                                                        relativeDistanceSteps,
                                                         0.0f));
                                             s
                                                 .setRelativeDirection((float) MathTools
-                                                    .indexToValue(
-                                                        rdir,
-                                                        -180.0f,
-                                                        180.0f,
-                                                        nbOfStepsForRelativeAngle,
+                                                    .indexToValue(rdir,
+                                                        -180.0f, 180.0f,
+                                                        relativeDirectionSteps,
                                                         0.0f));
 
-                                            if (act >= nbOfStepsForTurn)
+                                            if (act >= turnSteps)
                                             {
                                                 a.setTurn(false);
                                                 a
                                                     .setValue((float) MathTools
-                                                        .indexToValue(
-                                                            act
-                                                                    - nbOfStepsForTurn,
+                                                        .indexToValue(act
+                                                                - turnSteps,
                                                             0.0f, 100.0f,
-                                                            nbOfStepsForDash,
-                                                            1.0f));
+                                                            dashSteps, 1.0f));
                                             }
                                             else
                                             {
@@ -212,15 +219,14 @@ public class Qiteration implements Policy, Serializable, Runnable
                                                     .setValue((float) MathTools
                                                         .indexToValue(act,
                                                             -180.0f, 180.0f,
-                                                            nbOfStepsForTurn,
-                                                            0.5f));
+                                                            turnSteps, 0.5f));
                                             }
 
                                             tmp = qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act];
 
                                             qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = MarkovDecisionProcess
                                                 .reward(s, a, true)
-                                                    + 0.85f
+                                                    + 0.95f
                                                     * maxUq(
                                                         MarkovDecisionProcess
                                                             .nextState(s, a,
@@ -257,67 +263,70 @@ public class Qiteration implements Policy, Serializable, Runnable
             totalNbOfIterations++;
             finishTime = new Date().getTime();
             totalComputationTime += (finishTime - startTime);
-
-            System.out.println(nbOfIterations + " iterations done.");
+            
+            if (nbOfIterations % 100 == 0)
+            {
+                save();
+            }
         }
-        while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 5000);
+        while (!q0EqualsQ1(oldQtable, qTable) && nbOfIterations < 1000);
 
         System.out.println("nb of iterations: " + nbOfIterations);
         System.out.println("q iteration table computed.");
 
-        save("backupQl.zip");
+        save();
     }
 
     public float qFunction(State s, Action a)
     {
-        int i0, i1, i2, i3, i4, i5, i6, i7;
-        i0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
-        i1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
-        i2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
-        i3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
-        i4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
-            180.0f, nbOfStepsForRelativeAngle);
-        i5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
-            nbOfStepsForDistance);
-        i6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
+        int s0, s1, s2, s3, s4, s5, s6, s7;
+        s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
+            SoccerParams.BALL_SPEED_MAX, ballVelocityNormSteps);
+        s1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
+            180.0f, ballVelocityDirectionSteps);
+        s2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
+            SoccerParams.PLAYER_SPEED_MAX, playerVelocityNormSteps);
+        s3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
+            180.0f, playerVelocityDirectionSteps);
+        s4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
+            180.0f, playerBodyDirectionSteps);
+        s5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
+            relativeDistanceSteps);
+        s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
+            relativeDirectionSteps);
 
         if (a.isTurn())
         {
-            i7 = MathTools.valueToIndex(a.getValue(), -180.0f, 180.0f,
-                nbOfStepsForTurn);
+            s7 = MathTools.valueToIndex(a.getValue(), -180.0f, 180.0f,
+                turnSteps);
         }
         else
         {
-            i7 = nbOfStepsForTurn
+            s7 = turnSteps
                     + MathTools.valueToIndex(a.getValue(), 0.0f, 100.0f,
-                        nbOfStepsForDash);
+                        dashSteps);
         }
 
-        return qTable[i0][i1][i2][i3][i4][i5][i6][i7];
+        return qTable[s0][s1][s2][s3][s4][s5][s6][s7];
     }
 
     private float maxUq(State s, float[][][][][][][][] q0)
     {
         int s0, s1, s2, s3, s4, s5, s6;
         s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
+            SoccerParams.BALL_SPEED_MAX, ballVelocityNormSteps);
         s1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
+            180.0f, ballVelocityDirectionSteps);
         s2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
+            SoccerParams.PLAYER_SPEED_MAX, playerVelocityNormSteps);
         s3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
+            180.0f, playerVelocityDirectionSteps);
         s4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
-            180.0f, nbOfStepsForRelativeAngle);
+            180.0f, playerBodyDirectionSteps);
         s5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
-            nbOfStepsForDistance);
+            relativeDistanceSteps);
         s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
+            relativeDirectionSteps);
 
         float max = -1000000.0f;
         for (int i = 0; i < q0[s0][s1][s2][s3][s4][s5][s6].length; i++)
@@ -336,19 +345,19 @@ public class Qiteration implements Policy, Serializable, Runnable
     {
         int s0, s1, s2, s3, s4, s5, s6;
         s0 = MathTools.valueToIndex(s.getBallVelocityNorm(), 0.0f,
-            SoccerParams.BALL_SPEED_MAX, nbOfStepsForVelocityNorm);
+            SoccerParams.BALL_SPEED_MAX, ballVelocityNormSteps);
         s1 = MathTools.valueToIndex(s.getBallVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
+            180.0f, ballVelocityDirectionSteps);
         s2 = MathTools.valueToIndex(s.getPlayerVelocityNorm(), 0.0f,
-            SoccerParams.PLAYER_SPEED_MAX, nbOfStepsForVelocityNorm);
+            SoccerParams.PLAYER_SPEED_MAX, playerVelocityNormSteps);
         s3 = MathTools.valueToIndex(s.getPlayerVelocityDirection(), -180.0f,
-            180.0f, nbOfStepsForVelocityDirection);
+            180.0f, playerVelocityDirectionSteps);
         s4 = MathTools.valueToIndex(s.getPlayerBodyDirection(), -180.0f,
-            180.0f, nbOfStepsForRelativeAngle);
+            180.0f, playerBodyDirectionSteps);
         s5 = MathTools.valueToIndex(s.getRelativeDistance(), 0.0f, 125.0f,
-            nbOfStepsForDistance);
+            relativeDistanceSteps);
         s6 = MathTools.valueToIndex(s.getRelativeDirection(), -180.0f, 180.0f,
-            nbOfStepsForRelativeAngle);
+            relativeDirectionSteps);
 
         float max = -1000000.0f;
         Action a = null;
@@ -358,16 +367,15 @@ public class Qiteration implements Policy, Serializable, Runnable
             {
                 max = qTable[s0][s1][s2][s3][s4][s5][s6][i];
 
-                if (i < nbOfStepsForTurn)
+                if (i < turnSteps)
                 {
                     a = new Action((float) MathTools.indexToValue(i, -180.0f,
-                        180.0f, nbOfStepsForTurn, 0.5f), true);
+                        180.0f, turnSteps, 0.5f), true);
                 }
                 else
                 {
-                    a = new Action((float) MathTools.indexToValue(i
-                            - nbOfStepsForTurn, 0.0f, 100.0f, nbOfStepsForDash,
-                        1.0f), false);
+                    a = new Action((float) MathTools.indexToValue(
+                        i - turnSteps, 0.0f, 100.0f, dashSteps, 1.0f), false);
                 }
             }
 
@@ -469,7 +477,7 @@ public class Qiteration implements Policy, Serializable, Runnable
                                 {
                                     for (int p = 0; p < qTable[i][j][k][l][m][n][o].length; p++)
                                     {
-                                        if (qTable[i][j][k][l][m][n][o][p] > 2f * 1000000f)
+                                        if (qTable[i][j][k][l][m][n][o][p] > 2f * MarkovDecisionProcess.BIG_REWARD)
                                         {
                                             System.out
                                                 .println("prob: "
@@ -510,6 +518,11 @@ public class Qiteration implements Policy, Serializable, Runnable
         }
 
     }
+    
+    public void save()
+    {
+        save(this.getName());
+    }
 
     public static synchronized Qiteration loadQl(String filename)
     {
@@ -522,7 +535,7 @@ public class Qiteration implements Policy, Serializable, Runnable
             ObjectInputStream in = new ObjectInputStream(gzis);
             q = (Qiteration) in.readObject();
             in.close();
-            System.out.println("QTable loaded.");
+            System.out.println("QTable loaded: " + q.getName());
         }
         catch (Exception e)
         {
@@ -537,21 +550,17 @@ public class Qiteration implements Policy, Serializable, Runnable
         for (int i = 0; i < 10; i++)
         {
             int i0, i1, i2, i3, i4, i5, i6, i7;
-            i0 = (int) (Math.ceil(Math.random()
-                    * (nbOfStepsForVelocityNorm - 1)));
+            i0 = (int) (Math.ceil(Math.random() * (ballVelocityNormSteps - 1)));
             i1 = (int) (Math.ceil(Math.random()
-                    * (nbOfStepsForVelocityDirection - 1)));
-            i2 = (int) (Math.ceil(Math.random()
-                    * (nbOfStepsForVelocityNorm - 1)));
+                    * (ballVelocityDirectionSteps - 1)));
+            i2 = (int) (Math.ceil(Math.random() * (ballVelocityNormSteps - 1)));
             i3 = (int) Math.ceil(Math.random()
-                    * (nbOfStepsForVelocityDirection - 1));
-            i4 = (int) (Math.ceil(Math.random()
-                    * (nbOfStepsForRelativeAngle - 1)));
-            i5 = (int) (Math.ceil(Math.random() * (nbOfStepsForDistance - 1)));
-            i6 = (int) Math.ceil(Math.random()
-                    * (nbOfStepsForRelativeAngle - 1));
-            i7 = (int) (Math.ceil(Math.random()
-                    * ((nbOfStepsForDash + nbOfStepsForTurn - 1))));
+                    * (ballVelocityDirectionSteps - 1));
+            i4 = (int) (Math.ceil(Math.random() * (relativeDirectionSteps - 1)));
+            i5 = (int) (Math.ceil(Math.random() * (relativeDistanceSteps - 1)));
+            i6 = (int) Math.ceil(Math.random() * (relativeDirectionSteps - 1));
+            i7 = (int) (Math
+                .ceil(Math.random() * ((dashSteps + turnSteps - 1))));
 
             System.out.println(i0 + " " + i1 + " " + i2 + " " + i3 + " " + i4
                     + " " + i5 + " " + i6 + " " + i7 + " ");
@@ -567,16 +576,24 @@ public class Qiteration implements Policy, Serializable, Runnable
     public String toString()
     {
         String str = "";
-        int stateSpaceSize = nbOfStepsForDistance
-                * nbOfStepsForVelocityDirection * nbOfStepsForVelocityDirection
-                * nbOfStepsForVelocityNorm * nbOfStepsForVelocityNorm
-                * nbOfStepsForRelativeAngle * nbOfStepsForRelativeAngle;
-        int actionSpaceSize = (nbOfStepsForTurn + nbOfStepsForDash);
+        int stateSpaceSize = ballVelocityNormSteps * ballVelocityDirectionSteps
+                * playerVelocityNormSteps * playerVelocityDirectionSteps
+                * playerBodyDirectionSteps * relativeDistanceSteps
+                * relativeDirectionSteps;
+        int actionSpaceSize = (turnSteps + dashSteps);
 
+        str += "X = {" + ballVelocityNormSteps + ", " + ballVelocityDirectionSteps
+        + ", " + playerVelocityNormSteps + ", " + playerVelocityDirectionSteps
+        + ", " + playerBodyDirectionSteps + ", " + relativeDistanceSteps
+        + ", " + relativeDirectionSteps + "}" + "\n";
+        
+        str += "U = {" + turnSteps + ", " + dashSteps + "}" + "\n";
+        
+        
         str += "X x U² = "
                 + (stateSpaceSize * actionSpaceSize * actionSpaceSize) + "\n";
 
-        str += "Total number of iterations done so far: " + totalNbOfIterations;
+        str += "Total number of iterations done so far: " + totalNbOfIterations + "\n";
         str += "Total computation time so far (min): "
                 + ((float) (totalComputationTime) / 1000f / 60f) + "\n";
 
@@ -586,6 +603,10 @@ public class Qiteration implements Policy, Serializable, Runnable
     @Override
     public String getName()
     {
-        return "Qit_" + totalNbOfIterations;
+        return "Qit_" + ballVelocityNormSteps + "_"
+                + ballVelocityDirectionSteps + "_" + playerVelocityNormSteps
+                + "_" + ballVelocityDirectionSteps + "_"
+                + playerBodyDirectionSteps + "_" + relativeDistanceSteps + "_"
+                + relativeDirectionSteps + "_" + totalNbOfIterations + ".zip";
     }
 }
