@@ -51,8 +51,8 @@ public class Sebbot
     {
         //startAgents(args);
         //dpsComputation();
-        qitComputation();
-        //performanceTest();
+        //qitComputation();
+        performanceTest();
 
 //                DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
 //                RadialGaussian[] rgs = dps.getBasicFunctions();
@@ -174,33 +174,41 @@ public class Sebbot
     {
         Qiteration qit;
         
-        qit = new Qiteration(1, 1, 1, 1, 20, 200, 20, 10, 2);
-        qit.run();
-        qit = null;
+        for (float g = 0.5f; g < 0.9f; g += 0.5f)
+        {
+            qit = new Qiteration(1, 1, 1, 1, 50, 400, 50, 10, 2, g);
+            qit.run();
+            qit = null;
+        }
         
-        qit = new Qiteration(1, 1, 1, 1, 60, 400, 60, 10, 2);
-        qit.run();
-        qit = null;
+        for (float g = 0.9f; g < 1f; g += 0.2f)
+        {
+            qit = new Qiteration(1, 1, 1, 1, 50, 400, 50, 10, 2, g);
+            qit.run();
+            qit = null;
+        }
         
-        qit = new Qiteration(3, 7, 1, 1, 20, 200, 20, 10, 2);
-        qit.run();
-        qit = null;
+        for (float g = 0.5f; g < 0.9f; g += 0.5f)
+        {
+            qit = new Qiteration(4, 8, 1, 1, 20, 200, 20, 10, 2, g);
+            qit.run();
+            qit = null;
+        }
         
-        qit = new Qiteration(5, 10, 1, 1, 20, 200, 20, 10, 2);
-        qit.run();
-        qit = null;
+        for (float g = 0.9f; g < 1f; g += 0.2f)
+        {
+            qit = new Qiteration(4, 8, 1, 1, 20, 200, 20, 10, 2, g);
+            qit.run();
+            qit = null;
+        }
         
-
-        qit = new Qiteration(3, 4, 2, 4, 20, 200, 20, 10, 2);
-        qit.run();
-        qit = null;
     }
 
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_28_2688_100_50.zip");        
+        DirectPolicySearch dps = DirectPolicySearch.load("DPS_30_2880_100_50.zip");        
         //Qiteration qit = Qiteration.loadQl("backupQl.zip");
         //PolicyPerformance.testAllDps();
-        PolicyPerformance.logPerformances(dps, false);
+        PolicyPerformance.logPerformances(new HandCodedPolicy(), false);
     }
 }

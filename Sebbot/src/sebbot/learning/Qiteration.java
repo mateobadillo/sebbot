@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.Format;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
@@ -38,6 +39,15 @@ public class Qiteration implements Policy, Serializable, Runnable
     private int                   dashSteps;
     private int                   turnSteps;
 
+    float                         discountFactor;
+
+    /*
+     * =========================================================================
+     * 
+     *                     Constructors and destructors
+     * 
+     * =========================================================================
+     */
     /**
      * @param ballVelocityNormSteps
      * @param ballVelocityDirectionSteps
@@ -48,13 +58,15 @@ public class Qiteration implements Policy, Serializable, Runnable
      * @param relativeDirectionSteps
      * @param turnSteps
      * @param dashSteps
+     * @param discountFactor
      */
     public Qiteration(int ballVelocityNormSteps,
                       int ballVelocityDirectionSteps,
                       int playerVelocityNormSteps,
                       int playerVelocityDirectionSteps,
                       int playerBodyDirectionSteps, int relativeDistanceSteps,
-                      int relativeDirectionSteps, int turnSteps, int dashSteps)
+                      int relativeDirectionSteps, int turnSteps, int dashSteps,
+                      float discountFactor)
     {
         this.totalNbOfIterations = 0;
         this.totalComputationTime = 0;
@@ -67,6 +79,7 @@ public class Qiteration implements Policy, Serializable, Runnable
         this.relativeDirectionSteps = relativeDirectionSteps;
         this.turnSteps = turnSteps;
         this.dashSteps = dashSteps;
+        this.discountFactor = discountFactor;
 
         State.setBallVelocityNormSteps(ballVelocityNormSteps);
         State.setBallVelocityDirectionSteps(ballVelocityDirectionSteps);
@@ -115,6 +128,135 @@ public class Qiteration implements Policy, Serializable, Runnable
         //        testQ();
     }
 
+    /*
+     * =========================================================================
+     * 
+     *                      Getters and Setters
+     * 
+     * =========================================================================
+     */
+    /**
+     * @return the totalNbOfIterations
+     */
+    public int getTotalNbOfIterations()
+    {
+        return totalNbOfIterations;
+    }
+
+    /**
+     * @return the totalComputationTime
+     */
+    public long getTotalComputationTime()
+    {
+        return totalComputationTime;
+    }
+
+    /**
+     * @return the discountFactor
+     */
+    public float getDiscountFactor()
+    {
+        return discountFactor;
+    }
+
+    /**
+     * @return the qTable
+     */
+    public float[][][][][][][][] getqTable()
+    {
+        return qTable;
+    }
+
+    /**
+     * @return the oldQtable
+     */
+    public float[][][][][][][][] getOldQtable()
+    {
+        return oldQtable;
+    }
+
+    /**
+     * @return the ballVelocityNormSteps
+     */
+    public int getBallVelocityNormSteps()
+    {
+        return ballVelocityNormSteps;
+    }
+
+    /**
+     * @return the ballVelocityDirectionSteps
+     */
+    public int getBallVelocityDirectionSteps()
+    {
+        return ballVelocityDirectionSteps;
+    }
+
+    /**
+     * @return the playerVelocityNormSteps
+     */
+    public int getPlayerVelocityNormSteps()
+    {
+        return playerVelocityNormSteps;
+    }
+
+    /**
+     * @return the playerVelocityDirectionSteps
+     */
+    public int getPlayerVelocityDirectionSteps()
+    {
+        return playerVelocityDirectionSteps;
+    }
+
+    /**
+     * @return the playerBodyDirectionSteps
+     */
+    public int getPlayerBodyDirectionSteps()
+    {
+        return playerBodyDirectionSteps;
+    }
+
+    /**
+     * @return the relativeDistanceSteps
+     */
+    public int getRelativeDistanceSteps()
+    {
+        return relativeDistanceSteps;
+    }
+
+    /**
+     * @return the relativeDirectionSteps
+     */
+    public int getRelativeDirectionSteps()
+    {
+        return relativeDirectionSteps;
+    }
+
+    /**
+     * @return the dashSteps
+     */
+    public int getDashSteps()
+    {
+        return dashSteps;
+    }
+
+    /**
+     * @return the turnSteps
+     */
+    public int getTurnSteps()
+    {
+        return turnSteps;
+    }
+
+    /*
+     * =========================================================================
+     * 
+     *                            Main methods
+     * 
+     * =========================================================================
+     */
+    /**
+     * 
+     */
     public void computeQl()
     {
         long startTime;
@@ -226,7 +368,7 @@ public class Qiteration implements Policy, Serializable, Runnable
 
                                             qTable[bvn][bvd][pvn][pvd][pbd][rdist][rdir][act] = MarkovDecisionProcess
                                                 .reward(s, a, true)
-                                                    + 0.95f
+                                                    + discountFactor
                                                     * maxUq(
                                                         MarkovDecisionProcess
                                                             .nextState(s, a,
@@ -263,7 +405,9 @@ public class Qiteration implements Policy, Serializable, Runnable
             totalNbOfIterations++;
             finishTime = new Date().getTime();
             totalComputationTime += (finishTime - startTime);
-            
+
+            PolicyPerformance.logPerformances(this, false);
+
             if (nbOfIterations % 100 == 0)
             {
                 save();
@@ -277,6 +421,11 @@ public class Qiteration implements Policy, Serializable, Runnable
         save();
     }
 
+    /**
+     * @param s
+     * @param a
+     * @return
+     */
     public float qFunction(State s, Action a)
     {
         int s0, s1, s2, s3, s4, s5, s6, s7;
@@ -310,6 +459,11 @@ public class Qiteration implements Policy, Serializable, Runnable
         return qTable[s0][s1][s2][s3][s4][s5][s6][s7];
     }
 
+    /**
+     * @param s
+     * @param q0
+     * @return
+     */
     private float maxUq(State s, float[][][][][][][][] q0)
     {
         int s0, s1, s2, s3, s4, s5, s6;
@@ -341,6 +495,9 @@ public class Qiteration implements Policy, Serializable, Runnable
         return max;
     }
 
+    /* (non-Javadoc)
+     * @see sebbot.learning.Policy#chooseAction(sebbot.learning.State)
+     */
     public Action chooseAction(State s)
     {
         int s0, s1, s2, s3, s4, s5, s6;
@@ -384,6 +541,9 @@ public class Qiteration implements Policy, Serializable, Runnable
         return a;
     }
 
+    /**
+     * 
+     */
     private void initQtables()
     {
         for (int i = 0; i < oldQtable.length; i++)
@@ -414,6 +574,11 @@ public class Qiteration implements Policy, Serializable, Runnable
         }
     }
 
+    /**
+     * @param q0
+     * @param q1
+     * @return
+     */
     private boolean q0EqualsQ1(float[][][][][][][][] q0,
                                float[][][][][][][][] q1)
     {
@@ -458,6 +623,9 @@ public class Qiteration implements Policy, Serializable, Runnable
 
     }
 
+    /**
+     * 
+     */
     private void testQ()
     {
 
@@ -501,6 +669,9 @@ public class Qiteration implements Policy, Serializable, Runnable
 
     }
 
+    /**
+     * @param filename
+     */
     public void save(String filename)
     {
         try
@@ -518,12 +689,19 @@ public class Qiteration implements Policy, Serializable, Runnable
         }
 
     }
-    
+
+    /**
+     * 
+     */
     public void save()
     {
         save(this.getName());
     }
 
+    /**
+     * @param filename
+     * @return
+     */
     public static synchronized Qiteration loadQl(String filename)
     {
         Qiteration q = null;
@@ -535,7 +713,8 @@ public class Qiteration implements Policy, Serializable, Runnable
             ObjectInputStream in = new ObjectInputStream(gzis);
             q = (Qiteration) in.readObject();
             in.close();
-            System.out.println("QTable loaded: " + q.getName());
+            System.out.println("QTable loaded: ");
+            System.out.println(q);
         }
         catch (Exception e)
         {
@@ -545,6 +724,9 @@ public class Qiteration implements Policy, Serializable, Runnable
         return q;
     }
 
+    /**
+     * 
+     */
     public void printQl()
     {
         for (int i = 0; i < 10; i++)
@@ -568,11 +750,17 @@ public class Qiteration implements Policy, Serializable, Runnable
         }
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
+     */
     public void run()
     {
         computeQl();
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     public String toString()
     {
         String str = "";
@@ -582,18 +770,21 @@ public class Qiteration implements Policy, Serializable, Runnable
                 * relativeDirectionSteps;
         int actionSpaceSize = (turnSteps + dashSteps);
 
-        str += "X = {" + ballVelocityNormSteps + ", " + ballVelocityDirectionSteps
-        + ", " + playerVelocityNormSteps + ", " + playerVelocityDirectionSteps
-        + ", " + playerBodyDirectionSteps + ", " + relativeDistanceSteps
-        + ", " + relativeDirectionSteps + "}" + "\n";
-        
+        str += "X = {" + ballVelocityNormSteps + ", "
+                + ballVelocityDirectionSteps + ", " + playerVelocityNormSteps
+                + ", " + playerVelocityDirectionSteps + ", "
+                + playerBodyDirectionSteps + ", " + relativeDistanceSteps
+                + ", " + relativeDirectionSteps + "}" + "\n";
+
         str += "U = {" + turnSteps + ", " + dashSteps + "}" + "\n";
-        
-        
+
         str += "X x U² = "
                 + (stateSpaceSize * actionSpaceSize * actionSpaceSize) + "\n";
 
-        str += "Total number of iterations done so far: " + totalNbOfIterations + "\n";
+        str += "Discount factor: " + discountFactor + "\n";
+
+        str += "Total number of iterations done so far: " + totalNbOfIterations
+                + "\n";
         str += "Total computation time so far (min): "
                 + ((float) (totalComputationTime) / 1000f / 60f) + "\n";
 
@@ -603,10 +794,14 @@ public class Qiteration implements Policy, Serializable, Runnable
     @Override
     public String getName()
     {
+        String discountFactor = "" + this.discountFactor;
+        discountFactor = discountFactor.replaceAll("\\.", "-");
+
         return "Qit_" + ballVelocityNormSteps + "_"
                 + ballVelocityDirectionSteps + "_" + playerVelocityNormSteps
-                + "_" + ballVelocityDirectionSteps + "_"
+                + "_" + playerVelocityDirectionSteps + "_"
                 + playerBodyDirectionSteps + "_" + relativeDistanceSteps + "_"
-                + relativeDirectionSteps + "_" + totalNbOfIterations + ".zip";
+                + relativeDirectionSteps + "_" + discountFactor + "_"
+                + totalNbOfIterations + ".zip";
     }
 }

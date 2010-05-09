@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.LinkedList;
 
 import sebbot.MathTools;
+import sebbot.SoccerParams;
 
 /**
  * @author Sebastien Lentz
@@ -128,13 +129,13 @@ public class PolicyPerformance
                             + min[1] + ";" + max[1] + ";" + stdDev[1] + ";"
                             + mean[1] + ";" + min[0] + ";" + max[0] + ";"
                             + stdDev[0] + ";" + mean[0];
-                    
+
                     performanceLog.println(line);
                     performanceLog.flush();
                 }
             }
         }
-        
+
         performanceLog.close();
     }
 
@@ -164,8 +165,8 @@ public class PolicyPerformance
         float score;
         int iterationsDone = 0;
         int nbOfBadTrajectories = 0;
-        float averageScore = 0f;
         float totalScore = 0f;
+        float averageScore = 0f;
         for (State s : initialStates)
         {
             ts.clear();
@@ -205,6 +206,7 @@ public class PolicyPerformance
             if (iterationsDone == 10 && nbOfBadTrajectories == 10)
             {
                 totalScore = 0f;
+                averageScore = 0f;
                 nbOfBadTrajectories = initialStates.size();
                 break;
             }
@@ -216,14 +218,10 @@ public class PolicyPerformance
             badTrajectories.close();
         }
 
-        if (initialStates.size() != nbOfBadTrajectories)
+        if (nbOfBadTrajectories != initialStates.size())
         {
             averageScore = totalScore
-                    / (float) (initialStates.size() - nbOfBadTrajectories);
-        }
-        else
-        {
-            averageScore = 0f;
+                    / (initialStates.size() - nbOfBadTrajectories);
         }
 
         performance[0] = averageScore;
@@ -257,6 +255,15 @@ public class PolicyPerformance
                     + totalComputationTime + ";" + performance[0] + ";"
                     + performance[1];
         }
+        else if (policy.getClass() == Qiteration.class)
+        {
+            Qiteration qit = (Qiteration) policy;
+            float totalComputationTime = (float) qit.getTotalComputationTime() / 1000f / 60f;
+
+            line = qit.getName() + ";" + qit.getDiscountFactor() + ";"
+                    + qit.getTotalNbOfIterations() + ";" + totalComputationTime
+                    + ";" + performance[0] + ";" + performance[1];
+        }
         else
         {
             line = policy.getName() + ";" + performance[0] + ";"
@@ -265,5 +272,75 @@ public class PolicyPerformance
         performanceLog.println(line);
 
         performanceLog.close();
+    }
+
+    public static float trajectoryReward(State initialState, Policy p,
+                                         int nbOfSteps)
+    {
+        return trajectoryReward(initialState, p, nbOfSteps, null, null, null);
+    }
+
+    public static float trajectoryReward(State initialState, Policy p,
+                                         int nbOfSteps,
+                                         LinkedList<State> statesTrajectory,
+                                         LinkedList<Action> actionsTrajectory,
+                                         LinkedList<Float> rewardsTrajectory)
+    {
+        State s = initialState;
+        Action a = p.chooseAction(s);
+        float trajectoryReward = reward(s, a);
+
+        if (statesTrajectory != null)
+        {
+            statesTrajectory.add(s);
+            actionsTrajectory.add(a);
+            rewardsTrajectory.add(reward(s, a));
+        }
+
+        int nbOfIterations = 1;
+        while (!s.isTerminal() && nbOfIterations < nbOfSteps)
+        {
+            s = MarkovDecisionProcess.nextState(s, a);
+            a = p.chooseAction(s);
+            trajectoryReward += reward(s, a);
+
+            if (statesTrajectory != null)
+            {
+                statesTrajectory.add(s);
+                actionsTrajectory.add(a);
+                rewardsTrajectory.add(reward(s, a));
+            }
+
+            nbOfIterations++;
+        }
+
+        return trajectoryReward;
+    }
+
+    public static float reward(State s, Action a)
+    {
+        float reward;
+
+        if (s.isTerminal())
+        {
+            reward = 0f;
+        }
+        else
+        {
+            State nextState = MarkovDecisionProcess.nextState(s, a, false);
+
+            float nextStepDistance = nextState.getRelativeDistance();
+
+            if (nextStepDistance < SoccerParams.KICKABLE_MARGIN)
+            {
+                reward = 1000f;
+            }
+            else
+            {
+                reward = -1f;
+            }
+        }
+
+        return reward;
     }
 }
