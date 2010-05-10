@@ -8,11 +8,11 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.LinkedList;
 
-import sebbot.learning.DirectPolicySearch;
-import sebbot.learning.HandCodedPolicy;
-import sebbot.learning.PolicyPerformance;
-import sebbot.learning.Qiteration;
-import sebbot.learning.State;
+import sebbot.ballcapture.DirectPolicySearch;
+import sebbot.ballcapture.HandCodedPolicy;
+import sebbot.ballcapture.PolicyPerformance;
+import sebbot.ballcapture.Qiteration;
+import sebbot.ballcapture.State;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
@@ -50,9 +50,9 @@ public class Sebbot
     public static void main(String args[]) throws SocketException, IOException
     {
         //startAgents(args);
-        //dpsComputation();
+        dpsComputation();
         //qitComputation();
-        performanceTest();
+        //performanceTest();
 
 //                DirectPolicySearch dps = DirectPolicySearch.load("DPS_18_1152_100_50.zip");
 //                RadialGaussian[] rgs = dps.getBasicFunctions();
@@ -134,7 +134,7 @@ public class Sebbot
 
         //        dps = DirectPolicySearch.load("30_1920_30.zip");
         //        dpsGoto = new DPSGoTo(dps);
-        Qiteration qit = Qiteration.loadQl("backupQl.zip");
+        Qiteration qit = Qiteration.loadQl("Qit_4_8_1_1_20_200_20_0-9_197.zip");
         GoToBallAndShoot qitGotoBall = new GoToBallAndShoot(qit);
         
 //        UniformCover.setGoToBallStrategy(qitGotoBall);
@@ -158,7 +158,7 @@ public class Sebbot
     {
         DirectPolicySearch dps;
         int nbOfBFs = 12;
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 5; i++)
         {
             dps = new DirectPolicySearch(nbOfBFs, 1, 100);
             dps.run();
@@ -166,7 +166,7 @@ public class Sebbot
             dps.run();
             dps = new DirectPolicySearch(nbOfBFs, 3, 100);
             dps.run();
-            nbOfBFs += 2;
+            nbOfBFs += 4;
         }
     }
     
@@ -174,28 +174,28 @@ public class Sebbot
     {
         Qiteration qit;
         
-        for (float g = 0.5f; g < 0.9f; g += 0.5f)
+        for (float g = 0.5f; g < 0.9f; g += 0.05f)
         {
             qit = new Qiteration(1, 1, 1, 1, 50, 400, 50, 10, 2, g);
             qit.run();
             qit = null;
         }
         
-        for (float g = 0.9f; g < 1f; g += 0.2f)
+        for (float g = 0.9f; g < 1f; g += 0.02f)
         {
             qit = new Qiteration(1, 1, 1, 1, 50, 400, 50, 10, 2, g);
             qit.run();
             qit = null;
         }
         
-        for (float g = 0.5f; g < 0.9f; g += 0.5f)
+        for (float g = 0.5f; g < 0.9f; g += 0.05f)
         {
             qit = new Qiteration(4, 8, 1, 1, 20, 200, 20, 10, 2, g);
             qit.run();
             qit = null;
         }
         
-        for (float g = 0.9f; g < 1f; g += 0.2f)
+        for (float g = 0.9f; g < 1f; g += 0.02f)
         {
             qit = new Qiteration(4, 8, 1, 1, 20, 200, 20, 10, 2, g);
             qit.run();
@@ -206,9 +206,9 @@ public class Sebbot
 
     public static void performanceTest()
     {
-        DirectPolicySearch dps = DirectPolicySearch.load("DPS_30_2880_100_50.zip");        
-        //Qiteration qit = Qiteration.loadQl("backupQl.zip");
+        //DirectPolicySearch dps = DirectPolicySearch.load("DPS_30_2880_100_50.zip");        
+        Qiteration qit = Qiteration.loadQl("Qit_4_8_1_1_20_200_20_0-9_197.zip");
         //PolicyPerformance.testAllDps();
-        PolicyPerformance.logPerformances(new HandCodedPolicy(), false);
+        PolicyPerformance.logPerformances(qit, false);
     }
 }

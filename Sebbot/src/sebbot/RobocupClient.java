@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.charset.Charset;
 
-import sebbot.learning.Qiteration;
+import sebbot.ballcapture.Qiteration;
 import sebbot.strategy.GoToBallAndShoot;
 import sebbot.strategy.Strategy;
 import sebbot.strategy.UniformCover;
