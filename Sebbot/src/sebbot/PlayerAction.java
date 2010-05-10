@@ -44,7 +44,7 @@ public class PlayerAction
      * @param action
      * @param client
      */
-    public PlayerAction(sebbot.learning.Action action, RobocupClient client)
+    public PlayerAction(sebbot.ballcapture.Action action, RobocupClient client)
     {
         this.actionType = action.isTurn() ? actionType.TURN : actionType.DASH;
         this.power = action.isTurn() ? 0f : action.getValue();
