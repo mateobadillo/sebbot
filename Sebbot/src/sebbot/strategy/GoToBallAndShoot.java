@@ -4,8 +4,8 @@ import sebbot.FullstateInfo;
 import sebbot.Player;
 import sebbot.PlayerAction;
 import sebbot.RobocupClient;
-import sebbot.learning.Action;
-import sebbot.learning.State;
+import sebbot.ballcapture.Action;
+import sebbot.ballcapture.State;
 
 /**
  * @author Sebastien Lentz
@@ -14,7 +14,7 @@ import sebbot.learning.State;
 public class GoToBallAndShoot implements Strategy
 {
     
-    private sebbot.learning.Policy ballCaptureAlgorithm;
+    private sebbot.ballcapture.Policy ballCaptureAlgorithm;
     
 
     /*
@@ -27,7 +27,7 @@ public class GoToBallAndShoot implements Strategy
     /**
      * @param ballCaptureAlgorithm
      */
-    public GoToBallAndShoot(sebbot.learning.Policy ballCaptureAlgorithm)
+    public GoToBallAndShoot(sebbot.ballcapture.Policy ballCaptureAlgorithm)
     {
         this.ballCaptureAlgorithm = ballCaptureAlgorithm;
     }
@@ -37,7 +37,7 @@ public class GoToBallAndShoot implements Strategy
      */
     public GoToBallAndShoot()
     {
-        this(new sebbot.learning.HandCodedPolicy());
+        this(new sebbot.ballcapture.HandCodedPolicy());
     }
     
     /*
@@ -50,7 +50,7 @@ public class GoToBallAndShoot implements Strategy
     /**
      * @return the ballCaptureAlgorithm
      */
-    public sebbot.learning.Policy getBallCaptureAlgorithm()
+    public sebbot.ballcapture.Policy getBallCaptureAlgorithm()
     {
         return ballCaptureAlgorithm;
     }
@@ -58,7 +58,7 @@ public class GoToBallAndShoot implements Strategy
     /**
      * @param ballCaptureAlgorithm the ballCaptureAlgorithm to set
      */
-    public void setBallCaptureAlgorithm(sebbot.learning.Policy ballCaptureAlgorithm)
+    public void setBallCaptureAlgorithm(sebbot.ballcapture.Policy ballCaptureAlgorithm)
     {
         this.ballCaptureAlgorithm = ballCaptureAlgorithm;
     }
