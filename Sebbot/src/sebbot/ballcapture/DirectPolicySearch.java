@@ -631,18 +631,18 @@ public class DirectPolicySearch implements Policy, Serializable, Runnable
         relativeDistance.add(64f);
         relativeDistance.add(111f);
         
-        playerBodyDirection.add(-150f);
-        playerBodyDirection.add(-120f);
-        playerBodyDirection.add(-90f);
-        playerBodyDirection.add(-60f);
-        playerBodyDirection.add(30f);
-        playerBodyDirection.add(0f);
-        playerBodyDirection.add(30f);
-        playerBodyDirection.add(60f);
-        playerBodyDirection.add(90f);
-        playerBodyDirection.add(120f);
-        playerBodyDirection.add(150f);
-        playerBodyDirection.add(180f);
+        relativeDirection.add(-150f);
+        relativeDirection.add(-120f);
+        relativeDirection.add(-90f);
+        relativeDirection.add(-60f);
+        relativeDirection.add(30f);
+        relativeDirection.add(0f);
+        relativeDirection.add(30f);
+        relativeDirection.add(60f);
+        relativeDirection.add(90f);
+        relativeDirection.add(120f);
+        relativeDirection.add(150f);
+        relativeDirection.add(180f);
 
         State s;
         for (float s0 : ballVelocityNorm)
